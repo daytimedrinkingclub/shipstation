@@ -4,7 +4,6 @@ const socketIo = require("socket.io");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
-const Anthropic = require("@anthropic-ai/sdk");
 require("dotenv").config();
 
 const app = express();
@@ -78,8 +77,8 @@ app.get("/:websiteId", async (req, res) => {
 
 chatController.handleChat(io);
 
-const port = 3000;
+const PORT = process.env.PORT || 5001;
 
-server.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+server.listen(PORT, () => {
+  console.log(`Server running at ${PORT}`);
 });

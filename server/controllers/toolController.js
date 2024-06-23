@@ -31,7 +31,7 @@ async function handleToolUse(tool) {
         content: [
           {
             type: "text",
-            text: `Website deployed successfully, visit http://localhost:3000/${kebabCaseName}`,
+            text: `Website deployed successfully, visit shipstation.ai/app/${kebabCaseName}`,
           },
         ],
       },

@@ -4,7 +4,7 @@ const socketIo = require("socket.io");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
-const Anthropic = require("@anthropic-ai/sdk");
+
 require("dotenv").config();
 
 const app = express();
@@ -12,13 +12,7 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const chatController = require("./controllers/chatController");
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
-console.log(process.env.ANTHROPIC_API_KEY);
-
-const port = 3000;
+const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
 app.use(express.static("websites"));
@@ -37,7 +31,7 @@ app.get("/:websiteId", async (req, res) => {
       "utf-8"
     );
     const dom = new JSDOM(indexHtml, {
-      url: `http://localhost:${port}/${websiteId}`,
+      url: `http://localhost:${PORT}/${websiteId}`,
       runScripts: "dangerously",
       resources: "usable",
     });
@@ -81,6 +75,6 @@ app.get("/:websiteId", async (req, res) => {
 
 chatController.handleChat(io);
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
 });
