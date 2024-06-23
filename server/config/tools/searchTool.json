@@ -1,0 +1,14 @@
+{
+  "name": "google_search",
+  "description": "This tool will search for information on the web using google search engine",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The query to search on google and return the top 3 links and available information about the query"
+      }
+    },
+    "required": ["query"]
+  }
+}

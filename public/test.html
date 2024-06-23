@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Chat</title>
+  <link rel="stylesheet" href="styles/chat.css">
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+  <h1>AI Chat</h1>
+  <div id="chat-container"></div>
+  <script>
+    function insertSampleMessage(message) {
+      document.getElementById('user-input').value = message;
+      sendMessage();
+    }
+  </script>
+  <div id="sample-prompts">
+    <h2>Sample Prompts</h2>
+   <div class="sample-prompt-container">
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a website like bot9.ai')">Create a website like bot9.ai</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create an ecommerce website like thewholetruth')">Create an ecommerce website like thewholetruth</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a simple todos website with login and save todos functionality')">Create a simple todos website with login and save todos functionality</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a portoflio for a wedding photographer with a booking page')">Create a portoflio for a wedding photographer with a booking page</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a blog website with a comment section')">Create a blog website with a comment section</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a landing page for a mobile app')">Create a landing page for a mobile app</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a portfolio website for a graphic designer')">Create a portfolio website for a graphic designer</div>
+      <div class="sample-prompt-card" onclick="insertSampleMessage('help me create a news website with categories and search functionality')">Create a news website with categories and search functionality</div>
+    </div>
+  </div>
+  <div class="input-container">
+    <input type="text" id="user-input" placeholder="Type your message..." onkeypress="if(event.keyCode === 13) sendMessage()">
+    <button onclick="sendMessage()">Send</button>
+    <div id="loading" class="loading" style="display: none;"></div>
+  </div>
+  <div>
+    <p>Current Room: <span id="current-room"></span></p>
+    <input type="text" id="room-input" placeholder="Enter room ID to join">
+    <button onclick="joinRoom()">Join Room</button>
+  </div>
+  <script src="scripts/chat.js"></script>
+</body>
+</html>
