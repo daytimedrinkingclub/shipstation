@@ -52,4 +52,5 @@ For images, use https://picsum.photos/200/300 as src. where 200 is the height an
 Do not create inline svg images.
 All external links should be with target blank
 The generated code should not be of more than 4000 characters.  
+14. if creating a navbar and adding #links to internal sections, make sure to add the same id in component's html
 Your final goal is to produce a functional, attractive, and easily customizable components for the file it was asked for. Remember, only return the code for the file it was asked for.
