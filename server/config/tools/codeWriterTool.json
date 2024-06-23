@@ -1,0 +1,62 @@
+{
+  "name": "code_writer_tool",
+  "description": "Tool to generate website code based on a given configuration file",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "projectContext": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "project name"
+          },
+          "summary": {
+            "type": "string",
+            "description": "project summary"
+          },
+          "colorScheme": {
+            "type": "object",
+            "properties": {
+              "primary": {
+                "type": "string",
+                "description": "primary color hex code"
+              },
+              "secondary": {
+                "type": "string",
+                "description": "secondary color hex code"
+              },
+              "accent": {
+                "type": "string",
+                "description": "accent color hex code"
+              }
+            }
+          },
+          "font": {
+            "type": "string",
+            "description": "selected google font"
+          }
+        }
+      },
+      "files": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            }
+          },
+          "required": ["path", "type", "content"]
+        }
+      }
+    },
+    "required": ["projectContext", "files"]
+  }
+}
