@@ -52,23 +52,25 @@ If you need to add sample images, use https://picsum.photos/200/300 as src. 200 
 Do not create inline svg images.
 All external links should be with target blank
 The generated code should not be of more than 4000 characters.  
-IMPORTANT: In components.js dont write code again, instead load the components like:
-// Helper function to load HTML from file
+
+IMPORTANT: In components.js dont write code again, instead load the all components like this:
+
 async function loadHTML(url) {
     const response = await fetch(url);
     return await response.text();
 }
 
-// Define components
-class PortfolioHeader extends HTMLElement {
+// make classes of all the components inside components folder
+class ExampleHeader extends HTMLElement { // change the name of the class to the name of the component
     async connectedCallback() {
         const content = await loadHTML('components/header.html');
         this.innerHTML = content;
     }
 }
-// more components
-customElements.define('portfolio-header', PortfolioHeader);
-// more definitions
+
+// load all the components
+For eg. if projectContext.name is bot69,
+customElements.define('bot69-header', Bot69Header);
 
 14. if creating a navbar and adding #links to internal sections, make sure to add the same id in component's html
 Your final goal is to produce a functional, attractive, and easily customizable components for the file it was asked for. Remember, only return the code for the file it was asked for.
