@@ -31,7 +31,7 @@ async function handleToolUse(tool) {
         content: [
           {
             type: "text",
-            text: `Website deployed successfully, visit http://localhost:3000/websites/${kebabCaseName}`,
+            text: `Website deployed successfully, visit http://localhost:3000/${kebabCaseName}`,
           },
         ],
       },
