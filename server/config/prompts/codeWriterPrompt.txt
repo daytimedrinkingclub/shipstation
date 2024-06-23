@@ -39,7 +39,7 @@ You need to write the code (css/js/html etc) as per file and ONLY return the act
 4. Ensure Importing tailwind in index html and also configure the color scheme and font family there.
 Implement responsive design using tailwind classes. the website should look good on both desktop and mobile.
 
-5. Use the specified color scheme and fonts in your CSS.
+5. No need to make any css files. All styling is done inline via applying tailwind classes
 
 9. If any special features are requested, implement them using JavaScript within the relevant components.
 
@@ -48,9 +48,27 @@ Implement responsive design using tailwind classes. the website should look good
 11. Optimize the code for performance, avoiding unnecessary bloat.
 
 12. Include meta tags for SEO in the index.html file. The website should be SEO optimized.
-For images, use https://picsum.photos/200/300 as src. where 200 is the height and 300 is the width.
+If you need to add sample images, use https://picsum.photos/200/300 as src. 200 height and 300 is the width. You can also use any other height and width.
 Do not create inline svg images.
 All external links should be with target blank
 The generated code should not be of more than 4000 characters.  
+IMPORTANT: In components.js dont write code again, instead load the components like:
+// Helper function to load HTML from file
+async function loadHTML(url) {
+    const response = await fetch(url);
+    return await response.text();
+}
+
+// Define components
+class PortfolioHeader extends HTMLElement {
+    async connectedCallback() {
+        const content = await loadHTML('components/header.html');
+        this.innerHTML = content;
+    }
+}
+// more components
+customElements.define('portfolio-header', PortfolioHeader);
+// more definitions
+
 14. if creating a navbar and adding #links to internal sections, make sure to add the same id in component's html
 Your final goal is to produce a functional, attractive, and easily customizable components for the file it was asked for. Remember, only return the code for the file it was asked for.
