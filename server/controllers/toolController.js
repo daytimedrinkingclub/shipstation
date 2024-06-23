@@ -31,7 +31,7 @@ async function handleToolUse(tool) {
         content: [
           {
             type: "text",
-            text: `Website deployed successfully, visit https://shipstationai-0d4f3b604a61.herokuapp.com/${kebabCaseName}`,
+            text: `Website deployed successfully, visit https://shipstation.ai/${kebabCaseName}`,
           },
         ],
       },
