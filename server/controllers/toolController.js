@@ -1,6 +1,6 @@
 const fs = require("fs");
 const aiService = require("../services/aiService");
-const { saveFile } = require("../services/fileService");
+const { saveFileToS3 } = require("../services/s3Service");
 
 function toKebabCase(str) {
   return str.replace(/[^a-zA-Z0-9]+/g, "-").toLowerCase();
@@ -22,7 +22,7 @@ async function handleToolUse(tool) {
         "codeWriterPrompt"
       );
 
-      await saveFile(`websites/${kebabCaseName}/${file.path}`, content);
+      await saveFileToS3(`websites/${kebabCaseName}/${file.path}`, content);
     }
     return [
       {
@@ -31,7 +31,7 @@ async function handleToolUse(tool) {
         content: [
           {
             type: "text",
-            text: `Website deployed successfully, visit https://shipstation.ai/${kebabCaseName}`,
+            text: `Website deployed successfully, visit ${process.env.APP_BASE_URL}/${kebabCaseName}`,
           },
         ],
       },
