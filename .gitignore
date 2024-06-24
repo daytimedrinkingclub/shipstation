@@ -2,3 +2,4 @@ node_modules
 websites
 .DS_Store
 .env
+out.log

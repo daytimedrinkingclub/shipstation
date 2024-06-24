@@ -28,6 +28,15 @@ app.get("/:websiteId", async (req, res) => {
   const websitePath = path.join(__dirname, "websites", websiteId);
 
   try {
+    // Check if the directory exists
+    const websiteExists = await fs.access(websitePath, fs.constants.F_OK)
+      .then(() => true)
+      .catch(() => false);
+
+    if (!websiteExists) {
+      return res.status(404).send("Website not found");
+    }
+
     const indexHtml = await fs.readFile(
       path.join(websitePath, "index.html"),
       "utf-8"

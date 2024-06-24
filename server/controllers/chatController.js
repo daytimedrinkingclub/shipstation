@@ -5,7 +5,7 @@ const { systemPrompt } = require("../config/prompts");
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function processConversation(conversation, tools) {
+async function processConversation(conversation, tools, roomId) {
   let currentMessage = await client.messages.create({
     model: "claude-3-5-sonnet-20240620",
     max_tokens: 4000,
@@ -25,7 +25,7 @@ async function processConversation(conversation, tools) {
         content: currentMessage.content,
       });
       console.log("Found tool use in response:", tool);
-      const toolResult = await handleToolUse(tool, conversation);
+      const toolResult = await handleToolUse(tool, roomId);
       console.log("Received tool result:", toolResult);
       conversation.push({ role: "user", content: toolResult });
 
@@ -73,7 +73,11 @@ function handleChat(io) {
     socket.on("sendMessage", async (data) => {
       const { conversation, roomId } = data;
       const tools = [searchTool, codeWriterTool];
-      const finalMessage = await processConversation(conversation, tools);
+      const finalMessage = await processConversation(
+        conversation,
+        tools,
+        roomId
+      );
       io.to(roomId).emit("newMessage", {
         conversation,
         response: finalMessage.content,
