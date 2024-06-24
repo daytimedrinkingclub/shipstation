@@ -64,7 +64,7 @@ async function loadHTML(url) {
         const content = await loadHTML('path-to-component');
         this.innerHTML = content;
     }
-}
+
 
 14. if creating a navbar and adding #links to internal sections, make sure to add the same id in component's html
 Your final goal is to produce a functional, attractive, and easily customizable components for the file it was asked for. Remember, only return the code for the file it was asked for.
