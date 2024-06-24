@@ -1,31 +1,45 @@
-const s3 = require("../config/awsConfig");
+const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const { s3Client } = require("../config/awsConfig");
+require("dotenv").config();
 
-function getContentType(bucketPath) {
-  switch (bucketPath.split(".").pop()) {
-    case "js":
-      return "application/javascript";
-    case "css":
-      return "text/css";
-    case "html":
-      return "text/html";
-    case "json":
-      return "application/json";
-    case "md":
-      return "text/markdown";
-    default:
-      return "text/html";
-  }
-}
+const bucketName = process.env.BUCKETEER_BUCKET_NAME;
 
 async function saveFileToS3(bucketPath, content) {
   const params = {
-    Bucket: process.env.BUCKETEER_BUCKET_NAME,
+    Bucket: bucketName,
     Key: bucketPath,
     Body: content,
-    ContentType: getContentType(bucketPath), // Adjust based on the type of file you're saving
-    ACL: "public-read", // Ensures the file is publicly readable
   };
-
-  return s3.upload(params).promise();
+  try {
+    await s3Client.send(new PutObjectCommand(params));
+    console.log(`Successfully uploaded ${bucketPath}`);
+  } catch (err) {
+    console.error(`Error uploading ${bucketPath}:`, err);
+  }
 }
-module.exports = { saveFileToS3 };
+
+async function saveDirectoryToS3(directoryPath, remotePath) {
+  let destinationPath = remotePath || directoryPath;
+  const fs = require("fs").promises;
+  const path = require("path");
+  try {
+    const files = await fs.readdir(directoryPath);
+    const uploadPromises = files.map(async (file) => {
+      const filePath = path.join(directoryPath, file);
+      const stats = await fs.stat(filePath);
+      if (stats.isFile()) {
+        const fileContent = await fs.readFile(filePath);
+        const s3Path = path.join(destinationPath, file);
+        await saveFileToS3(s3Path, fileContent);
+        console.log(`File ${file} uploaded successfully to ${s3Path}`);
+      } else if (stats.isDirectory()) {
+        await saveDirectoryToS3(filePath, path.join(destinationPath, file));
+      }
+    });
+    await Promise.all(uploadPromises);
+  } catch (err) {
+    console.error("Failed to upload directory:", err);
+  }
+}
+
+module.exports = { saveFileToS3, saveDirectoryToS3 };

@@ -1,13 +1,12 @@
-const AWS = require("aws-sdk");
+const { S3Client } = require("@aws-sdk/client-s3");
+require("dotenv").config();
 
-AWS.config.update({
-  accessKeyId: process.env.BUCKETEER_AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.BUCKETEER_AWS_SECRET_ACCESS_KEY,
+const s3Client = new S3Client({
   region: process.env.BUCKETEER_AWS_REGION,
-  s3BucketEndpoint: false,
-  endpoint: `https://${process.env.BUCKETEER_BUCKET_NAME}.s3.amazonaws.com`,
+  credentials: {
+    accessKeyId: process.env.BUCKETEER_AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.BUCKETEER_AWS_SECRET_ACCESS_KEY,
+  },
 });
 
-const s3 = new AWS.S3();
-
-module.exports = s3;
+module.exports = { s3Client };
