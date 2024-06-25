@@ -11,6 +11,8 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const chatController = require("./server/controllers/chatController");
 const { listFoldersInS3 } = require("./server/services/s3Service");
+const { s3Handler } = require("./server/config/awsConfig");
+const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 
 app.use(express.json());
 app.use(express.static("websites"));
@@ -92,6 +94,43 @@ app.get("/:websiteId", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(404).send("Website not found");
+  }
+});
+
+app.use("/site/:siteId", async (req, res, next) => {
+  const siteName = req.params.siteId;
+  let filePath = req.path.slice(1); // Get the path without the leading slash
+
+  // Ensure filePath doesn't start with the siteName
+  filePath = filePath.replace(new RegExp(`^${siteName}/`), "");
+
+  // Default to index.html if filePath is empty or ends with a slash
+  if (filePath === "" || filePath.endsWith("/")) {
+    filePath += "index.html";
+  }
+
+  const key = `websites/${siteName}/${filePath}`;
+
+  try {
+    const params = {
+      Bucket: process.env.BUCKETEER_BUCKET_NAME,
+      Key: key,
+    };
+
+    const headCommand = new HeadObjectCommand(params);
+    const headObjectResponse = await s3Handler.send(headCommand);
+    res.set("Content-Type", headObjectResponse.ContentType);
+
+    const getCommand = new GetObjectCommand(params);
+    const { Body } = await s3Handler.send(getCommand);
+    Body.pipe(res);
+  } catch (error) {
+    console.error(`Error fetching ${key}: ${error}`);
+    if (error.name === "NoSuchKey") {
+      console.log(`File not found: ${key}`);
+      return next();
+    }
+    res.status(500).send("An error occurred");
   }
 });
 

@@ -28,7 +28,7 @@ async function handleToolUse(tool, roomId) {
         content: [
           {
             type: "text",
-            text: `Website deployed successfully, visit ${process.env.APP_BASE_URL}/${kebabCaseName}`,
+            text: `Website deployed successfully, visit ${process.env.APP_BASE_URL}/site/${kebabCaseName}/`,
           },
         ],
       },
