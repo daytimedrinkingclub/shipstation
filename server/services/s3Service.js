@@ -1,4 +1,7 @@
-const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  PutObjectCommand,
+  ListObjectsV2Command,
+} = require("@aws-sdk/client-s3");
 const { s3Client } = require("../config/awsConfig");
 require("dotenv").config();
 
@@ -15,6 +18,24 @@ async function saveFileToS3(bucketPath, content) {
     console.log(`Successfully uploaded ${bucketPath}`);
   } catch (err) {
     console.error(`Error uploading ${bucketPath}:`, err);
+  }
+}
+
+async function listFoldersInS3(prefix) {
+  const params = {
+    Bucket: bucketName,
+    Prefix: prefix,
+    Delimiter: "/",
+  };
+  try {
+    const data = await s3Client.send(new ListObjectsV2Command(params));
+    // Strip the prefix from each folder name
+    const folders = data.CommonPrefixes.map((item) => item.Prefix.replace(prefix, ''));
+    console.log(`Folders in '${prefix}':`, folders);
+    return JSON.stringify(folders); // Return folders as a JSON array
+  } catch (err) {
+    console.error(`Error listing folders in '${prefix}':`, err);
+    return JSON.stringify([]); // Return an empty JSON array in case of error
   }
 }
 
@@ -42,4 +63,4 @@ async function saveDirectoryToS3(directoryPath, remotePath) {
   }
 }
 
-module.exports = { saveFileToS3, saveDirectoryToS3 };
+module.exports = { saveFileToS3, saveDirectoryToS3, listFoldersInS3 };

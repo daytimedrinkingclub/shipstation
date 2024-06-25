@@ -1,0 +1,25 @@
+<script>
+  async function fetchAndDisplayItems() {
+    try {
+      const response = await fetch("/all-websites");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const { sites: items } = await response.json();
+      console.log(items);
+      const container = document.getElementById("items-container");
+      items.forEach((item) => {
+        const link = document.createElement("a");
+        link.href = `${item}`;
+        link.textContent = item;
+        container.appendChild(link);
+        container.appendChild(document.createElement("br"));
+      });
+    } catch (error) {
+      console.error("Failed to fetch items:", error);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", fetchAndDisplayItems);
+</script>
+<div id="items-container"></div>
