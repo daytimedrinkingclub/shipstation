@@ -10,6 +10,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 const chatController = require("./server/controllers/chatController");
+const { listFoldersInS3 } = require("./server/services/s3Service");
 
 app.use(express.json());
 app.use(express.static("websites"));
@@ -23,13 +24,23 @@ app.get("/test", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "test.html"));
 });
 
+app.get("/all", async (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "all.html"));
+});
+
+app.get("/all-websites", async (req, res) => {
+  const folders = await listFoldersInS3("websites/");
+  res.json({ sites: JSON.parse(folders) });
+});
+
 app.get("/:websiteId", async (req, res) => {
   const websiteId = req.params.websiteId;
   const websitePath = path.join(__dirname, "websites", websiteId);
 
   try {
     // Check if the directory exists
-    const websiteExists = await fs.access(websitePath, fs.constants.F_OK)
+    const websiteExists = await fs
+      .access(websitePath, fs.constants.F_OK)
       .then(() => true)
       .catch(() => false);
 
