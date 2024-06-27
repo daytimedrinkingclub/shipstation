@@ -1,8 +1,15 @@
 const searchService = require("../services/aiSearchService");
 const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
+const { toKebabCase } = require("../utils/file");
 
-async function handleToolUse(tool) {
+const generateProjectFolderName = (projectName) => {
+  return (
+    toKebabCase(projectName) + "-" + Math.random().toString(36).substr(2, 9)
+  );
+};
+
+async function handleToolUse(tool, sendEvent) {
   if (tool.name === "ai_research_assistant") {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -21,8 +28,9 @@ async function handleToolUse(tool) {
       project_goal,
       project_branding_style,
     } = tool.input;
+    const generatedFolderName = generateProjectFolderName(project_name);
     await fileService.saveFile(
-      `readme.md`, // change here
+      `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
       Project description : ${project_description}
       Project goal : ${project_goal}
@@ -35,21 +43,27 @@ async function handleToolUse(tool) {
         content: [
           {
             type: "text",
-            text: `PRD file created successfully at readme.md`,
+            text: `PRD file created successfully at ${generatedFolderName}/readme.md`,
           },
         ],
       },
     ];
   } else if (tool.name === "cto_tool") {
     const { prd_file_path } = tool.input;
+    const generatedFolderName = prd_file_path.split("/")[0];
     const fileContent = await fileService.readFile(prd_file_path);
-    const content = await ctoService.ctoService(fileContent);
-
+    const { message } = await ctoService.ctoService(
+      fileContent,
+      generatedFolderName
+    );
+    sendEvent("websiteDeployed", {
+      deployedUrl: `https://shipstation.ai/${generatedFolderName}`,
+    });
     return [
       {
         type: "tool_result",
         tool_use_id: tool.id,
-        content: [{ type: "text", text: content }],
+        content: [{ type: "text", text: message }],
       },
     ];
   }

@@ -20,9 +20,14 @@ function sendMessage() {
 
   socket.emit("sendMessage", { conversation, roomId, message });
 
-  socket.on("newMessage", (data) => {
-    conversation = data.conversation;
-    displayConversation(conversation);
+  socket.on("newMessage", ({ conversation }) => {
+    if (conversation) {
+      displayConversation(conversation);
+    }
+  });
+
+  socket.on("websiteDeployed", ({ deployedUrl }) => {
+    window.open(deployedUrl, "_blank");
   });
 }
 

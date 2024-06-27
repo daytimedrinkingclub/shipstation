@@ -4,7 +4,7 @@ const { handleToolUse } = require("./toolController");
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function processConversation(conversation, tools) {
+async function processConversation(conversation, tools, sendEvent) {
   let currentMessage = await client.messages.create({
     model: "claude-3-5-sonnet-20240620",
     max_tokens: 4000,
@@ -25,7 +25,7 @@ async function processConversation(conversation, tools) {
         content: currentMessage.content,
       });
       console.log("Found tool use in response:", tool);
-      const toolResult = await handleToolUse(tool);
+      const toolResult = await handleToolUse(tool, sendEvent);
       console.log("Received tool result:", toolResult);
       conversation.push({ role: "user", content: toolResult });
 
@@ -51,15 +51,15 @@ async function processConversation(conversation, tools) {
     }
   }
 
-  conversation.push({
-    role: currentMessage.role,
-    content: currentMessage.content,
-  });
-  console.log(
-    "Finished processConversation, final conversation:",
-    conversation
-  );
-  return currentMessage;
+  if (currentMessage.stop_reason === "end_turn") {
+    conversation.push({
+      role: currentMessage.role,
+      content: currentMessage.content,
+    });
+    sendEvent("newMessage", {
+      conversation,
+    });
+  }
 }
 
 function handleChat(io) {
@@ -74,11 +74,15 @@ function handleChat(io) {
     socket.on("sendMessage", async (data) => {
       const { conversation, roomId } = data;
       const tools = [searchTool, productManagerTool, ctoTool];
-      const finalMessage = await processConversation(conversation, tools);
-      io.to(roomId).emit("newMessage", {
-        conversation,
-        response: finalMessage.content,
-      });
+
+      const sendEvent = async (event, data) => {
+        io.to(roomId).emit(event, {
+          conversation,
+          data,
+        });
+      };
+
+      await processConversation(conversation, tools, sendEvent);
     });
 
     socket.on("disconnect", () => {
