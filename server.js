@@ -18,14 +18,6 @@ app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
 
-app.get("/", async (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "test.html"));
-});
-
-app.get("/test", async (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "test.html"));
-});
-
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });

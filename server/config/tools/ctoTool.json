@@ -1,0 +1,14 @@
+{
+  "name": "cto_tool",
+  "description": "This tool will take in the product requirement document created by the product team, and get the project developed and share the deployed project url for preview",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "prd_file_path": {
+        "type": "string",
+        "description": "The path of the product requirement document file that can be read to understand the project details"
+      }
+    },
+    "required": ["prd_file_path"]
+  }
+}

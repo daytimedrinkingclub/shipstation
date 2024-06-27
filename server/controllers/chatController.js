@@ -1,18 +1,18 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { codeWriterTool, searchTool } = require("../config/tools");
+const { searchTool, productManagerTool, ctoTool } = require("../config/tools");
 const { handleToolUse } = require("./toolController");
-const { systemPrompt } = require("../config/prompts");
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function processConversation(conversation, tools, roomId) {
+async function processConversation(conversation, tools) {
   let currentMessage = await client.messages.create({
     model: "claude-3-5-sonnet-20240620",
     max_tokens: 4000,
     temperature: 0,
-    system: systemPrompt,
+    system:
+      "Your task is to deploy a website for the user and share them the deployed url",
     messages: conversation,
-    tools, // Ensure tools are passed here
+    tools,
   });
 
   while (currentMessage.stop_reason === "tool_use") {
@@ -25,7 +25,7 @@ async function processConversation(conversation, tools, roomId) {
         content: currentMessage.content,
       });
       console.log("Found tool use in response:", tool);
-      const toolResult = await handleToolUse(tool, roomId);
+      const toolResult = await handleToolUse(tool);
       console.log("Received tool result:", toolResult);
       conversation.push({ role: "user", content: toolResult });
 
@@ -38,7 +38,8 @@ async function processConversation(conversation, tools, roomId) {
         model: "claude-3-5-sonnet-20240620",
         max_tokens: 4000,
         temperature: 0,
-        system: systemPrompt,
+        system:
+          "Your task is to deploy a website for the user and share them the deployed url",
         messages: conversation,
         tools,
       });
@@ -72,12 +73,8 @@ function handleChat(io) {
 
     socket.on("sendMessage", async (data) => {
       const { conversation, roomId } = data;
-      const tools = [searchTool, codeWriterTool];
-      const finalMessage = await processConversation(
-        conversation,
-        tools,
-        roomId
-      );
+      const tools = [searchTool, productManagerTool, ctoTool];
+      const finalMessage = await processConversation(conversation, tools);
       io.to(roomId).emit("newMessage", {
         conversation,
         response: finalMessage.content,

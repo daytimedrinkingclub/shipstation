@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ShipStation.AI</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css"
+    />
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+      body {
+        background-color: #1a202c;
+        color: #f7fafc;
+      }
+
+      .message-input-container {
+        display: flex;
+        align-items: center;
+        background-color: #2d3748;
+        padding: 8px;
+        border-radius: 8px;
+        margin: 20px;
+      }
+
+      #messageInput {
+        flex-grow: 1;
+        background-color: #4a5568;
+        color: #f7fafc;
+        border: none;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 16px;
+        resize: none;
+      }
+
+      .send-button {
+        background-color: transparent;
+        border: none;
+        color: #cbd5e0;
+        cursor: pointer;
+        font-size: 24px;
+        padding: 8px;
+        margin-left: 8px;
+      }
+
+      .send-button:hover {
+        color: #f7fafc;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="font-sans">
+    <div id="app" class="flex flex-col items-center justify-center h-screen">
+      <header
+        class="fixed top-0 left-0 right-0 bg-gray-800 py-4 px-8 flex items-center justify-between"
+      >
+        <a
+          href="#"
+          class="text-xl font-bold"
+          onclick="window.location.reload();"
+        >
+          <i class="fas fa-rocket mr-2"></i>
+          ShipStation.AI
+        </a>
+        <button
+          id="resetBtn"
+          class="text-gray-400 hover:text-white focus:outline-none hidden"
+        >
+          <i class="fas fa-redo"></i>
+        </button>
+      </header>
+
+      <div id="landing" class="text-center">
+        <h1 class="text-4xl font-bold mb-8">What will you ship today?</h1>
+        <div class="message-input-container">
+          <textarea
+            id="messageInput"
+            placeholder="Describe your website layout and other details here."
+            rows="4"
+          ></textarea>
+          <button id="sendBtn" class="send-button">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="designOptions" class="hidden mt-8 grid grid-cols-3 gap-4">
+        <!-- Design option cards will be rendered here -->
+      </div>
+
+      <div id="spinner" class="hidden">
+        <div class="flex items-center justify-center">
+          <div
+            class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-500"
+          ></div>
+        </div>
+        <div id="messages" class="mt-8 text-center"></div>
+      </div>
+
+      <div
+        id="success"
+        class="hidden flex flex-col items-center justify-center"
+      >
+        <h2 class="text-3xl font-bold mb-4">
+          <i class="fas fa-handshake mr-2"></i>
+          Your website is shipped in less than
+          <span id="shipTime"></span> seconds
+        </h2>
+        <div class="flex">
+          <a
+            href="#"
+            id="previewLink"
+            target="_blank"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-4"
+          >
+            Preview my website
+          </a>
+          <button
+            id="copyLinkBtn"
+            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Copy link
+          </button>
+        </div>
+        <button
+          class="mt-8 bg-transparent text-gray-400 hover:text-white font-bold py-2 px-4 rounded"
+          onclick="window.location.reload();"
+        >
+          Generate another website
+        </button>
+        <a
+          onclick="composeMailto()"
+          target="_blank"
+          class="mt-8 text-gray-400 cursor-pointer hover:text-white"
+        >
+          Want to connect your domain?
+        </a>
+      </div>
+
+      <div id="footer" class="fixed bottom-0 left-0 right-0 text-center py-4">
+        Built by
+        <a
+          href="https://daytimedrinking.club"
+          target="_blank"
+          class="text-blue-500 hover:text-blue-700"
+          >DTDC</a
+        >
+      </div>
+    </div>
+
+    <script>
+      const socket = io();
+      const app = document.getElementById("app");
+      const landing = document.getElementById("landing");
+      const queryInput = document.getElementById("messageInput");
+      const designOptions = document.getElementById("designOptions");
+      const spinner = document.getElementById("spinner");
+      const messages = document.getElementById("messages");
+      const success = document.getElementById("success");
+      const previewLink = document.getElementById("previewLink");
+      const copyLinkBtn = document.getElementById("copyLinkBtn");
+      const shipTime = document.getElementById("shipTime");
+      const resetBtn = document.getElementById("resetBtn");
+
+      let taskId;
+      let startTime;
+
+      const designTypes = ["professional", "cool", "minimal"];
+
+      queryInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter") {
+          await initTask();
+          showDesignOptions();
+        }
+      });
+
+      resetBtn.addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      async function initTask() {
+        const query = queryInput.value;
+        const response = await fetch("/perform", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ step: "init", meta: { query } }),
+        });
+        const data = await response.json();
+        taskId = data.taskId;
+        socket.emit("join-room", taskId);
+      }
+
+      function showDesignOptions() {
+        landing.classList.add("hidden");
+        designOptions.classList.remove("hidden");
+        designTypes.forEach((type) => {
+          const card = document.createElement("div");
+          card.classList.add(
+            "bg-gray-800",
+            "rounded-lg",
+            "p-4",
+            "text-center",
+            "cursor-pointer",
+            "hover:bg-gray-700"
+          );
+          card.textContent = type;
+          card.addEventListener("click", () => selectDesignType(type));
+          designOptions.appendChild(card);
+        });
+      }
+
+      async function selectDesignType(type) {
+        designOptions.classList.add("hidden");
+        spinner.classList.remove("hidden");
+
+        startTime = new Date();
+        showMessages();
+
+        const response = await fetch("/perform", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "task-id": taskId,
+          },
+          body: JSON.stringify({ step: "design", type }),
+        });
+
+        if (response.ok) {
+          socket.on("preview-url", (previewUrl) => {
+            showSuccessScreen(previewUrl);
+          });
+          socket.on("error", (error) => {
+            alert(error);
+            spinner.classList.add("hidden");
+            landing.classList.remove("hidden");
+          });
+        } else {
+          console.error("Failed to generate website");
+          spinner.classList.add("hidden");
+          landing.classList.remove("hidden");
+        }
+      }
+
+      function showMessages() {
+        const messages = [
+          "Analysing website design 🤔",
+          "Generating project 🚀",
+          "Writing code 💻",
+          "Writing copies 📝",
+          "Optimising for SEO 🔍",
+          "Almost there!, shipping your website! ⛵",
+        ];
+
+        let i = 0;
+        const interval = setInterval(() => {
+          if (i < messages.length) {
+            document.getElementById("messages").textContent = messages[i];
+            i++;
+          } else {
+            clearInterval(interval);
+          }
+        }, 1000);
+      }
+
+      function showSuccessScreen(previewUrl) {
+        spinner.classList.add("hidden");
+        success.classList.remove("hidden");
+        previewLink.href = previewUrl;
+        const endTime = new Date();
+        const shipTimeInMs = endTime - startTime;
+        const shipTimeInSeconds = Math.floor(shipTimeInMs / 1000);
+        shipTime.textContent = shipTimeInSeconds;
+
+        copyLinkBtn.addEventListener("click", () => {
+          navigator.clipboard.writeText(previewUrl);
+          alert("Preview URL copied to clipboard");
+        });
+      }
+
+      function composeMailto() {
+        window.location.href = `mailto:hi@daytimedrinking.club?subject=Connecting%20domain%20with%20my%20site&body=I%20would%20like%20to%20connect%20my%20website.%20Here%20is%20the%20URL:%20${encodeURIComponent(
+          document.getElementById("previewLink").href
+        )}`;
+      }
+
+      document
+        .getElementById("sendBtn")
+        .addEventListener("click", async function () {
+          // Add your logic here when the send button is clicked
+          await initTask();
+          showDesignOptions();
+        });
+
+      queryInput.addEventListener("input", () => {
+        if (queryInput.value.trim() !== "") {
+          resetBtn.classList.remove("hidden");
+        } else {
+          resetBtn.classList.add("hidden");
+        }
+      });
+    </script>
+  </body>
+</html>

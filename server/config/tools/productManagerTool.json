@@ -1,0 +1,31 @@
+{
+  "name": "product_manager_tool",
+  "description": "This tool calls the product manager of our company and the product manager coordinates with the cto_tool to create the webapp for the user, this tool will return a product requirement document file path which can be shared with the tech team for development, the product manager needs to prepare the requirements so that the website with webcomponents use only vanilla / plain javascript which will not rely on any build tools",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "project_name": {
+        "type": "string",
+        "description": "The name of the project"
+      },
+      "project_description": {
+        "type": "string",
+        "description": "The description of the project that we want to create, this will be added to the readme file, as detailed as possible such as business category, use case, functionalities etc"
+      },
+      "project_goal": {
+        "type": "string",
+        "description": "What is the problem the user is actually trying to solve by building this project"
+      },
+      "project_branding_style": {
+        "type": "string",
+        "description": "The branding of the project that we want to create, such as any color style component details the user wants to provide else default web development standards can be followed for web apps"
+      }
+    },
+    "required": [
+      "project_name",
+      "project_description",
+      "project_goal",
+      "project_branding_style"
+    ]
+  }
+}
