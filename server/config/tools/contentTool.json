@@ -1,0 +1,18 @@
+{
+  "name": "contentTool",
+  "description": "This tool can be used to create contents and copies that need to be added across the web application",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "content_type": {
+        "type": "string",
+        "description": "The type of the content that we want to create, i.e Heading or paragraph, CTA copy etc"
+      },
+      "content_details": {
+        "type": "string",
+        "description": "The details of the content that we want to create, i.e the context any limitaions, copy sentiments, tones etc"
+      }
+    },
+    "required": ["content_type", "content_details"]
+  }
+}

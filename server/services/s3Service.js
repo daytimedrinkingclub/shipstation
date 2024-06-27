@@ -2,7 +2,6 @@ const {
   PutObjectCommand,
   ListObjectsV2Command,
   GetObjectCommand,
-  PutBucketPolicyCommand,
 } = require("@aws-sdk/client-s3");
 const { s3Handler } = require("../config/awsConfig");
 require("dotenv").config();
@@ -76,36 +75,6 @@ async function getFileFromS3(bucketPath) {
   console.log("data", data?.Body);
   return data?.Body;
 }
-
-async function putBucketPolicy(bucketName, policy) {
-  const params = {
-    Bucket: bucketName,
-    Policy: JSON.stringify(policy),
-  };
-
-  const command = new PutBucketPolicyCommand(params);
-  try {
-    const data = await s3Handler.send(command);
-    console.log("Success", data);
-  } catch (error) {
-    console.error("Error", error);
-  }
-}
-
-const policy = {
-  Version: "2012-10-17",
-  Statement: [
-    {
-      Effect: "Allow",
-      Principal: "*",
-      Action: "s3:GetObject",
-      Resource: `arn:aws:s3:::${process.env.BUCKETEER_BUCKET_NAME}/*`,
-    },
-  ],
-};
-
-// Apply the policy
-// putBucketPolicy(process.env.BUCKETEER_BUCKET_NAME, policy);
 
 module.exports = {
   saveFileToS3,

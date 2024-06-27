@@ -2,7 +2,8 @@ const fs = require("fs").promises;
 const path = require("path");
 
 async function saveFile(filePath, content) {
-  const generatedPath = `${filePath}`;
+  const websitesPath = process.env.WEBSITES_PATH;
+  const generatedPath = `${websitesPath}/demo/${filePath}`;
   try {
     await fs.mkdir(path.dirname(generatedPath), { recursive: true });
     await fs.writeFile(generatedPath, content, "utf8");
@@ -13,6 +14,20 @@ async function saveFile(filePath, content) {
   }
 }
 
+async function readFile(filePath) {
+  const websitesPath = process.env.WEBSITES_PATH;
+  const generatedPath = `${websitesPath}/demo/${filePath}`;
+  try {
+    const data = await fs.readFile(generatedPath, "utf8");
+    console.log(`File read successfully: ${generatedPath}`);
+    return data;
+  } catch (error) {
+    console.error(`Error reading file ${filePath}:`, error);
+    throw error;
+  }
+}
+
 module.exports = {
+  readFile,
   saveFile,
 };
