@@ -7,12 +7,13 @@ require("dotenv").config();
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 async function codeAssitant(query, filePath) {
+  console.log("filePath in codeAssitant:", filePath);
   try {
     const msg = await client.messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 4000,
       temperature: 0,
-      system: `Write code as per the descroptions provided, use web-components architecture with the guidelines provided by user. Never use react.
+      system: `Write code as per the guidelines provided, use web-components architecture with the guidelines provided by user. Never use react. If you need to implement any functionality, use plain JS only. We are limited by web-components, tailwind and fontawsome only so never use any 3rd party library other than the ones mentioned previously.
       Use fontawesome cdn for icons and use icons from fontawesome only. Never use inline svgs.
       Always use images from https://picsum.photos/200/300 as src. 200 height and 300 is the width. You can also use any other height and width.
      <HTMLCodeExample>:
@@ -131,11 +132,11 @@ customElements.define('hero-section',HeroSection);
     const codeString = typeof code === "string" ? code : JSON.stringify(code);
 
     await saveFile(filePath, codeString);
-    // await saveFileToS3(filePath, codeString);
+    await saveFileToS3(filePath, codeString);
     console.log(`Code successfully written to file: ${filePath}`);
     return {
       description,
-      status: "Code written successfuly!, You can now proceed to next file",
+      status: `Code written successfuly to ${filePath}, You can now proceed to next file`,
     };
   } catch (error) {
     console.error("Error in aiAssistance:", error);

@@ -13,15 +13,15 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const systemPrompt = `As a cto your goal is to structure the given project into web components and get it developed using provided tools.
    Always use only tailwind css which is imported in index.html via cdn 
    These are the development guidelines to be always followed strictly.
-   0. Only use web components, not lit components etc. We are going to use vanilla js only.
-    After all the guidelines, please refer examples of your component
-   1. Create an index.html file which uses all the custom components as per the requirements.
+   After all the guidelines, please refer examples of your component
+   0. Create an index.html file which uses all the custom components as per the requirements.
    Ensure that you add the components and their expected file names as the components are created only after creating the index.html file.
+   1. Only use web components, not lit components etc. We are going to use vanilla js only. 
    2. Then get code written for the index.html file use code_writer_tool.
-   3. Then create a <component-name>.html file with the detailed comments
-   4. Get the code for <component-name>.html file using code_writer_tool.
+   3. Then create a <component-name>.html file with the detailed comments. Create the components in the components folder and not at the root level.
+   4. Get the code for components/<component-name>.html file using code_writer_tool.
    5. Repeat step 3 and 4 until all the component-names that we defined in index.html are created.
-   6. Create component.js file for the above components using the format:
+   6. Create component.js file at root for the above components using the format:
   <StartOfExample>:
   // Here is the example format for defining the components in the components.js file
 
@@ -77,7 +77,7 @@ Never:
 2. Never use shadow dom 
 `;
 
-async function ctoService(query) {
+async function ctoService(query, projectFolderName) {
   console.log("aiAssistance called with query:", query);
 
   const conversation = [
@@ -102,7 +102,7 @@ async function ctoService(query) {
           content: msg.content,
         });
         console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(tool, conversation);
+        const toolResult = await handleToolUse(tool, projectFolderName);
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
 
@@ -127,7 +127,10 @@ async function ctoService(query) {
       }
     }
 
-    return `Code successfully written to file: ${filePath}`;
+    return {
+      message: `Website successfully deployed at: https://shipstation.ai/${projectFolderName}`,
+      path: projectFolderName,
+    };
   } catch (error) {
     console.error("Error in aiAssistance:", error);
     console.error("Error details:", error.message);
