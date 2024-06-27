@@ -1,62 +1,18 @@
 {
   "name": "code_writer_tool",
-  "description": "Tool to generate website code based on a given configuration file",
+  "description": "This tool generates for the file as per the provided description and context.",
   "input_schema": {
     "type": "object",
     "properties": {
-      "projectContext": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "project name"
-          },
-          "summary": {
-            "type": "string",
-            "description": "project summary"
-          },
-          "colorScheme": {
-            "type": "object",
-            "properties": {
-              "primary": {
-                "type": "string",
-                "description": "primary color hex code"
-              },
-              "secondary": {
-                "type": "string",
-                "description": "secondary color hex code"
-              },
-              "accent": {
-                "type": "string",
-                "description": "accent color hex code"
-              }
-            }
-          },
-          "font": {
-            "type": "string",
-            "description": "selected google font"
-          }
-        }
+      "code": {
+        "type": "string",
+        "description": "The code to be written to the file. Never include comments."
       },
-      "files": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "path": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "content": {
-              "type": "string"
-            }
-          },
-          "required": ["path", "type", "content"]
-        }
+      "description": {
+        "type": "string",
+        "description": "Always return a detailed summary of the code that has been written in the file, and most importantly all the important tag names, links / references to other files."
       }
     },
-    "required": ["projectContext", "files"]
+    "required": ["code", "description"]
   }
 }

@@ -1,0 +1,18 @@
+{
+  "name": "task_assigner_tool",
+  "description": "It can work on only one file at a time, This tool will read the file comments and assign the correct resource as per the coding guidelines and update the code and return a successful execution of the task with summary of the code that has been added",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "file_name": {
+        "type": "string",
+        "description": "file name where the file is to be created, like index.html, script.js, header.html"
+      },
+      "task_guidelines": {
+        "type": "string",
+        "description": "Pass the names of tags, additionally correct component names so the code can be written in the correct file. Use web-components only. Never use React or any other framework."
+      }
+    },
+    "required": ["file_name", "task_guidelines"] 
+  }
+}
