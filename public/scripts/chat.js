@@ -7,29 +7,13 @@ socket.on("connect", () => {
   if (!roomId) {
     roomId = "room_" + Math.random().toString(36).substr(2, 9); // Generate a random room ID only once
     socket.emit("joinRoom", roomId);
-    updateRoomDisplay(roomId);
   }
 });
-
-function joinRoom() {
-  const newRoomId = document.getElementById("room-input").value;
-  if (newRoomId && newRoomId !== roomId) {
-    roomId = newRoomId;
-    socket.emit("joinRoom", roomId);
-    updateRoomDisplay(roomId);
-  }
-}
-
-function updateRoomDisplay(roomId) {
-  document.getElementById("current-room").textContent = roomId;
-}
 
 function sendMessage() {
   const userInput = document.getElementById("user-input");
   const message = userInput.value;
   userInput.value = "";
-  document.getElementById("sample-prompts").style.display = "none";
-
   displayMessage("user", message);
 
   conversation.push({ role: "user", content: message });
