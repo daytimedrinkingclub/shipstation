@@ -24,7 +24,16 @@ app.get("/all", async (req, res) => {
 
 app.get("/all-websites", async (req, res) => {
   const s3Websites = await listFoldersInS3("websites/");
-  const localWebsites = await fs.readdir("websites");
+  let localWebsites = [];
+  try {
+    localWebsites = await fs.readdir("websites");
+  } catch (err) {
+    if (err.code === "ENOENT") {
+      localWebsites = [];
+    } else {
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
   res.json({
     s3: JSON.parse(s3Websites).filter((website) => !website.startsWith(".")),
     local: localWebsites,
