@@ -111,7 +111,14 @@ app.use("/site/:siteId", async (req, res, next) => {
 
     const headCommand = new HeadObjectCommand(params);
     const headObjectResponse = await s3Handler.send(headCommand);
-    res.set("Content-Type", headObjectResponse.ContentType);
+
+    // Set the Content-Type based on the file extension
+    const fileExtension = path.extname(filePath).toLowerCase();
+    if (fileExtension === ".html") {
+      res.set("Content-Type", "text/html");
+    } else {
+      res.set("Content-Type", headObjectResponse.ContentType);
+    }
 
     const getCommand = new GetObjectCommand(params);
     const { Body } = await s3Handler.send(getCommand);

@@ -14,6 +14,9 @@ async function processConversation(conversation, tools, sendEvent) {
     messages: conversation,
     tools,
   });
+  sendEvent("newMessage", {
+    conversation,
+  });
 
   while (currentMessage.stop_reason === "tool_use") {
     const tool = currentMessage.content.find(

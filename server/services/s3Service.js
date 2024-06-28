@@ -9,16 +9,17 @@ require("dotenv").config();
 const bucketName = process.env.BUCKETEER_BUCKET_NAME;
 
 async function saveFileToS3(bucketPath, content) {
+  const finalPath = `websites/${bucketPath}`;
   const params = {
     Bucket: bucketName,
-    Key: bucketPath,
+    Key: finalPath,
     Body: content,
   };
   try {
     await s3Handler.send(new PutObjectCommand(params));
-    console.log(`Successfully uploaded ${bucketPath}`);
+    console.log(`Successfully uploaded to s3 on path: ${finalPath}`);
   } catch (err) {
-    console.error(`Error uploading ${bucketPath}:`, err);
+    console.error(`Error uploading ${finalPath}:`, err);
   }
 }
 

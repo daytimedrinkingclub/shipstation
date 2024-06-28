@@ -2,7 +2,7 @@ const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
 const searchService = require("../services/aiSearchService");
 
-async function handleToolUse(tool, projectFolderName) {
+async function handleToolUse(tool, projectFolderName, sendEvent) {
   if (tool.name === "ai_research_assistant") {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -23,6 +23,9 @@ async function handleToolUse(tool, projectFolderName) {
       `${projectFolderName}/${file_name}`,
       file_comments
     );
+    sendEvent("progress", {
+      message: `${file_name} created.`,
+    });
     return [
       {
         type: "tool_result",
@@ -45,15 +48,23 @@ async function handleToolUse(tool, projectFolderName) {
     );
     console.log("reading file: ", `${projectFolderName}/${file_name}`);
     const updatedFileContent =
-    `Filename: ${projectFolderName}/${file_name}` +
-    `\n\n` +
-    "Guidelines: " +
-    task_guidelines +
-    `\n\n` +
-    fileContent;
+      `Filename: ${projectFolderName}/${file_name}` +
+      `\n\n` +
+      "Guidelines: " +
+      task_guidelines +
+      `\n\n` +
+      fileContent;
 
-    const resp = await codeAssitant(updatedFileContent, `${projectFolderName}/${file_name}`);
-
+    sendEvent("progress", {
+      message: `Generating code for ${file_name}`,
+    });
+    const resp = await codeAssitant(
+      updatedFileContent,
+      `${projectFolderName}/${file_name}`
+    );
+    sendEvent("progress", {
+      message: `Code generated for ${file_name}`,
+    });
     return [
       {
         type: "tool_result",
@@ -67,6 +78,9 @@ async function handleToolUse(tool, projectFolderName) {
       },
     ];
   } else if (tool.name === "deploy_project_tool") {
+    sendEvent("websiteDeployed", {
+      deployedUrl: `https://shipstation.ai/${projectFolderName}`,
+    });
     return [
       {
         type: "tool_result",
