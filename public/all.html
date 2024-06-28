@@ -5,15 +5,24 @@
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
-      const { sites: items } = await response.json();
-      console.log(items);
-      const container = document.getElementById("items-container");
-      items.forEach((item) => {
+      const { s3: s3Websites, local: serverWebsites } = await response.json();
+      const s3Container = document.getElementById("s3-websites-container");
+      const serverContainer = document.getElementById("server-websites-container");
+      s3Websites.forEach((item) => {
         const link = document.createElement("a");
+        link.target = "_blank";
+        link.href = `site/${item}`;
+        link.textContent = item;
+        s3Container.appendChild(link);
+        s3Container.appendChild(document.createElement("br"));
+      });
+      serverWebsites.forEach((item) => {
+        const link = document.createElement("a");
+        link.target = "_blank";
         link.href = `${item}`;
         link.textContent = item;
-        container.appendChild(link);
-        container.appendChild(document.createElement("br"));
+        serverContainer.appendChild(link);
+        serverContainer.appendChild(document.createElement("br"));
       });
     } catch (error) {
       console.error("Failed to fetch items:", error);
@@ -22,4 +31,7 @@
 
   document.addEventListener("DOMContentLoaded", fetchAndDisplayItems);
 </script>
-<div id="items-container"></div>
+<h2>S3 Websites</h2>
+<div id="s3-websites-container"></div>
+<h2>Server Websites</h2>
+<div id="server-websites-container"></div>
