@@ -6,6 +6,67 @@ const socket = io(); // Connect to the server
 const requirementsTextarea = document.getElementById("user-input");
 const generateButton = document.getElementById("generateButton");
 
+function addWebsiteToLocalStorage(websiteName, deployedUrl) {
+  let websites = JSON.parse(localStorage.getItem("websites")) || [];
+  websites.push({ websiteName, deployedUrl });
+  localStorage.setItem("websites", JSON.stringify(websites));
+}
+
+function renderRecentlyShipped() {
+  const recentlyShippedSection = document.getElementById("recently-shipped");
+  const recentlyShippedList = document.getElementById("recently-shipped-list");
+  const websites = JSON.parse(localStorage.getItem("websites")) || [];
+
+  if (websites.length === 0) {
+    return;
+  }
+
+  recentlyShippedSection.classList.remove("hidden");
+  recentlyShippedList.innerHTML = "";
+
+  websites.forEach(({ websiteName, deployedUrl }) => {
+    const anchor = document.createElement("a");
+    anchor.href = deployedUrl;
+    anchor.target = "_blank";
+    anchor.className =
+      "bg-white text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
+    anchor.textContent = websiteName;
+    recentlyShippedList.appendChild(anchor);
+  });
+}
+
+function showSnackbar(message, type = "info") {
+  const snackbarContainer = document.getElementById("snackbar-container");
+  const snackbar = document.createElement("div");
+  snackbar.className = `mx-auto mb-4 px-4 py-2 rounded-md text-white text-sm font-bold shadow-lg transition-opacity duration-300 ease-in-out pointer-events-auto`;
+
+  switch (type) {
+    case "error":
+      snackbar.classList.add("bg-red-500");
+      break;
+    case "info":
+    default:
+      snackbar.classList.add("bg-blue-500");
+      break;
+  }
+
+  snackbar.textContent = message;
+  snackbarContainer.appendChild(snackbar);
+
+  // Fade in
+  setTimeout(() => {
+    snackbar.classList.add("opacity-90");
+  }, 10);
+
+  // Fade out and remove
+  setTimeout(() => {
+    snackbar.classList.remove("opacity-90");
+    snackbar.classList.add("opacity-0");
+    setTimeout(() => {
+      snackbarContainer.removeChild(snackbar);
+    }, 300);
+  }, 4000);
+}
 socket.on("connect", () => {
   if (!roomId) {
     roomId = "room_" + Math.random().toString(36).substr(2, 9); // Generate a random room ID only once
@@ -24,8 +85,19 @@ function sendMessage(message) {
     }
   });
 
+  socket.on("error", ({ data: { error } }) => {
+    hideLoader();
+    showSnackbar(
+      "We are experiencing unusually high load, please try again later!",
+      "error"
+    );
+    console.error("Error:", error);
+  });
+
   socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
     showSuccessOverlay(websiteName, deployedUrl);
+    addWebsiteToLocalStorage(websiteName, deployedUrl);
+    renderRecentlyShipped();
   });
 
   socket.on("progress", ({ data: { message } }) => {
@@ -37,6 +109,10 @@ function showLoader() {
   const loaderOverlay = document.getElementById("loaderOverlay");
   loaderOverlay.classList.remove("hidden");
 
+  const lottieContainer = document.getElementById("lottieAnimation");
+  // Clear existing animations
+  lottieContainer.innerHTML = "";
+
   const lottieAnimation = document.createElement("lottie-player");
   lottieAnimation.setAttribute("src", "/assets/ship.json");
   lottieAnimation.setAttribute("background", "transparent");
@@ -45,8 +121,15 @@ function showLoader() {
   lottieAnimation.setAttribute("loop", "");
   lottieAnimation.setAttribute("autoplay", "");
 
-  const lottieContainer = document.getElementById("lottieAnimation");
   lottieContainer.appendChild(lottieAnimation);
+
+  const closeLoadingOverlayBtn = document.getElementById(
+    "closeLoadingOverlayBtn"
+  );
+  closeLoadingOverlayBtn.addEventListener("click", () => {
+    hideLoader();
+    socket.emit("abortWebsiteCreation", { roomId });
+  });
 }
 
 const hideLoader = () => {
@@ -91,7 +174,12 @@ function showSuccessOverlay(websiteName, websiteUrl) {
   const copyLinkBtn = document.getElementById("copyLinkBtn");
   copyLinkBtn.addEventListener("click", () => {
     navigator.clipboard.writeText(websiteUrl).then(() => {
-      alert("Link copied to clipboard!");
+      const copyLinkText = document.getElementById("copyLinkText");
+      copyLinkText.textContent = "Copied!";
+      setTimeout(() => {
+        const copyLinkText = document.getElementById("copyLinkText");
+        copyLinkText.textContent = "Copy link";
+      }, 4000);
     });
   });
 
@@ -119,6 +207,8 @@ function hideSuccessOverlay() {
 function generateWebsite() {
   const requirements = requirementsTextarea.value.trim();
   if (requirements) {
+    // Reset the conversation
+    conversation = [];
     showLoader();
     generateButton.disabled = true;
     generateButton.innerHTML = `
@@ -130,8 +220,9 @@ function generateWebsite() {
           `;
 
     sendMessage(requirements);
+    // showSuccessOverlay("Website Name", "Website URL");
   } else {
-    alert("Please enter your website requirements first.");
+    showSnackbar("Please enter your website requirements :)", "error");
   }
 }
 
@@ -140,3 +231,5 @@ generateButton.addEventListener("click", generateWebsite);
 requirementsTextarea.addEventListener("input", function () {
   generateButton.disabled = this.value.trim().length === 0;
 });
+
+document.addEventListener("DOMContentLoaded", renderRecentlyShipped);

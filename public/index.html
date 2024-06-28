@@ -4,13 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShipStation.AI - Create stunning websites</title>
-    <meta name="description" content="ShipStation.AI - Create stunning websites with ease using our AI-powered platform.">
-    <meta name="keywords" content="AI, website creation, web design, ShipStation.AI, stunning websites">
-    <meta property="og:title" content="ShipStation.AI - Create stunning websites">
-    <meta property="og:description" content="Create stunning websites with ease using our AI-powered platform.">
-    <meta property="og:url" content="https://shipstation.ai">
-    <meta name="twitter:title" content="ShipStation.AI - Create stunning websites">
-    <meta name="twitter:description" content="Create stunning websites with ease using our AI-powered platform.">
+    <meta
+      name="description"
+      content="ShipStation.AI - Create stunning websites with ease using our AI-powered platform."
+    />
+    <meta
+      name="keywords"
+      content="AI, website creation, web design, ShipStation.AI, stunning websites"
+    />
+    <meta
+      property="og:title"
+      content="ShipStation.AI - Create stunning websites"
+    />
+    <meta
+      property="og:description"
+      content="Create stunning websites with ease using our AI-powered platform."
+    />
+    <meta property="og:url" content="https://shipstation.ai" />
+    <meta
+      name="twitter:title"
+      content="ShipStation.AI - Create stunning websites"
+    />
+    <meta
+      name="twitter:description"
+      content="Create stunning websites with ease using our AI-powered platform."
+    />
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -97,6 +115,10 @@
     </style>
   </head>
   <body class="flex flex-col min-h-screen">
+    <div
+      id="snackbar-container"
+      class="fixed inset-x-0 bottom-0 z-[10000] pointer-events-none flex flex-col items-center"
+    ></div>
     <div class="ship-background"></div>
     <header class="p-5 logo-area cursor-pointer">
       <svg
@@ -120,14 +142,14 @@
     <main
       class="flex-grow flex flex-col items-center justify-center px-4 md:px-8"
     >
-      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-center">
+      <h1 class="text-2xl md:text-5xl font-bold mb-4 text-center">
         What will you ship today?
       </h1>
       <div class="w-full max-w-3xl relative mb-6">
         <textarea
           id="user-input"
           rows="6"
-          class="w-full p-4 pr-12 text-lg border-2 border-cerulean rounded-lg focus:outline-none focus:border-berkeley-blue resize-none shadow-md"
+          class="w-full p-4 pr-12 sm:text-lg border-2 border-cerulean rounded-lg focus:outline-none focus:border-berkeley-blue resize-none shadow-md"
           placeholder="Enter your website requirements...
 
 Describe website layout and sections in detail along with copy.
@@ -143,7 +165,20 @@ You can also describe the brand guidelines and color palette."
         <i data-lucide="rocket" class="w-6 h-6"></i>
       </button>
     </main>
-
+    <div id="recently-shipped" class="hidden">
+      <div class="w-full max-w-3xl mx-auto px-4 md:px-8 my-8">
+        <hr class="border-t-2 border-dashed border-cerulean" />
+      </div>
+      <section class="w-full max-w-3xl mx-auto px-4 md:px-8 mb-12">
+        <h2 class="text-2xl font-bold mb-4 text-center">
+          Recently shipped by you:
+        </h2>
+        <div
+          class="flex flex-wrap justify-center gap-4"
+          id="recently-shipped-list"
+        ></div>
+      </section>
+    </div>
     <footer class="p-6 text-center text-base text-cerulean">
       <p>
         Built with ❤️ by
@@ -161,6 +196,12 @@ You can also describe the brand guidelines and color palette."
       id="loaderOverlay"
       class="fixed inset-0 flex items-center justify-center bg-white bg-opacity-80 backdrop-filter backdrop-blur-md hidden"
     >
+      <button
+        id="closeLoadingOverlayBtn"
+        class="absolute top-4 right-4 text-berkeley-blue hover:text-red-pantone transition-colors duration-300 z-20"
+      >
+        <i data-lucide="x-circle" class="w-10 h-10"></i>
+      </button>
       <div class="text-center">
         <div id="lottieAnimation" class="w-64 h-64 mx-auto"></div>
         <p class="text-2xl font-semibold mt-6" id="loaderText">
@@ -171,7 +212,7 @@ You can also describe the brand guidelines and color palette."
 
     <div
       id="successOverlay"
-      class="fixed inset-0 flex flex-col items-center justify-center bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-50 overflow-hidden"
+      class="fixed inset-0 flex flex-col items-center justify-center bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-[9999] overflow-hidden"
     >
       <button
         id="closeOverlayBtn"
@@ -180,17 +221,16 @@ You can also describe the brand guidelines and color palette."
         <i data-lucide="x-circle" class="w-10 h-10"></i>
       </button>
       <div id="confettiAnimation" class="absolute inset-0 w-full h-full"></div>
-      <div class="text-center relative z-10 bg-white bg-opacity-70">
-        <p
-          class="text-2xl font-semibold mt-6  p-4 rounded-lg"
-          id="successText"
-        ></p>
+      <div
+        class="text-center relative z-10 bg-white bg-opacity-80 max-w-3xl border border-black rounded"
+      >
+        <p class="text-2xl font-semibold m-8 p-4" id="successText"></p>
         <div class="my-8 space-x-4 flex justify-center">
           <button
             id="copyLinkBtn"
-            class="bg-cerulean hover:bg-berkeley-blue text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+            class="border border-black text-black font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
           >
-            <span>Copy link</span>
+            <span id="copyLinkText">Copy link</span>
             <i data-lucide="copy" class="hover:animate-bounce"></i>
           </button>
           <button
