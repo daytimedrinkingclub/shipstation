@@ -26,7 +26,7 @@ function sendMessage() {
     }
   });
 
-  socket.on("websiteDeployed", ({ deployedUrl }) => {
+  socket.on("websiteDeployed", ({ data: { deployedUrl } }) => {
     window.open(deployedUrl, "_blank");
   });
 }
@@ -44,7 +44,7 @@ function displayConversation(conversation) {
         if (item.type === "text") {
           displayMessage(role, item.text);
         } else if (item.type === "tool_use") {
-          displayToolCall(item);
+          // displayToolCall(item);
         } else if (item.type === "tool_result") {
           displayToolResult(item);
         }
@@ -100,11 +100,13 @@ function displayToolResult(toolResult) {
   const chatContainer = document.getElementById("chat-container");
   const toolResultElement = document.createElement("div");
   toolResultElement.className = "tool-result";
-  toolResultElement.innerHTML = `<strong>Tool Result:</strong><br>
-                                 ${JSON.stringify(
-                                   toolResult.content,
-                                   null,
-                                   2
-                                 )}`;
+
+  // Convert URLs in the text to clickable links
+  const linkifiedText = toolResult.content[0].text.replace(
+    /(https?:\/\/[^\s]+)/g,
+    '<a href="$1" target="_blank">$1</a>'
+  );
+
+  toolResultElement.innerHTML = `<strong>Tool Result:</strong> ${linkifiedText}`;
   chatContainer.appendChild(toolResultElement);
 }

@@ -54,11 +54,9 @@ async function handleToolUse(tool, sendEvent) {
     const fileContent = await fileService.readFile(prd_file_path);
     const { message } = await ctoService.ctoService(
       fileContent,
-      generatedFolderName
+      generatedFolderName,
+      sendEvent
     );
-    sendEvent("websiteDeployed", {
-      deployedUrl: `https://shipstation.ai/${generatedFolderName}`,
-    });
     return [
       {
         type: "tool_result",

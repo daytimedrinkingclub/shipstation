@@ -77,7 +77,7 @@ Never:
 2. Never use shadow dom 
 `;
 
-async function ctoService(query, projectFolderName) {
+async function ctoService(query, projectFolderName, sendEvent) {
   console.log("aiAssistance called with query:", query);
 
   const conversation = [
@@ -102,7 +102,11 @@ async function ctoService(query, projectFolderName) {
           content: msg.content,
         });
         console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(tool, projectFolderName);
+        const toolResult = await handleToolUse(
+          tool,
+          projectFolderName,
+          sendEvent
+        );
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
 
@@ -127,6 +131,9 @@ async function ctoService(query, projectFolderName) {
       }
     }
 
+    sendEvent("websiteDeployed", {
+      deployedUrl: `https://shipstation.ai/${projectFolderName}`,
+    });
     return {
       message: `Website successfully deployed at: https://shipstation.ai/${projectFolderName}`,
       path: projectFolderName,
