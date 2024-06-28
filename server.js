@@ -23,8 +23,12 @@ app.get("/all", async (req, res) => {
 });
 
 app.get("/all-websites", async (req, res) => {
-  const folders = await listFoldersInS3("websites/");
-  res.json({ sites: JSON.parse(folders) });
+  const s3Websites = await listFoldersInS3("websites/");
+  const localWebsites = await fs.readdir("websites");
+  res.json({
+    s3: JSON.parse(s3Websites).filter((website) => !website.startsWith(".")),
+    local: localWebsites,
+  });
 });
 
 app.get("/:websiteId", async (req, res) => {
