@@ -133,6 +133,7 @@ async function ctoService(query, projectFolderName, sendEvent) {
 
     sendEvent("websiteDeployed", {
       deployedUrl: `https://shipstation.ai/${projectFolderName}`,
+      websiteName: projectFolderName,
     });
     return {
       message: `Website successfully deployed at: https://shipstation.ai/${projectFolderName}`,

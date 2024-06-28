@@ -3,6 +3,9 @@ let roomId = null; // Store room ID
 
 const socket = io(); // Connect to the server
 
+const requirementsTextarea = document.getElementById("user-input");
+const generateButton = document.getElementById("generateButton");
+
 socket.on("connect", () => {
   if (!roomId) {
     roomId = "room_" + Math.random().toString(36).substr(2, 9); // Generate a random room ID only once
@@ -10,103 +13,130 @@ socket.on("connect", () => {
   }
 });
 
-function sendMessage() {
-  const userInput = document.getElementById("user-input");
-  const message = userInput.value;
-  userInput.value = "";
-  displayMessage("user", message);
-
+function sendMessage(message) {
   conversation.push({ role: "user", content: message });
 
   socket.emit("sendMessage", { conversation, roomId, message });
 
-  socket.on("newMessage", ({ conversation }) => {
-    if (conversation) {
-      displayConversation(conversation);
+  socket.on("newMessage", ({ conversation: messages }) => {
+    if (messages) {
+      conversation = messages;
     }
   });
 
-  socket.on("websiteDeployed", ({ data: { deployedUrl } }) => {
-    window.open(deployedUrl, "_blank");
+  socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
+    showSuccessOverlay(websiteName, deployedUrl);
+  });
+
+  socket.on("progress", ({ data: { message } }) => {
+    document.getElementById("loaderText").innerHTML = message;
   });
 }
 
-function displayConversation(conversation) {
-  const chatContainer = document.getElementById("chat-container");
-  chatContainer.innerHTML = "";
+function showLoader() {
+  const loaderOverlay = document.getElementById("loaderOverlay");
+  loaderOverlay.classList.remove("hidden");
 
-  for (const message of conversation) {
-    const role = message.role;
-    const content = message.content;
+  const lottieAnimation = document.createElement("lottie-player");
+  lottieAnimation.setAttribute("src", "/assets/ship.json");
+  lottieAnimation.setAttribute("background", "transparent");
+  lottieAnimation.setAttribute("speed", "1");
+  lottieAnimation.setAttribute("style", "width: 100%; height: 100%;");
+  lottieAnimation.setAttribute("loop", "");
+  lottieAnimation.setAttribute("autoplay", "");
 
-    if (Array.isArray(content)) {
-      for (const item of content) {
-        if (item.type === "text") {
-          displayMessage(role, item.text);
-        } else if (item.type === "tool_use") {
-          // displayToolCall(item);
-        } else if (item.type === "tool_result") {
-          displayToolResult(item);
-        }
-      }
-    } else {
-      displayMessage(role, content);
-    }
-  }
+  const lottieContainer = document.getElementById("lottieAnimation");
+  lottieContainer.appendChild(lottieAnimation);
 }
 
-function displayMessage(role, content) {
-  const chatContainer = document.getElementById("chat-container");
-  const messageElement = document.createElement("div");
-  messageElement.className = `message ${role}`;
+const hideLoader = () => {
+  const loaderOverlay = document.getElementById("loaderOverlay");
+  loaderOverlay.classList.add("hidden");
+  generateButton.disabled = false;
+  generateButton.innerHTML = `
+                <span>Generate my website</span>
+                <i data-lucide="rocket" class="w-6 h-6"></i>
+            `;
+  lucide.createIcons();
+};
 
-  if (role === "assistant") {
-    const thinkingMatch = content.match(/<thinking>(.*?)<\/thinking>/s);
-    const responseText = content
-      .replace(/<thinking>(.*?)<\/thinking>/s, "")
-      .trim();
+function showSuccessOverlay(websiteName, websiteUrl) {
+  hideLoader();
 
-    if (thinkingMatch) {
-      const thinkingText = thinkingMatch[1].trim();
-      const thinkingElement = document.createElement("div");
-      thinkingElement.className = "thinking-text";
-      thinkingElement.innerHTML = `<strong>Thinking:</strong> ${thinkingText}`;
-      messageElement.appendChild(thinkingElement);
-    }
+  const successOverlay = document.getElementById("successOverlay");
+  successOverlay.classList.remove("hidden");
 
-    const responseElement = document.createElement("div");
-    responseElement.className = "response-text";
-    responseElement.innerHTML = `<strong>Assistant:</strong> ${responseText}`;
-    messageElement.appendChild(responseElement);
-  } else {
-    messageElement.innerHTML = `<strong>${role}:</strong> ${content}`;
-  }
+  const successText = document.getElementById("successText");
+  successText.textContent = `Your website "${websiteName}" has been deployed successfully!`;
 
-  chatContainer.appendChild(messageElement);
-}
-
-function displayToolCall(toolCall) {
-  const chatContainer = document.getElementById("chat-container");
-  const toolCallElement = document.createElement("div");
-  toolCallElement.className = "tool-call";
-  toolCallElement.innerHTML = `<strong>Tool Call:</strong> ${toolCall.name}<br>
-                               <strong>Tool Input:</strong> ${JSON.stringify(
-                                 toolCall.input
-                               )}`;
-  chatContainer.appendChild(toolCallElement);
-}
-
-function displayToolResult(toolResult) {
-  const chatContainer = document.getElementById("chat-container");
-  const toolResultElement = document.createElement("div");
-  toolResultElement.className = "tool-result";
-
-  // Convert URLs in the text to clickable links
-  const linkifiedText = toolResult.content[0].text.replace(
-    /(https?:\/\/[^\s]+)/g,
-    '<a href="$1" target="_blank">$1</a>'
+  const confettiAnimation = document.createElement("lottie-player");
+  confettiAnimation.setAttribute(
+    "src",
+    "https://assets9.lottiefiles.com/packages/lf20_u4yrau.json"
   );
+  confettiAnimation.setAttribute("background", "transparent");
+  confettiAnimation.setAttribute("speed", "1");
+  confettiAnimation.setAttribute("autoplay", "");
 
-  toolResultElement.innerHTML = `<strong>Tool Result:</strong> ${linkifiedText}`;
-  chatContainer.appendChild(toolResultElement);
+  // Set the style to cover the full screen while maintaining aspect ratio
+  confettiAnimation.style.position = "absolute";
+  confettiAnimation.style.width = "100%";
+  confettiAnimation.style.height = "100%";
+  confettiAnimation.style.objectFit = "cover";
+  confettiAnimation.style.objectPosition = "center";
+
+  const confettiContainer = document.getElementById("confettiAnimation");
+  confettiContainer.appendChild(confettiAnimation);
+
+  const copyLinkBtn = document.getElementById("copyLinkBtn");
+  copyLinkBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(websiteUrl).then(() => {
+      alert("Link copied to clipboard!");
+    });
+  });
+
+  const visitNowBtn = document.getElementById("visitNowBtn");
+  visitNowBtn.addEventListener("click", () => {
+    window.open(websiteUrl, "_blank");
+  });
+
+  // const shipNewBtn = document.getElementById("shipNewBtn");
+  // shipNewBtn.addEventListener("click", () => {
+  //   hideSuccessOverlay();
+  // });
+
+  const closeOverlayBtn = document.getElementById("closeOverlayBtn");
+  closeOverlayBtn.addEventListener("click", hideSuccessOverlay);
 }
+
+function hideSuccessOverlay() {
+  const successOverlay = document.getElementById("successOverlay");
+  successOverlay.classList.add("hidden");
+  document.getElementById("user-input").value = "";
+  hideLoader();
+  window.location.reload();
+}
+function generateWebsite() {
+  const requirements = requirementsTextarea.value.trim();
+  if (requirements) {
+    showLoader();
+    generateButton.disabled = true;
+    generateButton.innerHTML = `
+              <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Starting website creation...
+          `;
+
+    sendMessage(requirements);
+  } else {
+    alert("Please enter your website requirements first.");
+  }
+}
+
+generateButton.addEventListener("click", generateWebsite);
+
+requirementsTextarea.addEventListener("input", function () {
+  generateButton.disabled = this.value.trim().length === 0;
+});

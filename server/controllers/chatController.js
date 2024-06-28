@@ -4,7 +4,7 @@ const { handleToolUse } = require("./toolController");
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function processConversation(conversation, tools, sendEvent) {
+async function processConversation(conversation, tools, sendEvent, roomId) {
   let currentMessage = await client.messages.create({
     model: "claude-3-5-sonnet-20240620",
     max_tokens: 4000,
@@ -28,7 +28,7 @@ async function processConversation(conversation, tools, sendEvent) {
         content: currentMessage.content,
       });
       console.log("Found tool use in response:", tool);
-      const toolResult = await handleToolUse(tool, sendEvent);
+      const toolResult = await handleToolUse(tool, sendEvent, roomId);
       console.log("Received tool result:", toolResult);
       conversation.push({ role: "user", content: toolResult });
 
@@ -85,7 +85,7 @@ function handleChat(io) {
         });
       };
 
-      await processConversation(conversation, tools, sendEvent);
+      await processConversation(conversation, tools, sendEvent, roomId);
     });
 
     socket.on("disconnect", () => {

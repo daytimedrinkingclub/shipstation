@@ -3,13 +3,11 @@ const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const { toKebabCase } = require("../utils/file");
 
-const generateProjectFolderName = (projectName) => {
-  return (
-    toKebabCase(projectName) + "-" + Math.random().toString(36).substr(2, 9)
-  );
+const generateProjectFolderName = (projectName, roomId) => {
+  return toKebabCase(projectName) + "-" + roomId;
 };
 
-async function handleToolUse(tool, sendEvent) {
+async function handleToolUse(tool, sendEvent, roomId) {
   if (tool.name === "ai_research_assistant") {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -28,7 +26,7 @@ async function handleToolUse(tool, sendEvent) {
       project_goal,
       project_branding_style,
     } = tool.input;
-    const generatedFolderName = generateProjectFolderName(project_name);
+    const generatedFolderName = generateProjectFolderName(project_name, roomId);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
