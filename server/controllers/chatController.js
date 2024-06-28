@@ -4,39 +4,14 @@ const { handleToolUse } = require("./toolController");
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-async function processConversation(conversation, tools, sendEvent, roomId) {
-  let currentMessage = await client.messages.create({
-    model: "claude-3-5-sonnet-20240620",
-    max_tokens: 4000,
-    temperature: 0,
-    system:
-      "Your task is to deploy a website for the user and share them the deployed url",
-    messages: conversation,
-    tools,
-  });
-  sendEvent("newMessage", {
-    conversation,
-  });
+async function processConversation(conversation, tools, sendEvent, roomId, abortSignal) {
+  while (true) {
+    if (abortSignal.aborted) {
+      throw new DOMException('Aborted', 'AbortError');
+    }
 
-  while (currentMessage.stop_reason === "tool_use") {
-    const tool = currentMessage.content.find(
-      (content) => content.type === "tool_use"
-    );
-    if (tool) {
-      conversation.push({
-        role: currentMessage.role,
-        content: currentMessage.content,
-      });
-      console.log("Found tool use in response:", tool);
-      const toolResult = await handleToolUse(tool, sendEvent, roomId);
-      console.log("Received tool result:", toolResult);
-      conversation.push({ role: "user", content: toolResult });
-
-      console.log(
-        "Sending request to Anthropic API with updated conversation:",
-        JSON.stringify(conversation)
-      );
-
+    let currentMessage;
+    try {
       currentMessage = await client.messages.create({
         model: "claude-3-5-sonnet-20240620",
         max_tokens: 4000,
@@ -46,28 +21,70 @@ async function processConversation(conversation, tools, sendEvent, roomId) {
         messages: conversation,
         tools,
       });
+      sendEvent("newMessage", {
+        conversation,
+      });
+    } catch (error) {
+      console.error("Error creating message:", error);
+      sendEvent("error", {
+        error: "Error calling Anthropic API",
+      });
+      throw error;
+    }
 
-      console.log("Received response from Anthropic API:", currentMessage);
-    } else {
-      console.log("No tool use found in response, breaking loop");
+    if (currentMessage.stop_reason === "end_turn") {
+      conversation.push({
+        role: currentMessage.role,
+        content: currentMessage.content,
+      });
+      sendEvent("newMessage", {
+        conversation,
+      });
       break;
     }
-  }
 
-  if (currentMessage.stop_reason === "end_turn") {
-    conversation.push({
-      role: currentMessage.role,
-      content: currentMessage.content,
-    });
-    sendEvent("newMessage", {
-      conversation,
-    });
+    while (currentMessage.stop_reason === "tool_use") {
+      const tool = currentMessage.content.find(
+        (content) => content.type === "tool_use"
+      );
+      if (tool) {
+        conversation.push({
+          role: currentMessage.role,
+          content: currentMessage.content,
+        });
+        console.log("Found tool use in response:", tool);
+        const toolResult = await handleToolUse(tool, sendEvent, roomId);
+        console.log("Received tool result:", toolResult);
+        conversation.push({ role: "user", content: toolResult });
+
+        console.log(
+          "Sending request to Anthropic API with updated conversation:",
+          JSON.stringify(conversation)
+        );
+
+        currentMessage = await client.messages.create({
+          model: "claude-3-5-sonnet-20240620",
+          max_tokens: 4000,
+          temperature: 0,
+          system:
+            "Your task is to deploy a website for the user and share them the deployed url",
+          messages: conversation,
+          tools,
+        });
+
+        console.log("Received response from Anthropic API:", currentMessage);
+      } else {
+        console.log("No tool use found in response, breaking loop");
+        break;
+      }
+    }
   }
 }
 
 function handleChat(io) {
   io.on("connection", (socket) => {
     console.log("New client connected");
+    let abortController = new AbortController();
 
     socket.on("joinRoom", (roomId) => {
       socket.join(roomId);
@@ -85,7 +102,22 @@ function handleChat(io) {
         });
       };
 
-      await processConversation(conversation, tools, sendEvent, roomId);
+      abortController = new AbortController();
+      try {
+        await processConversation(conversation, tools, sendEvent, roomId, abortController.signal);
+      } catch (error) {
+        if (error.name === 'AbortError') {
+          console.log('Website creation aborted');
+          sendEvent('creationAborted', { message: 'Website creation was aborted' });
+        } else {
+          console.error('Error in processConversation:', error);
+        }
+      }
+    });
+
+    socket.on("abortWebsiteCreation", () => {
+      abortController.abort();
+      console.log('Aborting website creation');
     });
 
     socket.on("disconnect", () => {
