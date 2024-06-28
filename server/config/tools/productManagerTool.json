@@ -14,11 +14,11 @@
       },
       "project_goal": {
         "type": "string",
-        "description": "What is the problem the user is actually trying to solve by building this project"
+        "description": "Define the goal that we are trying to acheieve by building this landing page like higher conversion, better click through rates or maybe they just want more signups/free trials etc. Additionally, gather the core USPs that need to be highlighted so that we can focus the UI/UX of the website around the domain/niche."
       },
       "project_branding_style": {
         "type": "string",
-        "description": "The branding of the project that we want to create, such as any color style component details the user wants to provide else default web development standards can be followed for web apps"
+        "description": "The branding of the project that we want to create, such as any specific brand colors."
       }
     },
     "required": [

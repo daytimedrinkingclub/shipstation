@@ -24,7 +24,7 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
       file_comments
     );
     sendEvent("progress", {
-      message: `${file_name} created.`,
+      message: `Creating file ${file_name}`,
     });
     return [
       {
@@ -78,9 +78,6 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
       },
     ];
   } else if (tool.name === "deploy_project_tool") {
-    sendEvent("websiteDeployed", {
-      deployedUrl: `https://shipstation.ai/${projectFolderName}`,
-    });
     return [
       {
         type: "tool_result",
