@@ -1,3 +1,5 @@
+lucide.createIcons();
+
 let conversation = [];
 let roomId = null; // Store room ID
 
@@ -5,6 +7,30 @@ const socket = io(); // Connect to the server
 
 const requirementsTextarea = document.getElementById("user-input");
 const generateButton = document.getElementById("generateButton");
+
+const cardContainer = document.getElementById("card-container");
+const shipForm = document.getElementById("ship-form");
+const userInput = document.getElementById("user-input");
+
+document.getElementById("landing-page-card").addEventListener("click", () => {
+  cardContainer.classList.add("hidden");
+  shipForm.classList.remove("hidden");
+  userInput.placeholder =
+    "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
+});
+
+document
+  .getElementById("personal-website-card")
+  .addEventListener("click", () => {
+    cardContainer.classList.add("hidden");
+    shipForm.classList.remove("hidden");
+    userInput.placeholder =
+      "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
+  });
+
+document.getElementById("ai-agent-card").addEventListener("click", () => {
+  window.open("https://example.com", "_blank");
+});
 
 function addWebsiteToLocalStorage(websiteName, deployedUrl) {
   let websites = JSON.parse(localStorage.getItem("websites")) || [];
