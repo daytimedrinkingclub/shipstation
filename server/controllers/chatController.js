@@ -53,7 +53,7 @@ async function processConversation(conversation, tools, sendEvent, roomId, abort
           content: currentMessage.content,
         });
         console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(tool, sendEvent, roomId);
+        const toolResult = await handleToolUse(tool, sendEvent, roomId, conversation);
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
 
