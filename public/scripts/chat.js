@@ -67,6 +67,9 @@ function showSnackbar(message, type = "info") {
     }, 300);
   }, 4000);
 }
+
+window.showSnackbar = showSnackbar;
+
 socket.on("connect", () => {
   if (!roomId) {
     roomId = "room_" + Math.random().toString(36).substr(2, 9); // Generate a random room ID only once
@@ -200,12 +203,16 @@ function showSuccessOverlay(websiteName, websiteUrl) {
 function hideSuccessOverlay() {
   const successOverlay = document.getElementById("successOverlay");
   successOverlay.classList.add("hidden");
-  document.getElementById("user-input").value = "";
   hideLoader();
   window.location.reload();
 }
 function generateWebsite() {
   const requirements = requirementsTextarea.value.trim();
+  // const user = supabase.auth.user();
+  // if (!user) {
+  //   showSnackbar("Please log in to generate a website.", "error");
+  //   return;
+  // }
   if (requirements) {
     // Reset the conversation
     conversation = [];
@@ -220,7 +227,6 @@ function generateWebsite() {
           `;
 
     sendMessage(requirements);
-    // showSuccessOverlay("Website Name", "Website URL");
   } else {
     showSnackbar("Please enter your website requirements :)", "error");
   }

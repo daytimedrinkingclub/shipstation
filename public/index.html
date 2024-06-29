@@ -42,6 +42,8 @@
     />
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/auth.js"></script>
     <style>
       :root {
         --red-pantone: #e63946;
@@ -120,7 +122,7 @@
       class="fixed inset-x-0 bottom-0 z-[10000] pointer-events-none flex flex-col items-center"
     ></div>
     <div class="ship-background"></div>
-    <header class="p-5 logo-area cursor-pointer">
+    <header class="p-5 logo-area cursor-pointer flex items-center mr-4">
       <svg
         class="w-64 md:w-80 mx-auto"
         viewBox="0 0 300 60"
