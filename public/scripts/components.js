@@ -78,10 +78,27 @@ class SuccessOverlayComponent extends HTMLElement {
 
 // Register custom elements
 customElements.define('header-component', HeaderComponent);
-customElements.define('ship-background-component', ShipBackgroundComponent);
 customElements.define('card-container-component', CardContainerComponent);
 customElements.define('ship-form-component', ShipFormComponent);
 customElements.define('recently-shipped-component', RecentlyShippedComponent);
 customElements.define('footer-component', FooterComponent);
 customElements.define('loader-overlay-component', LoaderOverlayComponent);
 customElements.define('success-overlay-component', SuccessOverlayComponent);
+Promise.all([
+    customElements.whenDefined('header-component'),
+    customElements.whenDefined('card-container-component'),
+    customElements.whenDefined('ship-form-component'),
+    customElements.whenDefined('recently-shipped-component'),
+    customElements.whenDefined('footer-component'),
+    customElements.whenDefined('loader-overlay-component'),
+    customElements.whenDefined('success-overlay-component')
+  ]).then(() => {
+    // Load other scripts after components are defined
+    const authScript = document.createElement('script');
+    authScript.src = 'scripts/auth.js';
+    document.head.appendChild(authScript);
+
+    const chatScript = document.createElement('script');
+    chatScript.src = 'scripts/chat.js';
+    document.head.appendChild(chatScript);
+  });

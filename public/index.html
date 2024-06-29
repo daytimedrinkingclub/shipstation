@@ -43,8 +43,7 @@
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/auth.js"></script>
-    <script src="scripts/components.js"></script>
+    <script src="scripts/components.js" defer></script>
     <link rel="stylesheet" href="styles/main.css" />
   </head>
   <body class="flex flex-col min-h-screen bg-black text-white">
@@ -75,148 +74,23 @@
     <main
       class="flex-grow flex flex-col items-center justify-center px-4 md:px-8"
     >
-      <div id="card-container" class="flex flex-wrap justify-center gap-8">
-        <div id="landing-page-card" class="w-full sm:w-auto max-w-sm card">
-          <div class="card-content">
-            <i class="card-icon" data-lucide="layout"></i>
-            <h2 class="text-2xl font-bold mb-4 text-white">
-              Ship Landing Page
-            </h2>
-            <p class="text-gray-400">
-              Craft a sleek, high-converting landing page that captivates your
-              audience from the first scroll.
-            </p>
-          </div>
-        </div>
-        <div id="personal-website-card" class="w-full sm:w-auto max-w-sm card">
-          <div class="card-content">
-            <i class="card-icon" data-lucide="user"></i>
-            <h2 class="text-2xl font-bold mb-4 text-white">
-              Ship Personal Websites
-            </h2>
-            <p class="text-gray-400">
-              Showcase your unique story and skills with a stunning personal
-              website that leaves a lasting impression.
-            </p>
-          </div>
-        </div>
-        <div id="ai-agent-card" class="w-full sm:w-auto max-w-sm card">
-          <div class="card-content">
-            <i class="card-icon" data-lucide="cpu"></i>
-            <h2 class="text-2xl font-bold mb-4 text-white">Ship Idea Board</h2>
-            <p class="text-gray-400">
-              Transform your concepts into reality with an AI-powered idea
-              board. Visualize, organize, and bring your creative visions to
-              life.
-            </p>
-          </div>
-          <span class="coming-soon-badge">Shipping Soon</span>
-        </div>
-      </div>
-      <div id="ship-form" class="hidden">
-        <h1 class="text-2xl md:text-5xl font-bold mb-4 text-center text-white">
-          What will you ship today?
-        </h1>
-        <div class="w-full max-w-3xl relative mb-6">
-          <textarea
-            id="user-input"
-            rows="6"
-            class="w-full p-4 pr-12 sm:text-lg border-2 border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 resize-none shadow-md bg-gray-900 text-white"
-            placeholder=""
-          ></textarea>
-        </div>
-        <button
-          id="generateButton"
-          class="bg-white hover:bg-gray-200 text-black font-bold py-4 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-        >
-          <span>Start shipping</span>
-          <i data-lucide="rocket" class="w-6 h-6"></i>
-        </button>
-      </div>
+      <card-container-component></card-container-component>
+      <ship-form-component></ship-form-component>
+      <recently-shipped-component></recently-shipped-component>
+      <loader-overlay-component></loader-overlay-component>
+      <success-overlay-component></success-overlay-component>
     </main>
-
-    <div id="recently-shipped" class="hidden">
-      <div class="w-full max-w-3xl mx-auto px-4 md:px-8 my-8">
-        <hr class="border-t-2 border-dashed border-gray-700" />
-      </div>
-      <section class="w-full max-w-3xl mx-auto px-4 md:px-8 mb-12">
-        <h2 class="text-2xl font-bold mb-4 text-center text-white">
-          Recently shipped by you:
-        </h2>
-        <div
-          class="flex flex-wrap justify-center gap-4"
-          id="recently-shipped-list"
-        ></div>
-      </section>
-    </div>
-    <footer class="p-6 text-center text-base text-gray-400">
+    <div class="p-6 text-center text-base text-gray-400">
       <p>
-        Shipped by
+        ⛴️ Shipped by
         <a
           href="https://daytimedrinking.club"
           target="_blank"
           rel="noopener noreferrer"
           class="underline hover:text-gray-200 font-semibold"
-          >DTDC</a
+          >Daytime Drinking Club</a
         >
       </p>
-    </footer>
-
-    <div
-      id="loaderOverlay"
-      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md hidden"
-    >
-      <button
-        id="closeLoadingOverlayBtn"
-        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300 z-20"
-      >
-        <i data-lucide="x-circle" class="w-10 h-10"></i>
-      </button>
-      <div class="text-center">
-        <div id="lottieAnimation" class="w-64 h-64 mx-auto"></div>
-        <p class="text-2xl font-semibold mt-6 text-white" id="loaderText">
-          Generating your website...
-        </p>
-      </div>
     </div>
-
-    <div
-      id="successOverlay"
-      class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-[9999] overflow-hidden"
-    >
-      <button
-        id="closeOverlayBtn"
-        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300 z-20"
-      >
-        <i data-lucide="x-circle" class="w-10 h-10"></i>
-      </button>
-      <div id="confettiAnimation" class="absolute inset-0 w-full h-full"></div>
-      <div
-        class="text-center relative z-10 bg-gray-900 bg-opacity-95 max-w-3xl border border-gray-700 rounded"
-      >
-        <p
-          class="text-2xl font-semibold m-8 p-4 text-white"
-          id="successText"
-        ></p>
-        <div class="my-8 space-x-4 flex justify-center">
-          <button
-            id="copyLinkBtn"
-            class="border border-gray-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
-          >
-            <span id="copyLinkText">Copy link</span>
-            <i data-lucide="copy" class="hover:animate-bounce"></i>
-          </button>
-          <button
-            id="visitNowBtn"
-            class="bg-white hover:bg-gray-200 text-black font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
-          >
-            <span>Visit now</span>
-            <i data-lucide="external-link" class="hover:animate-bounce"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <script src="scripts/chat.js"></script>
   </body>
 </html>
