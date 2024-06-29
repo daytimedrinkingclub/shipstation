@@ -36,7 +36,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
@@ -47,7 +47,7 @@
     <script src="scripts/components.js"></script>
     <link rel="stylesheet" href="styles/main.css" />
   </head>
-  <body class="flex flex-col min-h-screen">
+  <body class="flex flex-col min-h-screen bg-black text-white">
     <div
       id="snackbar-container"
       class="fixed inset-x-0 bottom-0 z-[10000] pointer-events-none flex flex-col items-center"
@@ -62,10 +62,10 @@
         <text
           x="10"
           y="45"
-          font-family="Space Grotesk"
+          font-family="Inter"
           font-size="40"
           font-weight="bold"
-          fill="#20B2AA"
+          fill="#FFFFFF"
         >
           ShipStation
         </text>
@@ -79,10 +79,10 @@
         <div id="landing-page-card" class="w-full sm:w-auto max-w-sm card">
           <div class="card-content">
             <i class="card-icon" data-lucide="layout"></i>
-            <h2 class="text-2xl font-bold mb-4 text-dark-primary">
+            <h2 class="text-2xl font-bold mb-4 text-white">
               Ship Landing Page
             </h2>
-            <p class="text-dark-on-surface">
+            <p class="text-gray-400">
               Create a beautiful landing page with animations and all the rizz.
             </p>
           </div>
@@ -90,10 +90,10 @@
         <div id="personal-website-card" class="w-full sm:w-auto max-w-sm card">
           <div class="card-content">
             <i class="card-icon" data-lucide="user"></i>
-            <h2 class="text-2xl font-bold mb-4 text-dark-primary">
+            <h2 class="text-2xl font-bold mb-4 text-white">
               Ship Personal Websites
             </h2>
-            <p class="text-dark-on-surface">
+            <p class="text-gray-400">
               Create portfolios, resume websites, and more.
             </p>
           </div>
@@ -101,31 +101,29 @@
         <div id="ai-agent-card" class="w-full sm:w-auto max-w-sm card">
           <div class="card-content">
             <i class="card-icon" data-lucide="cpu"></i>
-            <h2 class="text-2xl font-bold mb-4 text-dark-primary">
-              Ship Your AI Agent
-            </h2>
-            <p class="text-dark-on-surface">
+            <h2 class="text-2xl font-bold mb-4 text-white">Idea board</h2>
+            <p class="text-gray-400">
               Unleash the power of AI for your website.
             </p>
           </div>
-          <span class="coming-soon-badge">Coming Soon</span>
+          <span class="coming-soon-badge">Shipping soon</span>
         </div>
       </div>
       <div id="ship-form" class="hidden">
-        <h1 class="text-2xl md:text-5xl font-bold mb-4 text-center">
+        <h1 class="text-2xl md:text-5xl font-bold mb-4 text-center text-white">
           What will you ship today?
         </h1>
         <div class="w-full max-w-3xl relative mb-6">
           <textarea
             id="user-input"
             rows="6"
-            class="w-full p-4 pr-12 sm:text-lg border-2 border-cerulean rounded-lg focus:outline-none focus:border-berkeley-blue resize-none shadow-md bg-dark-surface text-dark-on-surface"
+            class="w-full p-4 pr-12 sm:text-lg border-2 border-gray-700 rounded-lg focus:outline-none focus:border-gray-500 resize-none shadow-md bg-gray-900 text-white"
             placeholder=""
           ></textarea>
         </div>
         <button
           id="generateButton"
-          class="bg-cerulean hover:bg-berkeley-blue text-white font-bold py-4 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-berkeley-blue focus:ring-opacity-50 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+          class="bg-white hover:bg-gray-200 text-black font-bold py-4 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-50 flex items-center space-x-3 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
         >
           <span>Start shipping</span>
           <i data-lucide="rocket" class="w-6 h-6"></i>
@@ -135,10 +133,10 @@
 
     <div id="recently-shipped" class="hidden">
       <div class="w-full max-w-3xl mx-auto px-4 md:px-8 my-8">
-        <hr class="border-t-2 border-dashed border-cerulean" />
+        <hr class="border-t-2 border-dashed border-gray-700" />
       </div>
       <section class="w-full max-w-3xl mx-auto px-4 md:px-8 mb-12">
-        <h2 class="text-2xl font-bold mb-4 text-center">
+        <h2 class="text-2xl font-bold mb-4 text-center text-white">
           Recently shipped by you:
         </h2>
         <div
@@ -147,14 +145,14 @@
         ></div>
       </section>
     </div>
-    <footer class="p-6 text-center text-base text-cerulean">
+    <footer class="p-6 text-center text-base text-gray-400">
       <p>
-        Built with ❤️ by
+        ⛴️ Shipped by
         <a
           href="https://daytimedrinking.club"
           target="_blank"
           rel="noopener noreferrer"
-          class="underline hover:text-berkeley-blue font-semibold"
+          class="underline hover:text-gray-200 font-semibold"
           >DTDC</a
         >
       </p>
@@ -162,17 +160,17 @@
 
     <div
       id="loaderOverlay"
-      class="fixed inset-0 flex items-center justify-center bg-dark-bg bg-opacity-90 backdrop-filter backdrop-blur-md hidden"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md hidden"
     >
       <button
         id="closeLoadingOverlayBtn"
-        class="absolute top-4 right-4 text-berkeley-blue hover:text-red-pantone transition-colors duration-300 z-20"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300 z-20"
       >
         <i data-lucide="x-circle" class="w-10 h-10"></i>
       </button>
       <div class="text-center">
         <div id="lottieAnimation" class="w-64 h-64 mx-auto"></div>
-        <p class="text-2xl font-semibold mt-6" id="loaderText">
+        <p class="text-2xl font-semibold mt-6 text-white" id="loaderText">
           Generating your website...
         </p>
       </div>
@@ -180,33 +178,33 @@
 
     <div
       id="successOverlay"
-      class="fixed inset-0 flex flex-col items-center justify-center bg-dark-bg bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-[9999] overflow-hidden"
+      class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-[9999] overflow-hidden"
     >
       <button
         id="closeOverlayBtn"
-        class="absolute top-4 right-4 text-berkeley-blue hover:text-red-pantone transition-colors duration-300 z-20"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300 z-20"
       >
         <i data-lucide="x-circle" class="w-10 h-10"></i>
       </button>
       <div id="confettiAnimation" class="absolute inset-0 w-full h-full"></div>
       <div
-        class="text-center relative z-10 bg-dark-surface bg-opacity-95 max-w-3xl border border-dark-primary rounded"
+        class="text-center relative z-10 bg-gray-900 bg-opacity-95 max-w-3xl border border-gray-700 rounded"
       >
         <p
-          class="text-2xl font-semibold m-8 p-4 text-dark-on-surface"
+          class="text-2xl font-semibold m-8 p-4 text-white"
           id="successText"
         ></p>
         <div class="my-8 space-x-4 flex justify-center">
           <button
             id="copyLinkBtn"
-            class="border border-dark-primary text-dark-on-surface font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+            class="border border-gray-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
           >
             <span id="copyLinkText">Copy link</span>
             <i data-lucide="copy" class="hover:animate-bounce"></i>
           </button>
           <button
             id="visitNowBtn"
-            class="bg-dark-primary hover:bg-dark-secondary text-dark-bg font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+            class="bg-white hover:bg-gray-200 text-black font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
           >
             <span>Visit now</span>
             <i data-lucide="external-link" class="hover:animate-bounce"></i>
