@@ -7,7 +7,7 @@ const generateProjectFolderName = (projectName, roomId) => {
   return toKebabCase(projectName) + "-" + roomId;
 };
 
-async function handleToolUse(tool, sendEvent, roomId) {
+async function handleToolUse(tool, sendEvent, roomId, conversation) {
   if (tool.name === "ai_research_assistant") {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -53,7 +53,8 @@ async function handleToolUse(tool, sendEvent, roomId) {
     const { message } = await ctoService.ctoService(
       fileContent,
       generatedFolderName,
-      sendEvent
+      sendEvent,
+      conversation
     );
     return [
       {

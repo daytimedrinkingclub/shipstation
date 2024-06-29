@@ -6,6 +6,7 @@ const {
   searchTool,
 } = require("../config/tools");
 const { handleToolUse } = require("../controllers/ctoToolController");
+const { insertConversation } = require("./dbService");
 require("dotenv").config();
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -77,7 +78,12 @@ Never:
 2. Never use shadow dom 
 `;
 
-async function ctoService(query, projectFolderName, sendEvent) {
+async function ctoService(
+  query,
+  projectFolderName,
+  sendEvent,
+  mainConversation
+) {
   console.log("aiAssistance called with query:", query);
 
   const conversation = [
@@ -131,12 +137,14 @@ async function ctoService(query, projectFolderName, sendEvent) {
       }
     }
 
+    const deployedUrl = `${process.env.APP_URL}/${projectFolderName}`;
     sendEvent("websiteDeployed", {
-      deployedUrl: `https://shipstation.ai/${projectFolderName}`,
+      deployedUrl,
       websiteName: projectFolderName,
     });
+    insertConversation(mainConversation, deployedUrl);
     return {
-      message: `Website successfully deployed at: https://shipstation.ai/${projectFolderName}`,
+      message: `Website successfully deployed at: ${deployedUrl}`,
       path: projectFolderName,
     };
   } catch (error) {
