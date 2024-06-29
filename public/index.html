@@ -45,7 +45,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/auth.js"></script>
     <script src="scripts/components.js"></script>
-    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/main.css" />
   </head>
   <body class="flex flex-col min-h-screen">
     <div
@@ -215,36 +215,6 @@
       </div>
     </div>
 
-    <script>
-      lucide.createIcons();
-    </script>
     <script src="scripts/chat.js"></script>
-    <script>
-      const cardContainer = document.getElementById("card-container");
-      const shipForm = document.getElementById("ship-form");
-      const userInput = document.getElementById("user-input");
-
-      document
-        .getElementById("landing-page-card")
-        .addEventListener("click", () => {
-          cardContainer.classList.add("hidden");
-          shipForm.classList.remove("hidden");
-          userInput.placeholder =
-            "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
-        });
-
-      document
-        .getElementById("personal-website-card")
-        .addEventListener("click", () => {
-          cardContainer.classList.add("hidden");
-          shipForm.classList.remove("hidden");
-          userInput.placeholder =
-            "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
-        });
-
-      document.getElementById("ai-agent-card").addEventListener("click", () => {
-        window.open("https://example.com", "_blank");
-      });
-    </script>
   </body>
 </html>
