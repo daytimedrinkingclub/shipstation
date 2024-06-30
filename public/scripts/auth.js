@@ -1,53 +1,84 @@
-// // Initialize Supabase client
+function initializeSupabase() {
+  const supabase = window.supabase.createClient(
+    "https://rqyiibvcszfszmdhhgkg.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeWlpYnZjc3pmc3ptZGhoZ2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk2OTI1MTQsImV4cCI6MjAzNTI2ODUxNH0.v0kjLBczNMYAmI-Onwc65LYzVa9roPeo4LcFBEm98ik"
+  );
 
-// const supabase = supabase.createClient(
-//   "https://rzikuenjublzqxeiddil.supabase.co",
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6aWt1ZW5qdWJsenF4ZWlkZGlsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk1ODI0NTQsImV4cCI6MjAzNTE1ODQ1NH0.RuIiGyqtNdFWm5AGIFBB8Tl2A-AuGXqPqZTAWDh6NkQ"
-// );
+  setupEventListeners(supabase);
 
-// document.addEventListener("DOMContentLoaded", () => {
-//   const loginButton = document.getElementById("loginButton");
-//   loginButton.addEventListener("click", handleLogin);
+  lucide.createIcons();
+  checkUser(supabase);
+}
 
-//   checkUser();
-// });
+initializeSupabase();
 
-// async function handleLogin() {
-//   try {
-//     const { data, error } = await supabase.auth.signInWithOtp({
-//       email: prompt("Please enter your email:"),
-//     });
+function setupEventListeners(supabase) {
+  const loginButton = document.getElementById("loginButton");
+  loginButton.addEventListener("click", () => handleLoginLogout(supabase));
 
-//     if (error) throw error;
+  const closeLoginModalButton = document.getElementById("closeLoginModal");
+  closeLoginModalButton.addEventListener("click", closeLoginModal);
 
-//     alert("Check your email for the login link!");
-//   } catch (error) {
-//     alert(error.error_description || error.message);
-//   }
-// }
+  const submitLoginFormButton = document.getElementById("submitLoginForm");
+  submitLoginFormButton.addEventListener("click", () =>
+    handleLoginSubmit(supabase)
+  );
+}
 
-// async function checkUser() {
-//   const {
-//     data: { user },
-//   } = await supabase.auth.getUser();
+function openLoginModal() {
+  const loginModal = document.getElementById("loginModal");
+  loginModal.classList.remove("hidden");
+}
 
-//   if (user) {
-//     document.getElementById("loginButton").textContent = "Logout";
-//     document
-//       .getElementById("loginButton")
-//       .removeEventListener("click", handleLogin);
-//     document
-//       .getElementById("loginButton")
-//       .addEventListener("click", handleLogout);
-//   }
-// }
+function closeLoginModal() {
+  const loginModal = document.getElementById("loginModal");
+  loginModal.classList.add("hidden");
+}
 
-// async function handleLogout() {
-//   await supabase.auth.signOut();
-//   window.showSnackbar("You have been logged out successfully", "info");
-//   document.getElementById("loginButton").textContent = "Login";
-//   document
-//     .getElementById("loginButton")
-//     .removeEventListener("click", handleLogout);
-//   document.getElementById("loginButton").addEventListener("click", handleLogin);
-// }
+async function handleLoginSubmit(supabase) {
+  const email = document.getElementById("email").value;
+
+  try {
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) throw error;
+    showSnackbar("Check your email for the login link!", "success");
+    closeLoginModal();
+  } catch (error) {
+    showSnackbar(error.error_description || error.message, "error");
+  }
+}
+
+async function handleLoginLogout(supabase) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    await handleLogout(supabase);
+  } else {
+    openLoginModal();
+  }
+}
+
+async function checkUser(supabase) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  updateLoginButton(user);
+}
+
+function updateLoginButton(user) {
+  const loginButton = document.getElementById("loginButton");
+
+  if (user) {
+    loginButton.textContent = "Logout";
+  } else {
+    loginButton.textContent = "Login";
+  }
+}
+
+async function handleLogout(supabase) {
+  await supabase.auth.signOut();
+  window.showSnackbar("You have been logged out successfully", "info");
+  updateLoginButton(null);
+}

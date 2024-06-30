@@ -49,28 +49,11 @@
   <body class="flex flex-col min-h-screen bg-black text-white">
     <div
       id="snackbar-container"
-      class="fixed inset-x-0 bottom-0 z-[10000] pointer-events-none flex flex-col items-center"
+      style="z-index: 1000"
+      class="fixed inset-x-0 bottom-0 pointer-events-none flex flex-col items-center"
     ></div>
     <div class="ship-background"></div>
-    <header class="p-5 logo-area cursor-pointer flex items-center mr-4">
-      <svg
-        class="w-64 md:w-80 mx-auto"
-        viewBox="0 0 300 60"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <text
-          x="10"
-          y="45"
-          font-family="Inter"
-          font-size="40"
-          font-weight="bold"
-          fill="#FFFFFF"
-        >
-          ShipStation
-        </text>
-      </svg>
-    </header>
-
+    <header-component class="w-full"></header-component>
     <main
       class="flex-grow flex flex-col items-center justify-center px-4 md:px-8"
     >
@@ -79,6 +62,7 @@
       <recently-shipped-component></recently-shipped-component>
       <loader-overlay-component></loader-overlay-component>
       <success-overlay-component></success-overlay-component>
+      <login-form-container></login-form-container>
     </main>
     <div class="p-6 text-center text-base text-gray-400">
       <p>

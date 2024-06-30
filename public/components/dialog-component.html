@@ -1,0 +1,72 @@
+<div
+  id="optionsDialog"
+  class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50"
+>
+  <div class="bg-gray-800 rounded-xl p-10 max-w-2xl w-full relative shadow-2xl">
+    <button
+      id="closeDialog"
+      class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-300"
+    >
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+    <h2 id="dialogTitle" class="text-3xl font-bold mb-8 text-white text-center">
+      Choose an Option
+    </h2>
+    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div
+        id="addKeyOption"
+        class="bg-gray-700 rounded-xl p-6 cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-600 group"
+      >
+        <div class="flex items-center justify-center mb-6">
+          <i
+            data-lucide="key"
+            class="w-16 h-16 text-gray-400 group-hover:text-gray-300 transition-colors duration-300"
+          ></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3 text-white text-center">
+          Add your own Anthropic key
+        </h3>
+        <p class="text-gray-300 text-center">
+          Use your personal Anthropic API key for website generation.
+        </p>
+      </div>
+      <div
+        id="payOption"
+        class="bg-gray-700 rounded-xl p-6 cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-600 group"
+      >
+        <div class="flex items-center justify-center mb-6">
+          <i
+            data-lucide="credit-card"
+            class="w-16 h-16 text-gray-400 group-hover:text-gray-300 transition-colors duration-300"
+          ></i>
+        </div>
+        <h3 class="text-2xl font-semibold mb-3 text-white text-center">
+          Pay to create
+        </h3>
+        <p class="text-gray-300 text-center">
+          Purchase credits to generate websites without an API key.
+        </p>
+      </div>
+    </div>
+    <div id="inputContainer" class="mt-8 hidden">
+      <input
+        id="emailInput"
+        type="email"
+        placeholder="Enter your email"
+        class="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hidden"
+      />
+      <input
+        id="apiKeyInput"
+        type="password"
+        placeholder="Enter your Anthropic API key"
+        class="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hidden"
+      />
+      <button
+        id="submitButton"
+        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>

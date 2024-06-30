@@ -4,15 +4,17 @@ const socketIo = require("socket.io");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
+const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+const chatController = require("./server/controllers/chatController");
+const { listFoldersInS3 } = require("./server/services/s3Service");
+const { s3Handler } = require("./server/config/awsConfig");
+const { validateRazorpayWebhook } = require("./server/services/paymentService");
+
 require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
-const chatController = require("./server/controllers/chatController");
-const { listFoldersInS3 } = require("./server/services/s3Service");
-const { s3Handler } = require("./server/config/awsConfig");
-const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
 
 app.use(express.json());
 app.use(express.static("websites"));
@@ -20,6 +22,27 @@ app.use(express.static("public"));
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
+});
+
+app.post("/payment-webhook", express.json(), (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const signature = req.headers["x-razorpay-signature"];
+
+  if (validateRazorpayWebhook(req.body, signature, secret)) {
+    const event = req.body.event;
+
+    if (event === "payment_link.paid") {
+      // Handle the payment_link.paid event
+      const email = req.body.payload.payment.entity.email;
+      // You can add your business logic here
+
+      res.status(200).json({ status: "ok" });
+    } else {
+      res.status(400).json({ error: "Event not handled" });
+    }
+  } else {
+    res.status(400).json({ error: "Invalid signature" });
+  }
 });
 
 app.get("/all-websites", async (req, res) => {

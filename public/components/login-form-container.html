@@ -1,0 +1,38 @@
+<div
+  id="loginModal"
+  class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50"
+>
+  <div class="bg-gray-800 rounded-2xl p-8 max-w-md w-full relative shadow-2xl">
+    <button
+      id="closeLoginModal"
+      class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300"
+    >
+      <i data-lucide="x" class="w-6 h-6"></i>
+    </button>
+    <h2 class="text-3xl font-bold mb-6 text-white text-center">Log In</h2>
+    <p class="text-gray-300 text-center mb-8">
+      Enter your email to receive a magic link
+    </p>
+    <div class="space-y-6">
+      <div class="flex items-center space-x-4">
+        <div class="flex-grow">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border-2 border-transparent focus:outline-none focus:border-blue-500 transition duration-300"
+            placeholder="Enter your email"
+          />
+        </div>
+        <button
+          onclick="handleLoginSubmit()"
+          id="submitLoginForm"
+          class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          <i data-lucide="send" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
