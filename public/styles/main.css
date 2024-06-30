@@ -6,7 +6,7 @@
   --dark-on-surface: #e0e0e0;
 }
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   background-color: var(--dark-bg);
   color: var(--dark-on-surface);
 }
@@ -32,8 +32,12 @@ body {
   --tw-ring-color: var(--dark-secondary);
 }
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out;
@@ -97,13 +101,18 @@ textarea {
 }
 
 .card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
   transform: translateX(-100%);
   transition: transform 0.3s ease-in-out;
 }
@@ -169,7 +178,7 @@ html {
 
 /* Add a subtle gradient background */
 body::before {
-  content: '';
+  content: "";
   position: fixed;
   top: 0;
   left: 0;
@@ -177,4 +186,65 @@ body::before {
   height: 100%;
   background: linear-gradient(135deg, #1c1c1c 0%, #0f0f0f 100%);
   z-index: -1;
+}
+
+.bg-dark-surface {
+  background-color: var(--dark-surface);
+}
+
+.text-dark-primary {
+  color: var(--dark-primary);
+}
+
+.text-dark-secondary {
+  color: var(--dark-secondary);
+}
+
+.text-dark-on-surface {
+  color: var(--dark-on-surface);
+}
+
+.bg-dark-bg {
+  background-color: var(--dark-bg);
+}
+
+.border-dark-secondary {
+  border-color: var(--dark-secondary);
+}
+
+.focus\:ring-dark-primary:focus {
+  --tw-ring-color: var(--dark-primary);
+}
+
+.hover\:bg-dark-secondary:hover {
+  background-color: var(--dark-secondary);
+}
+
+/* Add a subtle animation for the login form */
+.login-form-container {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#loginModal {
+  transition: opacity 0.3s ease-in-out;
+}
+
+#loginModal.flex {
+  opacity: 1;
+}
+
+#loginModal.hidden {
+  opacity: 0;
+  pointer-events: none;
 }

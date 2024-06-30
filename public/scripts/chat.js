@@ -234,28 +234,97 @@ function hideSuccessOverlay() {
 }
 function generateWebsite() {
   const requirements = requirementsTextarea.value.trim();
-  // const user = supabase.auth.user();
-  // if (!user) {
-  //   showSnackbar("Please log in to generate a website.", "error");
-  //   return;
-  // }
   if (requirements) {
-    // Reset the conversation
-    conversation = [];
-    showLoader();
-    generateButton.disabled = true;
-    generateButton.innerHTML = `
-              <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Starting website creation...
-          `;
+    const optionsDialog = document.getElementById("optionsDialog");
+    optionsDialog.classList.remove("hidden");
 
-    sendMessage(requirements);
+    const addKeyOption = document.getElementById("addKeyOption");
+    const payOption = document.getElementById("payOption");
+    const closeDialog = document.getElementById("closeDialog");
+    const dialogTitle = document.getElementById("dialogTitle");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const inputContainer = document.getElementById("inputContainer");
+    const emailInput = document.getElementById("emailInput");
+    const apiKeyInput = document.getElementById("apiKeyInput");
+    const submitButton = document.getElementById("submitButton");
+
+    function showInputs(title, showEmail = false, showApiKey = false) {
+      dialogTitle.textContent = title;
+      optionsContainer.classList.add("hidden");
+      inputContainer.classList.remove("hidden");
+      emailInput.classList.toggle("hidden", !showEmail);
+      apiKeyInput.classList.toggle("hidden", !showApiKey);
+    }
+
+    addKeyOption.addEventListener("click", () => {
+      showInputs("Add your own Anthropic key", false, true);
+    });
+
+    payOption.addEventListener("click", () => {
+      showInputs("Pay to create", true, false);
+    });
+
+    closeDialog.addEventListener("click", () => {
+      optionsDialog.classList.add("hidden");
+      // Reset the dialog to its initial state
+      dialogTitle.textContent = "Choose an Option";
+      optionsContainer.classList.remove("hidden");
+      inputContainer.classList.add("hidden");
+      emailInput.value = "";
+      apiKeyInput.value = "";
+    });
+
+    submitButton.addEventListener("click", () => {
+      const email = emailInput.value;
+      const apiKey = apiKeyInput.value;
+
+      if (email) {
+        console.log("Submitting email:", email);
+        openPaymentLink(email);
+      } else if (apiKey) {
+        console.log("Submitting API key:", apiKey);
+        socket.emit("anthropicKey", apiKey);
+      }
+    });
+
+    lucide.createIcons();
   } else {
     showSnackbar("Please enter your website requirements :)", "error");
   }
+}
+
+socket.on("apiKeyStatus", (response) => {
+  if (response.success) {
+    showSnackbar(response.message, "success");
+    startWebsiteGeneration(requirementsTextarea.value.trim());
+    optionsDialog.classList.add("hidden");
+  } else {
+    showSnackbar(response.message, "error");
+  }
+});
+
+function openPaymentLink(email) {
+  // Replace with your actual payment link
+  const paymentLink = `https://your-payment-link.com?email=${encodeURIComponent(
+    email
+  )}`;
+  window.open(paymentLink, "_blank");
+}
+
+function startWebsiteGeneration(requirements) {
+  // Reset the conversation
+  conversation = [];
+  showLoader();
+  generateButton.disabled = true;
+  generateButton.innerHTML = `
+    <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    Starting website creation...
+  `;
+
+  sendMessage(requirements);
 }
 
 generateButton.addEventListener("click", generateWebsite);

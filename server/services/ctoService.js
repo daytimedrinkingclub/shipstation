@@ -1,4 +1,3 @@
-const Anthropic = require("@anthropic-ai/sdk");
 const {
   fileCreatorTool,
   taskAssignerTool,
@@ -7,9 +6,8 @@ const {
 } = require("../config/tools");
 const { handleToolUse } = require("../controllers/ctoToolController");
 const { insertConversation } = require("./dbService");
+const { getAnthropicClient } = require("./anthropicService");
 require("dotenv").config();
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const systemPrompt = `As a cto your goal is to structure the given project into web components and get it developed using provided tools.
    Always use only tailwind css which is imported in index.html via cdn 
@@ -91,7 +89,7 @@ async function ctoService(
   ];
 
   try {
-    let msg = await client.messages.create({
+    let msg = await getAnthropicClient().messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 4000,
       temperature: 0,
