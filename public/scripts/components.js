@@ -43,6 +43,7 @@ class RecentlyShippedComponent extends HTMLElement {
       "components/recently-shipped-component.html"
     );
     this.innerHTML = content;
+    renderRecentlyShipped();
   }
 }
 
@@ -137,7 +138,7 @@ Promise.all([
 
     observer.observe(document.body, {
       childList: true,
-      subtree: true
+      subtree: true,
     });
   });
 });
