@@ -12,25 +12,37 @@ const cardContainer = document.getElementById("card-container");
 const shipForm = document.getElementById("ship-form");
 const userInput = document.getElementById("user-input");
 
+let isUserLoggedIn = false; // Add this line at the top of the file
+
+// Modify the event listeners for the cards
 document.getElementById("landing-page-card").addEventListener("click", () => {
-  cardContainer.classList.add("hidden");
-  shipForm.classList.remove("hidden");
-  userInput.placeholder =
-    "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
+  if (isUserLoggedIn) {
+    cardContainer.classList.add("hidden");
+    shipForm.classList.remove("hidden");
+    userInput.placeholder =
+      "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
+  } else {
+    openLoginModal();
+  }
 });
 
 document
   .getElementById("personal-website-card")
   .addEventListener("click", () => {
-    cardContainer.classList.add("hidden");
-    shipForm.classList.remove("hidden");
-    userInput.placeholder =
-      "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
+    if (isUserLoggedIn) {
+      cardContainer.classList.add("hidden");
+      shipForm.classList.remove("hidden");
+      userInput.placeholder =
+        "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
+    } else {
+      openLoginModal();
+    }
   });
 
-document.getElementById("ai-agent-card").addEventListener("click", () => {
-  window.open("https://example.com", "_blank");
-});
+// Add this function to update the login state
+function updateLoginState(loggedIn) {
+  isUserLoggedIn = loggedIn;
+}
 
 function addWebsiteToLocalStorage(websiteName, deployedUrl) {
   let websites = JSON.parse(localStorage.getItem("websites")) || [];
@@ -55,7 +67,7 @@ function renderRecentlyShipped() {
     anchor.href = deployedUrl;
     anchor.target = "_blank";
     anchor.className =
-      "bg-white text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
+      "text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
     anchor.textContent = websiteName;
     recentlyShippedList.appendChild(anchor);
   });
@@ -322,5 +334,3 @@ generateButton.addEventListener("click", generateWebsite);
 requirementsTextarea.addEventListener("input", function () {
   generateButton.disabled = this.value.trim().length === 0;
 });
-
-document.addEventListener("DOMContentLoaded", renderRecentlyShipped);

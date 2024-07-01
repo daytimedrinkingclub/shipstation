@@ -8,6 +8,15 @@ function initializeSupabase() {
 
   lucide.createIcons();
   checkUser(supabase);
+
+  // Add this line to listen for auth state changes
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_IN") {
+      updateLoginState(true);
+    } else if (event === "SIGNED_OUT") {
+      updateLoginState(false);
+    }
+  });
 }
 
 initializeSupabase();
@@ -23,6 +32,15 @@ function setupEventListeners(supabase) {
   submitLoginFormButton.addEventListener("click", () =>
     handleLoginSubmit(supabase)
   );
+
+  // Add event listener for the email input
+  const emailInput = document.getElementById("email");
+  emailInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleLoginSubmit(supabase);
+    }
+  });
 }
 
 function openLoginModal() {
@@ -35,14 +53,24 @@ function closeLoginModal() {
   loginModal.classList.add("hidden");
 }
 
+function validateEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(String(email).toLowerCase());
+}
+
 async function handleLoginSubmit(supabase) {
   const email = document.getElementById("email").value;
+
+  if (!validateEmail(email)) {
+    showSnackbar("Please enter a valid email address", "error");
+    return;
+  }
 
   try {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        // emailRedirectTo: "http://localhost:3000",
+        emailRedirectTo: window.location.origin,
       },
     });
     if (error) throw error;
@@ -77,8 +105,10 @@ function updateLoginButton(user) {
 
   if (user) {
     loginButton.textContent = "Logout";
+    updateLoginState(true); // Add this line
   } else {
     loginButton.textContent = "Login";
+    updateLoginState(false); // Add this line
   }
 }
 
@@ -87,3 +117,6 @@ async function handleLogout(supabase) {
   window.showSnackbar("You have been logged out successfully", "info");
   updateLoginButton(null);
 }
+
+// Make sure to expose the openLoginModal function
+window.openLoginModal = openLoginModal;
