@@ -39,7 +39,12 @@ async function handleLoginSubmit(supabase) {
   const email = document.getElementById("email").value;
 
   try {
-    const { error } = await supabase.auth.signInWithOtp({ email });
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        // emailRedirectTo: "http://localhost:3000",
+      },
+    });
     if (error) throw error;
     showSnackbar("Check your email for the login link!", "success");
     closeLoginModal();

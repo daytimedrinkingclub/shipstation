@@ -116,4 +116,28 @@ Promise.all([
   const chatScript = document.createElement("script");
   chatScript.src = "scripts/chat.js";
   document.head.appendChild(chatScript);
+
+  // Initialize Razorpay payment button
+  const razorpayScript = document.createElement("script");
+  razorpayScript.src = "https://checkout.razorpay.com/v1/payment-button.js";
+  razorpayScript.setAttribute("data-payment_button_id", "pl_OTLsws336UXJ5J");
+  razorpayScript.async = true;
+
+  // Wait for the dialog component to be fully loaded
+  customElements.whenDefined("dialog-component").then(() => {
+    const observer = new MutationObserver((mutations, obs) => {
+      const razorpayContainer = document.getElementById("razorpayContainer");
+      if (razorpayContainer && razorpayContainer.offsetParent !== null) {
+        const form = document.createElement("form");
+        form.appendChild(razorpayScript);
+        razorpayContainer.appendChild(form);
+        obs.disconnect(); // Stop observing once we've added the script
+      }
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+  });
 });
