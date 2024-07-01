@@ -43,7 +43,6 @@ class RecentlyShippedComponent extends HTMLElement {
       "components/recently-shipped-component.html"
     );
     this.innerHTML = content;
-    renderRecentlyShipped();
   }
 }
 

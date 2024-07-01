@@ -93,11 +93,36 @@ async function handleLoginLogout(supabase) {
   }
 }
 
+async function getAvailableShips(supabase) {
+  let { data: user_profiles, error } = await supabase
+    .from("user_profiles")
+    .select("available_ships");
+
+  const availableShips = document.getElementById("availableShips");
+  availableShips.textContent = `Available Ships: ${
+    user_profiles[0]?.available_ships ?? 0
+  }`;
+}
+
+async function getCreatedShips(supabase) {
+  let { data: ships, error } = await supabase.from("ships").select("slug");
+  if (error) {
+    console.error("Error fetching created ships:", error);
+    return [];
+  }
+  return ships;
+}
+
 async function checkUser(supabase) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
   updateLoginButton(user);
+  if (user) {
+    await getAvailableShips(supabase);
+    const ships = await getCreatedShips(supabase);
+    renderRecentlyShipped(ships);
+  }
 }
 
 function updateLoginButton(user) {

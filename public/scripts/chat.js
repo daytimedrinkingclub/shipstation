@@ -44,31 +44,23 @@ function updateLoginState(loggedIn) {
   isUserLoggedIn = loggedIn;
 }
 
-function addWebsiteToLocalStorage(websiteName, deployedUrl) {
-  let websites = JSON.parse(localStorage.getItem("websites")) || [];
-  websites.push({ websiteName, deployedUrl });
-  localStorage.setItem("websites", JSON.stringify(websites));
-}
-
-function renderRecentlyShipped() {
-  const recentlyShippedSection = document.getElementById("recently-shipped");
-  const recentlyShippedList = document.getElementById("recently-shipped-list");
-  const websites = JSON.parse(localStorage.getItem("websites")) || [];
-
+function renderRecentlyShipped(websites = []) {
   if (websites.length === 0) {
     return;
   }
+  const recentlyShippedSection = document.getElementById("recently-shipped");
+  const recentlyShippedList = document.getElementById("recently-shipped-list");
 
   recentlyShippedSection.classList.remove("hidden");
   recentlyShippedList.innerHTML = "";
 
-  websites.forEach(({ websiteName, deployedUrl }) => {
+  websites.forEach(({ slug }) => {
     const anchor = document.createElement("a");
-    anchor.href = deployedUrl;
+    anchor.href = `/${slug}`;
     anchor.target = "_blank";
     anchor.className =
       "text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
-    anchor.textContent = websiteName;
+    anchor.textContent = slug;
     recentlyShippedList.appendChild(anchor);
   });
 }
@@ -137,8 +129,6 @@ function sendMessage(message) {
 
   socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
     showSuccessOverlay(websiteName, deployedUrl);
-    addWebsiteToLocalStorage(websiteName, deployedUrl);
-    renderRecentlyShipped();
   });
 
   socket.on("progress", ({ data: { message } }) => {
