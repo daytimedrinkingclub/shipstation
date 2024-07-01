@@ -6,7 +6,7 @@
   --dark-on-surface: #e0e0e0;
 }
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Archivo", sans-serif;
   background-color: var(--dark-bg);
   color: var(--dark-on-surface);
 }

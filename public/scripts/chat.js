@@ -244,49 +244,47 @@ function generateWebsite() {
     const dialogTitle = document.getElementById("dialogTitle");
     const optionsContainer = document.getElementById("optionsContainer");
     const inputContainer = document.getElementById("inputContainer");
-    const emailInput = document.getElementById("emailInput");
     const apiKeyInput = document.getElementById("apiKeyInput");
     const submitButton = document.getElementById("submitButton");
+    const razorpayContainer = document.getElementById("razorpayContainer");
 
-    function showInputs(title, showEmail = false, showApiKey = false) {
+    function showInputs(title, showApiKey = false) {
       dialogTitle.textContent = title;
       optionsContainer.classList.add("hidden");
       inputContainer.classList.remove("hidden");
-      emailInput.classList.toggle("hidden", !showEmail);
       apiKeyInput.classList.toggle("hidden", !showApiKey);
+      razorpayContainer.classList.add("hidden");
     }
 
-    addKeyOption.addEventListener("click", () => {
-      showInputs("Add your own Anthropic key", false, true);
-    });
-
-    payOption.addEventListener("click", () => {
-      showInputs("Pay to create", true, false);
-    });
-
-    closeDialog.addEventListener("click", () => {
-      optionsDialog.classList.add("hidden");
-      // Reset the dialog to its initial state
+    function showOptionsModal() {
       dialogTitle.textContent = "Choose an Option";
       optionsContainer.classList.remove("hidden");
       inputContainer.classList.add("hidden");
-      emailInput.value = "";
       apiKeyInput.value = "";
+      razorpayContainer.classList.remove("hidden");
+    }
+
+    addKeyOption.addEventListener("click", () => {
+      showInputs("Add your own Anthropic key", true);
+    });
+
+    closeDialog.addEventListener("click", () => {
+      if (inputContainer.classList.contains("hidden")) {
+        optionsDialog.classList.add("hidden");
+      } else {
+        showOptionsModal();
+      }
     });
 
     submitButton.addEventListener("click", () => {
-      const email = emailInput.value;
       const apiKey = apiKeyInput.value;
-
-      if (email) {
-        console.log("Submitting email:", email);
-        openPaymentLink(email);
-      } else if (apiKey) {
+      if (apiKey) {
         console.log("Submitting API key:", apiKey);
         socket.emit("anthropicKey", apiKey);
       }
     });
 
+    showOptionsModal();
     lucide.createIcons();
   } else {
     showSnackbar("Please enter your website requirements :)", "error");
@@ -302,14 +300,6 @@ socket.on("apiKeyStatus", (response) => {
     showSnackbar(response.message, "error");
   }
 });
-
-function openPaymentLink(email) {
-  // Replace with your actual payment link
-  const paymentLink = `https://your-payment-link.com?email=${encodeURIComponent(
-    email
-  )}`;
-  window.open(paymentLink, "_blank");
-}
 
 function startWebsiteGeneration(requirements) {
   // Reset the conversation

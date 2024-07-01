@@ -1,72 +1,79 @@
 <div
   id="optionsDialog"
-  class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50"
+  class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center hidden z-50 transition-opacity duration-300"
 >
-  <div class="bg-gray-800 rounded-xl p-10 max-w-2xl w-full relative shadow-2xl">
+  <div
+    class="bg-dark-surface rounded-xl p-8 max-w-2xl w-full relative shadow-2xl animate-fadeIn"
+  >
     <button
       id="closeDialog"
-      class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors duration-300"
+      class="absolute top-4 right-4 text-dark-secondary hover:text-dark-primary transition-colors duration-300"
     >
-      <i data-lucide="x" class="w-6 h-6"></i>
+      <i data-lucide="x" class="w-5 h-5"></i>
     </button>
-    <h2 id="dialogTitle" class="text-3xl font-bold mb-8 text-white text-center">
-      Choose an Option
+    <h2
+      id="dialogTitle"
+      class="text-2xl font-bold mb-6 text-dark-primary text-center"
+    >
+      Choose an option
     </h2>
-    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div
         id="addKeyOption"
-        class="bg-gray-700 rounded-xl p-6 cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-600 group"
+        class="bg-dark-bg rounded-xl p-5 cursor-pointer transition duration-300 ease-in-out transform hover:scale-102 hover:bg-dark-surface group relative"
       >
-        <div class="flex items-center justify-center mb-6">
+        <div
+          class="absolute top-2 right-2 bg-gray-700 text-white text-xs font-bold px-2 py-1 rounded"
+        >
+          Free
+        </div>
+        <div class="flex items-center justify-center mb-4">
           <i
             data-lucide="key"
-            class="w-16 h-16 text-gray-400 group-hover:text-gray-300 transition-colors duration-300"
+            class="w-12 h-12 text-dark-secondary group-hover:text-dark-primary transition-colors duration-300"
           ></i>
         </div>
-        <h3 class="text-2xl font-semibold mb-3 text-white text-center">
-          Add your own Anthropic key
+        <h3 class="text-xl font-semibold mb-2 text-dark-primary text-center">
+          Provide Anthropic key
         </h3>
-        <p class="text-gray-300 text-center">
+        <p class="text-dark-secondary text-center text-sm">
           Use your personal Anthropic API key for website generation.
         </p>
       </div>
       <div
         id="payOption"
-        class="bg-gray-700 rounded-xl p-6 cursor-pointer transition duration-300 ease-in-out transform hover:scale-105 hover:bg-gray-600 group"
+        class="bg-dark-bg rounded-xl p-5 cursor-pointer transition duration-300 ease-in-out transform hover:scale-102 hover:bg-dark-surface group"
       >
-        <div class="flex items-center justify-center mb-6">
+        <div class="flex items-center justify-center mb-4">
           <i
             data-lucide="credit-card"
-            class="w-16 h-16 text-gray-400 group-hover:text-gray-300 transition-colors duration-300"
+            class="w-12 h-12 text-dark-secondary group-hover:text-dark-primary transition-colors duration-300"
           ></i>
         </div>
-        <h3 class="text-2xl font-semibold mb-3 text-white text-center">
+        <h3 class="text-xl font-semibold mb-2 text-dark-primary text-center">
           Pay to create
         </h3>
-        <p class="text-gray-300 text-center">
-          Purchase credits to generate websites without an API key.
-        </p>
+        <div id="razorpayContainer" class="mt-4 text-center">
+  
+        </div>
       </div>
     </div>
-    <div id="inputContainer" class="mt-8 hidden">
-      <input
-        id="emailInput"
-        type="email"
-        placeholder="Enter your email"
-        class="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hidden"
-      />
-      <input
-        id="apiKeyInput"
-        type="password"
-        placeholder="Enter your Anthropic API key"
-        class="w-full p-3 mb-4 bg-gray-700 text-white rounded-lg hidden"
-      />
-      <button
-        id="submitButton"
-        class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300"
-      >
-        Submit
-      </button>
+    <div id="inputContainer" class="mt-6 hidden">
+      <div class="flex items-center">
+        <input
+          id="apiKeyInput"
+          type="password"
+          placeholder="Enter your Anthropic API key"
+          class="flex-grow p-3 mr-3 bg-dark-bg text-dark-primary rounded-lg hidden focus:ring-1 focus:ring-dark-primary"
+        />
+        <button
+          id="submitButton"
+          class="px-6 py-2 border rounded font-semibold text-center border hover:bg-black whitespace-nowrap"
+        >
+          Start building
+          <i data-lucide="wand-sparkles" class="inline-block w-5 h-5 ml-2"></i>
+        </button>
+      </div>
     </div>
   </div>
 </div>
