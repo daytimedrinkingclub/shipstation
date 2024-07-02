@@ -17,10 +17,7 @@ let isUserLoggedIn = false; // Add this line at the top of the file
 // Modify the event listeners for the cards
 document.getElementById("landing-page-card").addEventListener("click", () => {
   if (isUserLoggedIn) {
-    cardContainer.classList.add("hidden");
-    shipForm.classList.remove("hidden");
-    userInput.placeholder =
-      "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
+    selectAppType("landing_page");
   } else {
     openLoginModal();
   }
@@ -30,10 +27,7 @@ document
   .getElementById("personal-website-card")
   .addEventListener("click", () => {
     if (isUserLoggedIn) {
-      cardContainer.classList.add("hidden");
-      shipForm.classList.remove("hidden");
-      userInput.placeholder =
-        "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
+      selectAppType("portfolio");
     } else {
       openLoginModal();
     }
@@ -107,11 +101,25 @@ socket.on("connect", () => {
   }
 });
 
+function selectAppType(shipType) {
+  socket.emit("startProject", {
+    roomId,
+    userId,
+    shipType,
+    apiKey: localStorage.getItem("anthropicKey"),
+  });
+}
+
 function sendMessage(message) {
   conversation.push({ role: "user", content: message });
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = getUserFromLocalStorage();
   const userId = user?.id;
-  socket.emit("sendMessage", { conversation, roomId, message, userId });
+  socket.emit("sendMessage", {
+    conversation,
+    message,
+    roomId,
+    userId,
+  });
   socket.on("newMessage", ({ conversation: messages }) => {
     if (messages) {
       conversation = messages;
@@ -317,9 +325,9 @@ function setupPaymentDialogHandlers() {
 socket.on("apiKeyStatus", (response) => {
   if (response.success) {
     showSnackbar(response.message, "success");
-    startWebsiteGeneration(requirementsTextarea.value.trim());
     optionsDialog.classList.add("hidden");
-    localStorage.setItem("userProvidedKey", "true");
+    localStorage.setItem("anthropicKey", response.key);
+    // todo do next stuff
   } else {
     showSnackbar(response.message, "error");
   }

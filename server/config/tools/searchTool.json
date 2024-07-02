@@ -1,5 +1,5 @@
 {
-  "name": "ai_research_assistant",
+  "name": "search_tool",
   "description": "This tool will search for information on the web",
   "input_schema": {
     "type": "object",

@@ -4,6 +4,19 @@ function initializeSupabase() {
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxeWlpYnZjc3pmc3ptZGhoZ2tnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTk2OTI1MTQsImV4cCI6MjAzNTI2ODUxNH0.v0kjLBczNMYAmI-Onwc65LYzVa9roPeo4LcFBEm98ik"
   );
 
+  window.userDataKey = `sb-rqyiibvcszfszmdhhgkg-auth-token`;
+
+  window.getSupabaseUser = async () => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user;
+  };
+
+  window.getUserFromLocalStorage = () => {
+    return JSON.parse(localStorage.getItem(window.userDataKey)).user;
+  };
+
   setupEventListeners(supabase);
 
   lucide.createIcons();
@@ -120,12 +133,9 @@ async function checkUser(supabase) {
     data: { user },
   } = await supabase.auth.getUser();
   if (user) {
-    localStorage.setItem("user", JSON.stringify(user));
     await getAvailableShips(supabase);
     const ships = await getCreatedShips(supabase);
     renderRecentlyShipped(ships);
-  } else {
-    localStorage.removeItem("user");
   }
   updateLoginButton(user);
 }

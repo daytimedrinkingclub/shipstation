@@ -1,5 +1,5 @@
 {
-  "name": "file_creator",
+  "name": "file_creator_tool",
   "description": "This tool creates one file at a time with the comments about the implentation details of that file only. Once the file is made, assign it immediately to task_assigner_tool",
   "input_schema": {
     "type": "object",

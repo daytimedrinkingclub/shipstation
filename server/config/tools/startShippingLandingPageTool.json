@@ -1,0 +1,31 @@
+{
+  "name": "start_shipping_landing_page_tool",
+  "description": "Generate a plan summary for the user to understand the requirements of the landing page or portfolio and coordinates with the cto_tool to create the project for the user.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "project_name": {
+        "type": "string",
+        "description": "The name of the website/product for which the website needs to be created"
+      },
+      "project_description": {
+        "type": "string",
+        "description": "The description of the project that we want to create, this will be added to the readme file, as detailed as possible such as business category, use case, functionalities and all other relevant section which add value to the landing page"
+      },
+      "sections": {
+        "type": "string",
+        "description": "Base things needed to be shown on website like sections etc hero, testimonials, pricing section etc"
+      },
+      "design_style": {
+        "type": "string",
+        "description": "The type of looks the user wants for their website like professional, minimal, sleek, playful, detailed etc"
+      }
+    },
+    "required": [
+      "project_name",
+      "project_description",
+      "sections",
+      "design_style"
+    ]
+  }
+}

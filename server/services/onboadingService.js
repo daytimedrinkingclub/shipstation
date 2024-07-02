@@ -1,39 +1,40 @@
-const { searchTool, productManagerTool, ctoTool } = require("../config/tools");
-const { handleToolUse } = require("./toolController");
 const {
-  validateAnthropicKey,
-  updateAnthropicKey,
-  getAnthropicClient,
-  isUsingCustomKey,
-} = require("../services/anthropicService");
+  getDataForPortfolioTool,
+  getDataForLandingPageTool,
+  ctoTool,
+} = require("../config/tools");
+const {
+  handleOnboardingToolUse,
+} = require("../controllers/onboardingToolController");
+const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
+const { SHIP_TYPES } = require("./constants");
 
-async function processConversation(
-  conversation,
+async function processConversation({
+  client,
+  shipType,
   tools,
   sendEvent,
   roomId,
   abortSignal,
-  userId
-) {
+  userId,
+}) {
   while (true) {
     if (abortSignal.aborted) {
       throw new DOMException("Aborted", "AbortError");
     }
 
     let currentMessage;
+    const conversation = DEFAULT_MESSAGES[shipType];
     try {
-      currentMessage = await getAnthropicClient().messages.create({
-        model: "claude-3-5-sonnet-20240620",
-        max_tokens: 4000,
-        temperature: 0,
+      currentMessage = await client.sendMessage({
         system:
           "Your task is to deploy a website for the user and share them the deployed url",
         messages: conversation,
         tools,
       });
       sendEvent("newMessage", {
-        conversation,
+        conversation: currentMessage.content,
       });
     } catch (error) {
       console.error("Error creating message:", error);
@@ -42,18 +43,15 @@ async function processConversation(
       });
       throw error;
     }
-
+    console.log("message in onboardingService", currentMessage);
     if (currentMessage.stop_reason === "end_turn") {
       conversation.push({
         role: currentMessage.role,
         content: currentMessage.content,
       });
-      sendEvent("newMessage", {
-        conversation,
-      });
-      sendEvent("needUserInput", {
-        message: currentMessage.content[0].text,
-      });
+      // sendEvent("needUserInput", {
+      //   message: currentMessage.content[0].text,
+      // });
       break;
     }
 
@@ -67,13 +65,14 @@ async function processConversation(
           content: currentMessage.content,
         });
         console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(
+        const toolResult = await handleOnboardingToolUse({
           tool,
           sendEvent,
           roomId,
           conversation,
-          userId
-        );
+          userId,
+          client,
+        });
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
 
@@ -81,16 +80,12 @@ async function processConversation(
           "Sending request to Anthropic API with updated conversation:",
           JSON.stringify(conversation)
         );
-        currentMessage = await getAnthropicClient().messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 4000,
-          temperature: 0,
+        currentMessage = client.sendMessage({
           system:
             "Your task is to deploy a website for the user and share them the deployed url",
           messages: conversation,
           tools,
         });
-
         console.log("Received response from Anthropic API:", currentMessage);
       } else {
         console.log("No tool use found in response, breaking loop");
@@ -100,7 +95,7 @@ async function processConversation(
   }
 }
 
-function handleChat(io) {
+function handleOnboardingSocketEvents(io) {
   io.on("connection", (socket) => {
     console.log("New client connected");
     let abortController = new AbortController();
@@ -111,14 +106,14 @@ function handleChat(io) {
     });
 
     socket.on("anthropicKey", (key) => {
-      validateAnthropicKey(key).then((isValid) => {
+      AnthropicService.validateKey(key).then((isValid) => {
         if (isValid) {
-          console.log("Anthropic API key validated and set successfully");
+          console.log("Anthropic API key validated");
           socket.emit("apiKeyStatus", {
             success: true,
             message: "API key is valid, generating website!",
+            key,
           });
-          updateAnthropicKey(key);
         } else {
           console.log("Invalid Anthropic API key provided");
           socket.emit("apiKeyStatus", {
@@ -129,35 +124,51 @@ function handleChat(io) {
       });
     });
 
-    socket.on("sendMessage", async (data) => {
-      const { conversation, roomId, userId } = data;
-      const profile = await getUserProfile(userId);
-      const { available_ships } = profile;
-      if (available_ships <= 0 && !isUsingCustomKey()) {
-        socket.emit("showPaymentOptions", {
-          error: "Please select an option to proceed!",
-        });
-        return;
+    socket.on("startProject", async (data) => {
+      const { roomId, userId, shipType, apiKey } = data;
+      const clientParams = { userId };
+      if (apiKey) {
+        // using own anthropic key
+        clientParams.apiKey = apiKey;
+      } else {
+        const profile = await getUserProfile(userId);
+        const { available_ships } = profile;
+        if (available_ships <= 0) {
+          // todo add check for !client.isCustomKey
+          socket.emit("showPaymentOptions", {
+            error: "Please select an option to proceed!",
+          });
+          return;
+        }
       }
-      const tools = [searchTool, productManagerTool, ctoTool];
+
+      const client = new AnthropicService(clientParams);
+
+      const tools = [ctoTool];
+
+      if (shipType === SHIP_TYPES.PORTFOLIO) {
+        tools.push(getDataForPortfolioTool);
+        tools.push(startShippingPortfolioTool);
+      }
+      if (shipType === SHIP_TYPES.LANDING_PAGE) {
+        tools.push(getDataForLandingPageTool);
+        tools.push(startShippingLandingPageTool);
+      }
 
       const sendEvent = async (event, data) => {
-        io.to(roomId).emit(event, {
-          conversation,
-          data,
-        });
+        io.to(roomId).emit(event, data);
       };
 
       abortController = new AbortController();
       try {
-        await processConversation(
-          conversation,
-          tools,
+        await processConversation({
+          client,
           sendEvent,
           roomId,
-          abortController.signal,
-          userId
-        );
+          abortSignal,
+          userId,
+          shipType,
+        });
       } catch (error) {
         if (error.name === "AbortError") {
           console.log("Website creation aborted");
@@ -182,5 +193,5 @@ function handleChat(io) {
 }
 
 module.exports = {
-  handleChat,
+  handleOnboardingSocketEvents,
 };
