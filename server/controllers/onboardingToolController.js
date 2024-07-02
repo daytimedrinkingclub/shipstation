@@ -1,4 +1,3 @@
-const searchService = require("../services/aiSearchService");
 const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const { toKebabCase } = require("../utils/file");
@@ -18,7 +17,7 @@ async function handleOnboardingToolUse({
   tool,
   sendEvent,
   roomId,
-  conversation,
+  messages,
   userId,
   client,
 }) {
@@ -99,18 +98,19 @@ async function handleOnboardingToolUse({
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
     const fileContent = await fileService.readFile(prd_file_path);
-    const { message, slug } = await ctoService.ctoService(
+    const { message, slug } = await ctoService.ctoService({
       fileContent,
       generatedFolderName,
-      sendEvent
-    );
+      sendEvent,
+      client,
+    });
 
     const mode = false ? "self-key" : "paid"; // todo fix
 
     const ship = {
       user_id: userId,
       status: "completed",
-      prompt: conversation[0].content,
+      prompt: messages[0].content,
       mode,
       slug,
     };
@@ -120,7 +120,7 @@ async function handleOnboardingToolUse({
     const profilePayload = { available_ships: available_ships - 1 }; // updated
     await updateUserProfile(userId, profilePayload);
     const convPayload = {
-      chat_json: conversation,
+      chat_json: messages,
       ship_id: id,
     };
     await insertConversation(convPayload);

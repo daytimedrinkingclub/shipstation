@@ -4,8 +4,7 @@ const {
   deployProjectTool,
   searchTool,
 } = require("../config/tools");
-const { handleToolUse } = require("../controllers/ctoToolController");
-const { getAnthropicClient } = require("./anthropicService");
+const { handleCTOToolUse } = require("../controllers/ctoToolController");
 require("dotenv").config();
 
 const systemPrompt = `As a cto your goal is to structure the given project into web components and get it developed using provided tools.
@@ -75,51 +74,40 @@ Never:
 2. Never use shadow dom 
 `;
 
-async function ctoService(query, projectFolderName, sendEvent) {
+async function ctoService({ query, projectFolderName, sendEvent, client }) {
   console.log("aiAssistance called with query:", query);
 
-  const conversation = [
-    { role: "user", content: [{ type: "text", text: query }] },
-  ];
+  const messages = [{ role: "user", content: [{ type: "text", text: query }] }];
 
   try {
-    let msg = await getAnthropicClient().messages.create({
-      model: "claude-3-5-sonnet-20240620",
-      max_tokens: 4000,
-      temperature: 0,
+    let msg = await client.sendMessage({
+      messages,
       system: systemPrompt,
       tools: [fileCreatorTool, taskAssignerTool, deployProjectTool, searchTool],
-      messages: conversation,
     });
-    console.log("Received response from Anthropic API:", msg);
     while (msg.stop_reason === "tool_use") {
       const tool = msg.content.find((content) => content.type === "tool_use");
       if (tool) {
-        conversation.push({
+        messages.push({
           role: msg.role,
           content: msg.content,
         });
-        console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(
+        console.log("Found cto tool use in response:", tool);
+        const toolResult = await handleCTOToolUse(
           tool,
           projectFolderName,
           sendEvent
         );
-        console.log("Received tool result:", toolResult);
-        conversation.push({ role: "user", content: toolResult });
-
+        messages.push({ role: "user", content: toolResult });
         console.log(
-          "Sending request to Anthropic API with updated conversation:",
-          JSON.stringify(conversation)
+          "Sending request to Anthropic API with updated messages:",
+          JSON.stringify(messages)
         );
 
-        msg = await getAnthropicClient().messages.create({
-          model: "claude-3-5-sonnet-20240620",
-          max_tokens: 4000,
-          temperature: 0,
+        msg = await client.sendMessage({
           system: systemPrompt,
           tools: [fileCreatorTool, taskAssignerTool, deployProjectTool],
-          messages: conversation,
+          messages,
         });
 
         console.log("Received response from Anthropic API:", msg);
