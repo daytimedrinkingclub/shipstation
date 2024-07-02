@@ -6,6 +6,7 @@ const {
   insertShip,
   insertConversation,
   getUserProfile,
+  updateUserProfile,
 } = require("../services/dbService");
 const { isUsingCustomKey } = require("../services/anthropicService");
 
