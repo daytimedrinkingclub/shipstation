@@ -134,16 +134,13 @@ async function ctoService(
         break;
       }
     }
-
-    const deployedUrl = `${process.env.APP_URL}/${projectFolderName}`;
+    const slug = projectFolderName;
     sendEvent("websiteDeployed", {
-      deployedUrl,
-      websiteName: projectFolderName,
+      slug,
     });
-    insertConversation(mainConversation, deployedUrl);
     return {
-      message: `Website successfully deployed at: ${deployedUrl}`,
-      path: projectFolderName,
+      message: `Website successfully built with  slug: ${slug}`,
+      slug,
     };
   } catch (error) {
     console.error("Error in aiAssistance:", error);

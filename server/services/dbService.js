@@ -1,12 +1,40 @@
 const { supabaseClient } = require("./supabaseService");
 
-async function insertConversation(conversation, shipstationUrl) {
+async function insertConversation(payload) {
   const { data, error } = await supabaseClient
     .from("conversations")
-    .insert([{ conversation, shipstation_url: shipstationUrl }]);
+    .insert({ ...payload });
 
   if (error) {
     console.error("Error inserting conversation:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+async function insertShip(ship) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .insert([{ ...ship }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error inserting ship:", error);
+    throw error;
+  }
+
+  return data;
+}
+async function updateShip(shipId, ship) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .update(ship)
+    .eq("id", shipId);
+
+  if (error) {
+    console.error("Error updating ship:", error);
     throw error;
   }
 
@@ -85,6 +113,8 @@ async function insertPayment(paymentData) {
 
 module.exports = {
   insertConversation,
+  insertShip,
+  updateShip,
   getConversation,
   updateConversation,
   getUserProfile,
