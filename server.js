@@ -30,10 +30,20 @@ app.post("/payment-webhook", express.json(), (req, res) => {
 
   if (validateRazorpayWebhook(req.body, signature, secret)) {
     const event = req.body.event;
+    const {} = req.body.payload;
 
-    if (event === "payment_link.paid") {
+    if (event === "order.paid") {
       // Handle the payment_link.paid event
       const email = req.body.payload.payment.entity.email;
+      const user_id = req.body.payload.payment.entity.user_id; // todo get from db
+
+      const payload = {
+        payload: req.body,
+        user_id,
+        transaction_id: req.body.payload.payment.acquirer_data.rrn,
+        status: "successful",
+        provider: "razorpay",
+      };
       // You can add your business logic here
 
       res.status(200).json({ status: "ok" });
