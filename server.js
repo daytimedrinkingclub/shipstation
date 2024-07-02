@@ -5,7 +5,6 @@ const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
 const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const chatController = require("./server/controllers/chatController");
 const { listFoldersInS3 } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
@@ -14,6 +13,9 @@ const {
   insertPayment,
   getUserProfile,
 } = require("./server/services/dbService");
+const {
+  handleOnboardingSocketEvents,
+} = require("./server/services/onboadingService");
 
 require("dotenv").config();
 
@@ -196,7 +198,7 @@ app.use("/site/:siteId", async (req, res, next) => {
   }
 });
 
-chatController.handleChat(io);
+handleOnboardingSocketEvents(io);
 
 const PORT = process.env.PORT || 5001;
 

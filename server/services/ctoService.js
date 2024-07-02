@@ -5,7 +5,6 @@ const {
   searchTool,
 } = require("../config/tools");
 const { handleToolUse } = require("../controllers/ctoToolController");
-const { insertConversation } = require("./dbService");
 const { getAnthropicClient } = require("./anthropicService");
 require("dotenv").config();
 
@@ -76,12 +75,7 @@ Never:
 2. Never use shadow dom 
 `;
 
-async function ctoService(
-  query,
-  projectFolderName,
-  sendEvent,
-  mainConversation
-) {
+async function ctoService(query, projectFolderName, sendEvent) {
   console.log("aiAssistance called with query:", query);
 
   const conversation = [
