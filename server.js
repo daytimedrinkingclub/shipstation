@@ -9,6 +9,11 @@ const chatController = require("./server/controllers/chatController");
 const { listFoldersInS3 } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
+const { getUserIdFromEmail } = require("./server/services/supabaseService");
+const {
+  insertPayment,
+  getUserProfile,
+} = require("./server/services/dbService");
 
 require("dotenv").config();
 
@@ -24,7 +29,7 @@ app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
-app.post("/payment-webhook", express.json(), (req, res) => {
+app.post("/payment-webhook", express.json(), async (req, res) => {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers["x-razorpay-signature"];
 
@@ -34,19 +39,25 @@ app.post("/payment-webhook", express.json(), (req, res) => {
 
     if (event === "order.paid") {
       // Handle the payment_link.paid event
-      const email = req.body.payload.payment.entity.email;
-      const user_id = req.body.payload.payment.entity.user_id; // todo get from db
-
+      const email = req.body.payload.payment?.entity?.email;
+      const user_id = await getUserIdFromEmail(email);
       const payload = {
         payload: req.body,
         user_id,
-        transaction_id: req.body.payload.payment.acquirer_data.rrn,
+        transaction_id: req.body.payload.payment?.entity.acquirer_data?.rrn,
         status: "successful",
         provider: "razorpay",
       };
-      // You can add your business logic here
 
-      res.status(200).json({ status: "ok" });
+      await insertPayment(payload);
+
+      const profile = await getUserProfile(user_id);
+      const { available_ships } = profile; // current
+      const profilePayload = { available_ships: available_ships + 1 }; // updated
+
+      await updateUserProfile(user_id, profilePayload);
+
+      res.status(200).json({ status: "Ships added!" });
     } else {
       res.status(400).json({ error: "Event not handled" });
     }

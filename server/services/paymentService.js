@@ -31,6 +31,16 @@ class PaymentService {
     }
   }
 
+  async fetchOrderDetails(orderId) {
+    try {
+      const order = await this.instance.orders.fetch(orderId);
+      return order;
+    } catch (error) {
+      console.error("Error fetching order details:", error);
+      throw error;
+    }
+  }
+
   static validateWebhook(body, signature, secret) {
     const shasum = crypto.createHmac("sha256", secret);
     shasum.update(JSON.stringify(body));
@@ -41,6 +51,6 @@ class PaymentService {
 }
 
 module.exports = {
-  default: new PaymentService(),
+  PaymentService,
   validateRazorpayWebhook: PaymentService.validateWebhook,
 };

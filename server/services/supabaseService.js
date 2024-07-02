@@ -9,7 +9,7 @@ const supabaseClient = createClient(
 async function getUserIdFromEmail(email) {
   try {
     const { data, error } = await supabaseClient
-      .from("users")
+      .from("user_profiles")
       .select("id")
       .eq("email", email)
       .single();
