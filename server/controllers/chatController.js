@@ -1,18 +1,26 @@
-const Anthropic = require("@anthropic-ai/sdk");
 const { searchTool, productManagerTool, ctoTool } = require("../config/tools");
 const { handleToolUse } = require("./toolController");
+const {
+  validateAnthropicKey,
+  updateAnthropicKey,
+  getAnthropicClient,
+} = require("../services/anthropicService");
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-async function processConversation(conversation, tools, sendEvent, roomId, abortSignal) {
+async function processConversation(
+  conversation,
+  tools,
+  sendEvent,
+  roomId,
+  abortSignal
+) {
   while (true) {
     if (abortSignal.aborted) {
-      throw new DOMException('Aborted', 'AbortError');
+      throw new DOMException("Aborted", "AbortError");
     }
 
     let currentMessage;
     try {
-      currentMessage = await client.messages.create({
+      currentMessage = await getAnthropicClient().messages.create({
         model: "claude-3-5-sonnet-20240620",
         max_tokens: 4000,
         temperature: 0,
@@ -53,7 +61,12 @@ async function processConversation(conversation, tools, sendEvent, roomId, abort
           content: currentMessage.content,
         });
         console.log("Found tool use in response:", tool);
-        const toolResult = await handleToolUse(tool, sendEvent, roomId);
+        const toolResult = await handleToolUse(
+          tool,
+          sendEvent,
+          roomId,
+          conversation
+        );
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
 
@@ -61,8 +74,7 @@ async function processConversation(conversation, tools, sendEvent, roomId, abort
           "Sending request to Anthropic API with updated conversation:",
           JSON.stringify(conversation)
         );
-
-        currentMessage = await client.messages.create({
+        currentMessage = await getAnthropicClient().messages.create({
           model: "claude-3-5-sonnet-20240620",
           max_tokens: 4000,
           temperature: 0,
@@ -91,6 +103,25 @@ function handleChat(io) {
       console.log(`User joined room: ${roomId}`);
     });
 
+    socket.on("anthropicKey", (key) => {
+      validateAnthropicKey(key).then((isValid) => {
+        if (isValid) {
+          console.log("Anthropic API key validated and set successfully");
+          socket.emit("apiKeyStatus", {
+            success: true,
+            message: "API key validated and saved successfully",
+          });
+          updateAnthropicKey(key);
+        } else {
+          console.log("Invalid Anthropic API key provided");
+          socket.emit("apiKeyStatus", {
+            success: false,
+            message: "Invalid API key. Please try again.",
+          });
+        }
+      });
+    });
+
     socket.on("sendMessage", async (data) => {
       const { conversation, roomId } = data;
       const tools = [searchTool, productManagerTool, ctoTool];
@@ -104,20 +135,28 @@ function handleChat(io) {
 
       abortController = new AbortController();
       try {
-        await processConversation(conversation, tools, sendEvent, roomId, abortController.signal);
+        await processConversation(
+          conversation,
+          tools,
+          sendEvent,
+          roomId,
+          abortController.signal
+        );
       } catch (error) {
-        if (error.name === 'AbortError') {
-          console.log('Website creation aborted');
-          sendEvent('creationAborted', { message: 'Website creation was aborted' });
+        if (error.name === "AbortError") {
+          console.log("Website creation aborted");
+          sendEvent("creationAborted", {
+            message: "Website creation was aborted",
+          });
         } else {
-          console.error('Error in processConversation:', error);
+          console.error("Error in processConversation:", error);
         }
       }
     });
 
     socket.on("abortWebsiteCreation", () => {
       abortController.abort();
-      console.log('Aborting website creation');
+      console.log("Aborting website creation");
     });
 
     socket.on("disconnect", () => {

@@ -1,0 +1,42 @@
+<div
+  id="loginModal"
+  class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center hidden z-50 transition-opacity duration-300"
+>
+  <div
+    class="bg-dark-surface rounded-xl p-8 max-w-md w-full relative shadow-2xl animate-fadeIn"
+  >
+    <button
+      id="closeLoginModal"
+      class="absolute top-4 right-4 text-dark-secondary hover:text-dark-primary transition-colors duration-300"
+    >
+      <i data-lucide="x" class="w-5 h-5"></i>
+    </button>
+    <h2 class="text-2xl font-bold mb-6 text-dark-primary text-center">
+      Log In
+    </h2>
+    <p class="text-dark-secondary text-center mb-8">
+      Enter your email to receive a login link
+    </p>
+    <div class="space-y-6">
+      <div class="flex items-center space-x-4">
+        <div class="flex-grow">
+          <input
+            type="email"
+            id="email"
+            name="email"
+            required
+            class="w-full px-4 py-3 bg-dark-bg text-dark-primary rounded-lg border border-transparent focus:outline-none focus:ring-1 focus:ring-dark-primary transition duration-300"
+            placeholder="Enter your email"
+          />
+        </div>
+        <button
+          onclick="handleLoginSubmit()"
+          id="submitLoginForm"
+          class="bg-dark-primary hover:bg-dark-secondary text-dark-bg font-semibold py-3 px-6 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-dark-primary focus:ring-opacity-50"
+        >
+          <i data-lucide="forward" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,3 +1,5 @@
+lucide.createIcons();
+
 let conversation = [];
 let roomId = null; // Store room ID
 
@@ -6,31 +8,59 @@ const socket = io(); // Connect to the server
 const requirementsTextarea = document.getElementById("user-input");
 const generateButton = document.getElementById("generateButton");
 
-function addWebsiteToLocalStorage(websiteName, deployedUrl) {
-  let websites = JSON.parse(localStorage.getItem("websites")) || [];
-  websites.push({ websiteName, deployedUrl });
-  localStorage.setItem("websites", JSON.stringify(websites));
+const cardContainer = document.getElementById("card-container");
+const shipForm = document.getElementById("ship-form");
+const userInput = document.getElementById("user-input");
+
+let isUserLoggedIn = false; // Add this line at the top of the file
+
+// Modify the event listeners for the cards
+document.getElementById("landing-page-card").addEventListener("click", () => {
+  if (isUserLoggedIn) {
+    cardContainer.classList.add("hidden");
+    shipForm.classList.remove("hidden");
+    userInput.placeholder =
+      "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
+  } else {
+    openLoginModal();
+  }
+});
+
+document
+  .getElementById("personal-website-card")
+  .addEventListener("click", () => {
+    if (isUserLoggedIn) {
+      cardContainer.classList.add("hidden");
+      shipForm.classList.remove("hidden");
+      userInput.placeholder =
+        "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
+    } else {
+      openLoginModal();
+    }
+  });
+
+// Add this function to update the login state
+function updateLoginState(loggedIn) {
+  isUserLoggedIn = loggedIn;
 }
 
-function renderRecentlyShipped() {
-  const recentlyShippedSection = document.getElementById("recently-shipped");
-  const recentlyShippedList = document.getElementById("recently-shipped-list");
-  const websites = JSON.parse(localStorage.getItem("websites")) || [];
-
+function renderRecentlyShipped(websites = []) {
   if (websites.length === 0) {
     return;
   }
+  const recentlyShippedSection = document.getElementById("recently-shipped");
+  const recentlyShippedList = document.getElementById("recently-shipped-list");
 
   recentlyShippedSection.classList.remove("hidden");
   recentlyShippedList.innerHTML = "";
 
-  websites.forEach(({ websiteName, deployedUrl }) => {
+  websites.forEach(({ slug }) => {
     const anchor = document.createElement("a");
-    anchor.href = deployedUrl;
+    anchor.href = `/${slug}`;
     anchor.target = "_blank";
     anchor.className =
-      "bg-white text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
-    anchor.textContent = websiteName;
+      "text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105";
+    anchor.textContent = slug;
     recentlyShippedList.appendChild(anchor);
   });
 }
@@ -67,6 +97,9 @@ function showSnackbar(message, type = "info") {
     }, 300);
   }, 4000);
 }
+
+window.showSnackbar = showSnackbar;
+
 socket.on("connect", () => {
   if (!roomId) {
     roomId = "room_" + Math.random().toString(36).substr(2, 9); // Generate a random room ID only once
@@ -96,8 +129,6 @@ function sendMessage(message) {
 
   socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
     showSuccessOverlay(websiteName, deployedUrl);
-    addWebsiteToLocalStorage(websiteName, deployedUrl);
-    renderRecentlyShipped();
   });
 
   socket.on("progress", ({ data: { message } }) => {
@@ -200,30 +231,92 @@ function showSuccessOverlay(websiteName, websiteUrl) {
 function hideSuccessOverlay() {
   const successOverlay = document.getElementById("successOverlay");
   successOverlay.classList.add("hidden");
-  document.getElementById("user-input").value = "";
   hideLoader();
   window.location.reload();
 }
 function generateWebsite() {
   const requirements = requirementsTextarea.value.trim();
   if (requirements) {
-    // Reset the conversation
-    conversation = [];
-    showLoader();
-    generateButton.disabled = true;
-    generateButton.innerHTML = `
-              <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Starting website creation...
-          `;
+    const optionsDialog = document.getElementById("optionsDialog");
+    optionsDialog.classList.remove("hidden");
 
-    sendMessage(requirements);
-    // showSuccessOverlay("Website Name", "Website URL");
+    const addKeyOption = document.getElementById("addKeyOption");
+    const payOption = document.getElementById("payOption");
+    const closeDialog = document.getElementById("closeDialog");
+    const dialogTitle = document.getElementById("dialogTitle");
+    const optionsContainer = document.getElementById("optionsContainer");
+    const inputContainer = document.getElementById("inputContainer");
+    const apiKeyInput = document.getElementById("apiKeyInput");
+    const submitButton = document.getElementById("submitButton");
+    const razorpayContainer = document.getElementById("razorpayContainer");
+
+    function showInputs(title, showApiKey = false) {
+      dialogTitle.textContent = title;
+      optionsContainer.classList.add("hidden");
+      inputContainer.classList.remove("hidden");
+      apiKeyInput.classList.toggle("hidden", !showApiKey);
+      razorpayContainer.classList.add("hidden");
+    }
+
+    function showOptionsModal() {
+      dialogTitle.textContent = "Choose an Option";
+      optionsContainer.classList.remove("hidden");
+      inputContainer.classList.add("hidden");
+      apiKeyInput.value = "";
+      razorpayContainer.classList.remove("hidden");
+    }
+
+    addKeyOption.addEventListener("click", () => {
+      showInputs("Add your own Anthropic key", true);
+    });
+
+    closeDialog.addEventListener("click", () => {
+      if (inputContainer.classList.contains("hidden")) {
+        optionsDialog.classList.add("hidden");
+      } else {
+        showOptionsModal();
+      }
+    });
+
+    submitButton.addEventListener("click", () => {
+      const apiKey = apiKeyInput.value;
+      if (apiKey) {
+        console.log("Submitting API key:", apiKey);
+        socket.emit("anthropicKey", apiKey);
+      }
+    });
+
+    showOptionsModal();
+    lucide.createIcons();
   } else {
     showSnackbar("Please enter your website requirements :)", "error");
   }
+}
+
+socket.on("apiKeyStatus", (response) => {
+  if (response.success) {
+    showSnackbar(response.message, "success");
+    startWebsiteGeneration(requirementsTextarea.value.trim());
+    optionsDialog.classList.add("hidden");
+  } else {
+    showSnackbar(response.message, "error");
+  }
+});
+
+function startWebsiteGeneration(requirements) {
+  // Reset the conversation
+  conversation = [];
+  showLoader();
+  generateButton.disabled = true;
+  generateButton.innerHTML = `
+    <svg class="animate-spin -ml-1 mr-3 h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    </svg>
+    Starting website creation...
+  `;
+
+  sendMessage(requirements);
 }
 
 generateButton.addEventListener("click", generateWebsite);
@@ -231,5 +324,3 @@ generateButton.addEventListener("click", generateWebsite);
 requirementsTextarea.addEventListener("input", function () {
   generateButton.disabled = this.value.trim().length === 0;
 });
-
-document.addEventListener("DOMContentLoaded", renderRecentlyShipped);
