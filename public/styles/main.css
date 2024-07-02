@@ -1,0 +1,250 @@
+:root {
+  --dark-bg: #0f0f0f;
+  --dark-surface: #1c1c1c;
+  --dark-primary: #ffffff;
+  --dark-secondary: #a0a0a0;
+  --dark-on-surface: #e0e0e0;
+}
+body {
+  font-family: "Archivo", sans-serif;
+  background-color: var(--dark-bg);
+  color: var(--dark-on-surface);
+}
+.bg-cerulean {
+  background-color: var(--dark-primary);
+}
+.bg-berkeley-blue {
+  background-color: var(--dark-secondary);
+}
+.text-cerulean {
+  color: var(--dark-primary);
+}
+.hover\:text-berkeley-blue:hover {
+  color: var(--dark-secondary);
+}
+.border-cerulean {
+  border-color: var(--dark-primary);
+}
+.focus\:border-berkeley-blue:focus {
+  border-color: var(--dark-secondary);
+}
+.focus\:ring-berkeley-blue:focus {
+  --tw-ring-color: var(--dark-secondary);
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
+.ship-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 24 24' fill='none' stroke='%23333333' stroke-width='0.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 21c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1 .6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1'/%3E%3Cpath d='M19.38 20A11.6 11.6 0 0 0 21 14l-9-4-9 4c0 2.9.94 5.34 2.81 7.76'/%3E%3Cpath d='M19 13V7a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6'/%3E%3Cpath d='M12 10v4'/%3E%3Cpath d='M12 2v3'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  transition: transform 5s ease-in-out;
+  animation: slide 10s linear infinite;
+}
+@keyframes slide {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(50px, 50px);
+  } /* Adjust translation values to control the diagonal movement */
+}
+.logo-area:hover + .ship-background {
+  animation-play-state: running;
+}
+textarea::placeholder {
+  color: #9ca3af; /* A light gray color for the placeholder */
+}
+textarea {
+  color: var(
+    --dark-on-surface
+  ); /* Use the dark theme text color for typed text */
+  background-color: var(--dark-surface); /* Ensure the background is dark */
+}
+
+.card {
+  background-color: var(--dark-surface);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 250px;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.card:hover::before {
+  transform: translateX(100%);
+}
+
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  color: var(--dark-primary);
+  transition: transform 0.3s ease-in-out;
+}
+
+.card:hover .card-icon {
+  transform: scale(1.1);
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--dark-secondary);
+  color: var(--dark-bg);
+  font-size: 0.8rem;
+  font-weight: bold;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  z-index: 3;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+#generateButton {
+  background-color: var(--dark-primary);
+  color: var(--dark-bg);
+  transition: all 0.3s ease-in-out;
+}
+
+#generateButton:hover {
+  background-color: var(--dark-secondary);
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add a subtle gradient background */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1c1c1c 0%, #0f0f0f 100%);
+  z-index: -1;
+}
+
+.bg-dark-surface {
+  background-color: var(--dark-surface);
+}
+
+.text-dark-primary {
+  color: var(--dark-primary);
+}
+
+.text-dark-secondary {
+  color: var(--dark-secondary);
+}
+
+.text-dark-on-surface {
+  color: var(--dark-on-surface);
+}
+
+.bg-dark-bg {
+  background-color: var(--dark-bg);
+}
+
+.border-dark-secondary {
+  border-color: var(--dark-secondary);
+}
+
+.focus\:ring-dark-primary:focus {
+  --tw-ring-color: var(--dark-primary);
+}
+
+.hover\:bg-dark-secondary:hover {
+  background-color: var(--dark-secondary);
+}
+
+/* Add a subtle animation for the login form */
+.login-form-container {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#loginModal {
+  transition: opacity 0.3s ease-in-out;
+}
+
+#loginModal.flex {
+  opacity: 1;
+}
+
+#loginModal.hidden {
+  opacity: 0;
+  pointer-events: none;
+}

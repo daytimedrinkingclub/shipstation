@@ -1,0 +1,33 @@
+<div
+  id="successOverlay"
+  class="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md hidden z-[9999] overflow-hidden"
+>
+  <button
+    id="closeOverlayBtn"
+    class="absolute top-4 right-4 text-gray-400 hover:text-gray-200 transition-colors duration-300 z-20"
+  >
+    <i data-lucide="x-circle" class="w-10 h-10"></i>
+  </button>
+  <div id="confettiAnimation" class="absolute inset-0 w-full h-full"></div>
+  <div
+    class="text-center relative z-10 bg-gray-900 bg-opacity-95 max-w-3xl border border-gray-700 rounded"
+  >
+    <p class="text-2xl font-semibold m-8 p-4 text-white" id="successText"></p>
+    <div class="my-8 space-x-4 flex justify-center">
+      <button
+        id="copyLinkBtn"
+        class="border border-gray-700 text-white font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+      >
+        <span id="copyLinkText">Copy link</span>
+        <i data-lucide="copy" class="hover:animate-bounce"></i>
+      </button>
+      <button
+        id="visitNowBtn"
+        class="bg-white hover:bg-gray-200 text-black font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+      >
+        <span>Visit now</span>
+        <i data-lucide="external-link" class="hover:animate-bounce"></i>
+      </button>
+    </div>
+  </div>
+</div>
