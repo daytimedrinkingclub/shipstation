@@ -56,9 +56,38 @@ async function getUserProfile(userId) {
   return data;
 }
 
+async function updateUserProfile(userId, profileData) {
+  const { data, error } = await supabaseClient
+    .from("user_profiles")
+    .update(profileData)
+    .eq("id", userId);
+
+  if (error) {
+    console.error("Error updating user profile:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+async function insertPayment(paymentData) {
+  const { data, error } = await supabaseClient
+    .from("payments")
+    .insert(paymentData);
+
+  if (error) {
+    console.error("Error inserting payment:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   insertConversation,
   getConversation,
   updateConversation,
   getUserProfile,
+  updateUserProfile,
+  insertPayment,
 };
