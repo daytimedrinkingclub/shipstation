@@ -2,6 +2,7 @@ const {
   insertConversation,
   insertPayment,
   updateUserProfile,
+  insertShip,
 } = require("./server/services/dbService");
 const { PaymentService } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
@@ -12,13 +13,12 @@ async function testInsertConversation() {
     message: "This is a test message",
     timestamp: new Date().toISOString(),
   };
-  const sampleShipstationUrl = "http://example.com/shipstation";
 
   try {
-    const result = await insertConversation(
-      sampleConversation,
-      sampleShipstationUrl
-    );
+    const result = await insertConversation({
+      chat_json: sampleConversation,
+      ship_id: 7, // should exist
+    });
     console.log("Insert successful, result:", result);
   } catch (error) {
     console.error("Error during insert:", error);
@@ -126,7 +126,21 @@ async function testOrderDetails() {
   console.log(order);
 }
 
-// testInsertConversation();
+async function testInsertShip() {
+  const ship = {
+    user_id: "d0c606fa-2a9f-4561-9fdf-62bc967ff160",
+    status: "completed",
+    prompt: "This is a test prompt",
+    mode: "internal",
+    slug: "test-ship",
+  };
+
+  const result = await insertShip(ship);
+  console.log(result);
+}
+
+testInsertConversation();
+// testInsertShip();
 // testInsertPayment();
 // testUpdateProfile();
-testOrderDetails();
+// testOrderDetails();

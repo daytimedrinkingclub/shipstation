@@ -133,8 +133,9 @@ function sendMessage(message) {
     showSnackbar(error, "info");
   });
 
-  socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
-    showSuccessOverlay(websiteName, deployedUrl);
+  socket.on("websiteDeployed", ({ data: { slug } }) => {
+    const deployedUrl = window.location.host + "/" + slug;
+    showSuccessOverlay(slug, deployedUrl);
   });
 
   socket.on("progress", ({ data: { message } }) => {

@@ -13,7 +13,8 @@ async function processConversation(
   tools,
   sendEvent,
   roomId,
-  abortSignal
+  abortSignal,
+  userId
 ) {
   while (true) {
     if (abortSignal.aborted) {
@@ -70,7 +71,8 @@ async function processConversation(
           tool,
           sendEvent,
           roomId,
-          conversation
+          conversation,
+          userId
         );
         console.log("Received tool result:", toolResult);
         conversation.push({ role: "user", content: toolResult });
@@ -153,7 +155,8 @@ function handleChat(io) {
           tools,
           sendEvent,
           roomId,
-          abortController.signal
+          abortController.signal,
+          userId
         );
       } catch (error) {
         if (error.name === "AbortError") {

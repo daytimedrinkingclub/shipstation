@@ -2,12 +2,18 @@ const searchService = require("../services/aiSearchService");
 const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const { toKebabCase } = require("../utils/file");
+const {
+  insertShip,
+  insertConversation,
+  getUserProfile,
+} = require("../services/dbService");
+const { isUsingCustomKey } = require("../services/anthropicService");
 
 const generateProjectFolderName = (projectName, roomId) => {
   return toKebabCase(projectName) + "-" + roomId;
 };
 
-async function handleToolUse(tool, sendEvent, roomId, conversation) {
+async function handleToolUse(tool, sendEvent, roomId, conversation, userId) {
   if (tool.name === "ai_research_assistant") {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -50,12 +56,32 @@ async function handleToolUse(tool, sendEvent, roomId, conversation) {
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
     const fileContent = await fileService.readFile(prd_file_path);
-    const { message } = await ctoService.ctoService(
+    const { message, slug } = await ctoService.ctoService(
       fileContent,
       generatedFolderName,
       sendEvent,
       conversation
     );
+
+    const mode = isUsingCustomKey() ? "self-key" : "paid";
+
+    const ship = {
+      user_id: userId,
+      status: "completed",
+      prompt: conversation[0].content,
+      mode,
+      slug,
+    };
+    const { id } = await insertShip(ship);
+    const profile = await getUserProfile(userId);
+    const { available_ships } = profile; // current
+    const profilePayload = { available_ships: available_ships - 1 }; // updated
+    await updateUserProfile(userId, profilePayload);
+    const convPayload = {
+      chat_json: conversation,
+      ship_id: id,
+    };
+    await insertConversation(convPayload);
     return [
       {
         type: "tool_result",
