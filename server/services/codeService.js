@@ -1,15 +1,13 @@
-const Anthropic = require("@anthropic-ai/sdk");
 const { codeWriterTool } = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
+const { getAnthropicClient } = require("./anthropicService");
 require("dotenv").config();
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 async function codeAssitant(query, filePath) {
   console.log("filePath in codeAssitant:", filePath);
   try {
-    const msg = await client.messages.create({
+    const msg = await getAnthropicClient().messages.create({
       model: "claude-3-5-sonnet-20240620",
       max_tokens: 4000,
       temperature: 0,

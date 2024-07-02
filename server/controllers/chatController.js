@@ -109,7 +109,7 @@ function handleChat(io) {
           console.log("Anthropic API key validated and set successfully");
           socket.emit("apiKeyStatus", {
             success: true,
-            message: "API key validated and saved successfully",
+            message: "API key is valid, generating website!",
           });
           updateAnthropicKey(key);
         } else {

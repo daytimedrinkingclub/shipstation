@@ -119,7 +119,7 @@ async function ctoService(
           JSON.stringify(conversation)
         );
 
-        msg = await client.messages.create({
+        msg = await getAnthropicClient().messages.create({
           model: "claude-3-5-sonnet-20240620",
           max_tokens: 4000,
           temperature: 0,
