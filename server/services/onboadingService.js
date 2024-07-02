@@ -13,7 +13,6 @@ const { SHIP_TYPES } = require("./constants");
 async function processConversation({
   client,
   shipType,
-  tools,
   sendEvent,
   roomId,
   abortSignal,
@@ -25,12 +24,24 @@ async function processConversation({
     }
 
     let currentMessage;
-    const conversation = DEFAULT_MESSAGES[shipType];
+
+    const messages = DEFAULT_MESSAGES[shipType];
+    const tools = [ctoTool];
+
+    if (shipType === SHIP_TYPES.PORTFOLIO) {
+      tools.push(getDataForPortfolioTool);
+      tools.push(startShippingPortfolioTool);
+    }
+    if (shipType === SHIP_TYPES.LANDING_PAGE) {
+      tools.push(getDataForLandingPageTool);
+      tools.push(startShippingLandingPageTool);
+    }
+
     try {
       currentMessage = await client.sendMessage({
         system:
           "Your task is to deploy a website for the user and share them the deployed url",
-        messages: conversation,
+        messages,
         tools,
       });
       sendEvent("newMessage", {
@@ -45,13 +56,10 @@ async function processConversation({
     }
     console.log("message in onboardingService", currentMessage);
     if (currentMessage.stop_reason === "end_turn") {
-      conversation.push({
+      messages.push({
         role: currentMessage.role,
         content: currentMessage.content,
       });
-      // sendEvent("needUserInput", {
-      //   message: currentMessage.content[0].text,
-      // });
       break;
     }
 
@@ -60,7 +68,7 @@ async function processConversation({
         (content) => content.type === "tool_use"
       );
       if (tool) {
-        conversation.push({
+        messages.push({
           role: currentMessage.role,
           content: currentMessage.content,
         });
@@ -69,21 +77,21 @@ async function processConversation({
           tool,
           sendEvent,
           roomId,
-          conversation,
+          messages,
           userId,
           client,
         });
         console.log("Received tool result:", toolResult);
-        conversation.push({ role: "user", content: toolResult });
+        messages.push({ role: "user", content: toolResult });
 
         console.log(
           "Sending request to Anthropic API with updated conversation:",
-          JSON.stringify(conversation)
+          JSON.stringify(messages)
         );
         currentMessage = client.sendMessage({
           system:
             "Your task is to deploy a website for the user and share them the deployed url",
-          messages: conversation,
+          messages,
           tools,
         });
         console.log("Received response from Anthropic API:", currentMessage);
@@ -143,17 +151,6 @@ function handleOnboardingSocketEvents(io) {
       }
 
       const client = new AnthropicService(clientParams);
-
-      const tools = [ctoTool];
-
-      if (shipType === SHIP_TYPES.PORTFOLIO) {
-        tools.push(getDataForPortfolioTool);
-        tools.push(startShippingPortfolioTool);
-      }
-      if (shipType === SHIP_TYPES.LANDING_PAGE) {
-        tools.push(getDataForLandingPageTool);
-        tools.push(startShippingLandingPageTool);
-      }
 
       const sendEvent = async (event, data) => {
         io.to(roomId).emit(event, data);

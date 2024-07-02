@@ -32,12 +32,6 @@ const TOOLS = {
 module.exports = {
   searchTool,
   ctoTool,
-  htmlTool,
-  scriptTool,
-  styleTool,
-  contentTool,
-  placeholderTool,
-  productManagerTool,
   fileCreatorTool,
   taskAssignerTool,
   codeWriterTool,

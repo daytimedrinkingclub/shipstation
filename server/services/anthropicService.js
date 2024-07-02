@@ -40,16 +40,19 @@ class AnthropicService {
   }
 
   async sendMessage({
-    conversation = [],
     system,
     tools = [],
     tool_choice = "auto",
+    messages = [],
   }) {
+    if (messages.length < 1) {
+      throw new Error("No messages provided");
+    }
     const clientParams = {
       model: this.model,
       max_tokens: this.maxTokens,
       temperature: this.temperature,
-      messages: conversation,
+      messages,
       tools,
       tool_choice,
     };
@@ -57,21 +60,21 @@ class AnthropicService {
       clientParams.system = system;
     }
     const response = await this.client.messages.create(clientParams);
+    console.log("currently used tokens", this.tokensUsed);
     this.tokensUsed += response.usage.output_tokens;
-
-    console.log("tokens used", this.tokensUsed);
+    console.log("new tokens used", this.tokensUsed);
 
     if (!this.conversationId) {
       console.log("inserting conversation");
       this.conversationId = await insertConversation({
         userId: this.userId,
-        chat_json: conversation,
+        chat_json: messages,
         tokens_used: this.tokensUsed,
       });
     } else {
       console.log("updating conversation: ", this.conversationId);
       await updateConversation(this.conversationId, {
-        chat_json: conversation,
+        chat_json: messages,
         tokens_used: this.tokensUsed,
       });
     }
