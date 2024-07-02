@@ -109,9 +109,9 @@ socket.on("connect", () => {
 
 function sendMessage(message) {
   conversation.push({ role: "user", content: message });
-
-  socket.emit("sendMessage", { conversation, roomId, message });
-
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user?.id;
+  socket.emit("sendMessage", { conversation, roomId, message, userId });
   socket.on("newMessage", ({ conversation: messages }) => {
     if (messages) {
       conversation = messages;
@@ -125,6 +125,12 @@ function sendMessage(message) {
       "error"
     );
     console.error("Error:", error);
+  });
+
+  socket.on("showPaymentOptions", ({ error }) => {
+    hideLoader();
+    togglePaymentOption(true);
+    showSnackbar(error, "info");
   });
 
   socket.on("websiteDeployed", ({ data: { deployedUrl, websiteName } }) => {
@@ -154,13 +160,13 @@ function showLoader() {
 
   lottieContainer.appendChild(lottieAnimation);
 
-  const closeLoadingOverlayBtn = document.getElementById(
-    "closeLoadingOverlayBtn"
-  );
-  closeLoadingOverlayBtn.addEventListener("click", () => {
-    hideLoader();
-    socket.emit("abortWebsiteCreation", { roomId });
-  });
+  // const closeLoadingOverlayBtn = document.getElementById(
+  //   "closeLoadingOverlayBtn"
+  // );
+  // closeLoadingOverlayBtn.addEventListener("click", () => {
+  //   hideLoader();
+  //   socket.emit("abortWebsiteCreation", { roomId });
+  // });
 }
 
 const hideLoader = () => {
@@ -237,60 +243,74 @@ function hideSuccessOverlay() {
 function generateWebsite() {
   const requirements = requirementsTextarea.value.trim();
   if (requirements) {
-    const optionsDialog = document.getElementById("optionsDialog");
-    optionsDialog.classList.remove("hidden");
-
-    const addKeyOption = document.getElementById("addKeyOption");
-    const payOption = document.getElementById("payOption");
-    const closeDialog = document.getElementById("closeDialog");
-    const dialogTitle = document.getElementById("dialogTitle");
-    const optionsContainer = document.getElementById("optionsContainer");
-    const inputContainer = document.getElementById("inputContainer");
-    const apiKeyInput = document.getElementById("apiKeyInput");
-    const submitButton = document.getElementById("submitButton");
-    const razorpayContainer = document.getElementById("razorpayContainer");
-
-    function showInputs(title, showApiKey = false) {
-      dialogTitle.textContent = title;
-      optionsContainer.classList.add("hidden");
-      inputContainer.classList.remove("hidden");
-      apiKeyInput.classList.toggle("hidden", !showApiKey);
-      razorpayContainer.classList.add("hidden");
+    if (window.availableShips > 0 || localStorage.getItem("userProvidedKey")) {
+      startWebsiteGeneration(requirements);
+      return;
     }
-
-    function showOptionsModal() {
-      dialogTitle.textContent = "Choose an Option";
-      optionsContainer.classList.remove("hidden");
-      inputContainer.classList.add("hidden");
-      apiKeyInput.value = "";
-      razorpayContainer.classList.remove("hidden");
-    }
-
-    addKeyOption.addEventListener("click", () => {
-      showInputs("Add your own Anthropic key", true);
-    });
-
-    closeDialog.addEventListener("click", () => {
-      if (inputContainer.classList.contains("hidden")) {
-        optionsDialog.classList.add("hidden");
-      } else {
-        showOptionsModal();
-      }
-    });
-
-    submitButton.addEventListener("click", () => {
-      const apiKey = apiKeyInput.value;
-      if (apiKey) {
-        console.log("Submitting API key:", apiKey);
-        socket.emit("anthropicKey", apiKey);
-      }
-    });
-
-    showOptionsModal();
-    lucide.createIcons();
+    togglePaymentOption(true);
   } else {
     showSnackbar("Please enter your website requirements :)", "error");
   }
+}
+
+function togglePaymentOption(show = true) {
+  const optionsDialog = document.getElementById("optionsDialog");
+  if (show) {
+    optionsDialog.classList.remove("hidden");
+    setupPaymentDialogHandlers();
+  } else {
+    optionsDialog.classList.add("hidden");
+  }
+}
+
+function setupPaymentDialogHandlers() {
+  const addKeyOption = document.getElementById("addKeyOption");
+  const closeDialog = document.getElementById("closeDialog");
+  const dialogTitle = document.getElementById("dialogTitle");
+  const optionsContainer = document.getElementById("optionsContainer");
+  const inputContainer = document.getElementById("inputContainer");
+  const apiKeyInput = document.getElementById("apiKeyInput");
+  const submitButton = document.getElementById("submitButton");
+  const razorpayContainer = document.getElementById("razorpayContainer");
+
+  function showInputs(title, showApiKey = false) {
+    dialogTitle.textContent = title;
+    optionsContainer.classList.add("hidden");
+    inputContainer.classList.remove("hidden");
+    apiKeyInput.classList.toggle("hidden", !showApiKey);
+    razorpayContainer.classList.add("hidden");
+  }
+
+  function showOptionsModal() {
+    dialogTitle.textContent = "Choose an Option";
+    optionsContainer.classList.remove("hidden");
+    inputContainer.classList.add("hidden");
+    apiKeyInput.value = "";
+    razorpayContainer.classList.remove("hidden");
+  }
+
+  addKeyOption.addEventListener("click", () => {
+    showInputs("Add your own Anthropic key", true);
+  });
+
+  closeDialog.addEventListener("click", () => {
+    if (inputContainer.classList.contains("hidden")) {
+      togglePaymentOption(false);
+    } else {
+      showOptionsModal();
+    }
+  });
+
+  submitButton.addEventListener("click", () => {
+    const apiKey = apiKeyInput.value;
+    if (apiKey) {
+      console.log("Submitting API key:", apiKey);
+      socket.emit("anthropicKey", apiKey);
+    }
+  });
+
+  showOptionsModal();
+  lucide.createIcons();
 }
 
 socket.on("apiKeyStatus", (response) => {
@@ -298,9 +318,15 @@ socket.on("apiKeyStatus", (response) => {
     showSnackbar(response.message, "success");
     startWebsiteGeneration(requirementsTextarea.value.trim());
     optionsDialog.classList.add("hidden");
+    localStorage.setItem("userProvidedKey", "true");
   } else {
     showSnackbar(response.message, "error");
   }
+});
+
+socket.on("needUserInput", ({ data: { message } }) => {
+  hideLoader();
+  showSnackbar("Please provide more details", "info");
 });
 
 function startWebsiteGeneration(requirements) {
