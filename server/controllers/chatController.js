@@ -4,7 +4,9 @@ const {
   validateAnthropicKey,
   updateAnthropicKey,
   getAnthropicClient,
+  isUsingCustomKey,
 } = require("../services/anthropicService");
+const { getUserProfile } = require("../services/dbService");
 
 async function processConversation(
   conversation,
@@ -47,6 +49,9 @@ async function processConversation(
       });
       sendEvent("newMessage", {
         conversation,
+      });
+      sendEvent("needUserInput", {
+        message: currentMessage.content[0].text,
       });
       break;
     }
@@ -123,7 +128,15 @@ function handleChat(io) {
     });
 
     socket.on("sendMessage", async (data) => {
-      const { conversation, roomId } = data;
+      const { conversation, roomId, userId } = data;
+      const profile = await getUserProfile(userId);
+      const { available_ships } = profile;
+      if (available_ships <= 0 && !isUsingCustomKey()) {
+        socket.emit("showPaymentOptions", {
+          error: "Please select an option to proceed!",
+        });
+        return;
+      }
       const tools = [searchTool, productManagerTool, ctoTool];
 
       const sendEvent = async (event, data) => {

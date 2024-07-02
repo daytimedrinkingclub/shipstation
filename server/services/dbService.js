@@ -41,8 +41,24 @@ async function updateConversation(conversationId, conversation) {
   return data;
 }
 
+async function getUserProfile(userId) {
+  const { data, error } = await supabaseClient
+    .from("user_profiles")
+    .select("*")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    console.error("Error getting user:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   insertConversation,
   getConversation,
   updateConversation,
+  getUserProfile,
 };

@@ -77,7 +77,7 @@ async function handleLoginSubmit(supabase) {
     showSnackbar("Check your email for the login link!", "success");
     closeLoginModal();
   } catch (error) {
-    showSnackbar(error.error_description || error.message, "error");
+    console.error("Error signing in:", error);
   }
 }
 
@@ -102,6 +102,8 @@ async function getAvailableShips(supabase) {
   availableShips.textContent = `Available Ships: ${
     user_profiles[0]?.available_ships ?? 0
   }`;
+  // set this to window global variable
+  window.availableShips = user_profiles[0]?.available_ships ?? 0;
 }
 
 async function getCreatedShips(supabase) {
@@ -117,12 +119,15 @@ async function checkUser(supabase) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  updateLoginButton(user);
   if (user) {
+    localStorage.setItem("user", JSON.stringify(user));
     await getAvailableShips(supabase);
     const ships = await getCreatedShips(supabase);
     renderRecentlyShipped(ships);
+  } else {
+    localStorage.removeItem("user");
   }
+  updateLoginButton(user);
 }
 
 function updateLoginButton(user) {

@@ -11,6 +11,9 @@ function getAnthropicClient() {
   }
   return currentClient;
 }
+function isUsingCustomKey() {
+  return currentKey !== process.env.ANTHROPIC_API_KEY;
+}
 
 function updateAnthropicKey(newKey) {
   if (newKey !== currentKey) {
@@ -42,4 +45,5 @@ module.exports = {
   getAnthropicClient,
   updateAnthropicKey,
   validateAnthropicKey,
+  isUsingCustomKey,
 };
