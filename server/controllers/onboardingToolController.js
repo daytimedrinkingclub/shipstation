@@ -1,5 +1,6 @@
 const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
+const searchService = require("../services/searchService");
 const { toKebabCase } = require("../utils/file");
 const {
   insertShip,
@@ -152,6 +153,17 @@ async function handleOnboardingToolUse({
         type: "tool_result",
         tool_use_id: tool.id,
         content: [{ type: "text", text: message }],
+      },
+    ];
+  } else if (tool.name === TOOLS.SEARCH) {
+    const searchQuery = tool.input.query;
+    console.log("Performing search with query:", searchQuery);
+    const searchResults = await searchService.performSearch(searchQuery);
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [{ type: "text", text: JSON.stringify(searchResults) }],
       },
     ];
   }
