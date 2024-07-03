@@ -65,20 +65,21 @@ class AnthropicService {
     console.log("new tokens used", this.tokensUsed);
 
     if (!this.conversationId) {
-      console.log("inserting conversation");
       const conversation = await insertConversation({
         user_id: this.userId,
         chat_json: messages,
         tokens_used: this.tokensUsed,
       });
       this.conversationId = conversation.id;
-    } else {
-      console.log("updating conversation: ", this.conversationId);
-      await updateConversation(this.conversationId, {
-        chat_json: messages,
-        tokens_used: this.tokensUsed,
-      });
+      console.log("inserted conversation: ", this.conversationId);
     }
+    // else { // disabling as we dont need to update it everytime
+    //   console.log("updating conversation: ", this.conversationId);
+    //   await updateConversation(this.conversationId, {
+    //     chat_json: messages,
+    //     tokens_used: this.tokensUsed,
+    //   });
+    // }
 
     return response;
   }
