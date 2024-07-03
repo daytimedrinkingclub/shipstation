@@ -12,7 +12,7 @@ const {
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
-const { SHIP_TYPES } = require("./constants");
+const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
 async function processConversation({
   client,
@@ -33,14 +33,16 @@ async function processConversation({
     let messages = [];
     let tools = [ctoTool];
 
-    if (type === "ship_type") {
+    if (type === "shipType") {
       if (message === SHIP_TYPES.PORTFOLIO) {
         tools.push(getDataForPortfolioTool);
         tools.push(startShippingPortfolioTool);
+        messages = DEFAULT_MESSAGES[message];
       }
       if (message === SHIP_TYPES.LANDING_PAGE) {
         tools.push(getDataForLandingPageTool);
         tools.push(startShippingLandingPageTool);
+        messages = DEFAULT_MESSAGES[message];
       }
     } else if (type === "prompt") {
       tools.push(productManagerTool);
@@ -178,6 +180,7 @@ function handleOnboardingSocketEvents(io) {
           userId,
           type,
           message,
+          socket,
         });
       } catch (error) {
         if (error.name === "AbortError") {

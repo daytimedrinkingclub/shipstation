@@ -1,6 +1,6 @@
 const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
-const searchService = require("../services/aiSearchService");
+const searchService = require("../services/searchService");
 const { TOOLS } = require("../config/tools");
 
 async function handleCTOToolUse({
