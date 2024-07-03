@@ -93,11 +93,12 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           content: msg.content,
         });
         console.log("Found cto tool use in response:", tool);
-        const toolResult = await handleCTOToolUse(
+        const toolResult = await handleCTOToolUse({
           tool,
           projectFolderName,
-          sendEvent
-        );
+          sendEvent,
+          client,
+        });
         messages.push({ role: "user", content: toolResult });
         console.log(
           "Sending request to Anthropic API with updated messages:",
