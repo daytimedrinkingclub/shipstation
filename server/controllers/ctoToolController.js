@@ -3,7 +3,12 @@ const { codeAssitant } = require("../services/codeService");
 const searchService = require("../services/aiSearchService");
 const { TOOLS } = require("../config/tools");
 
-async function handleCTOToolUse(tool, projectFolderName, sendEvent) {
+async function handleCTOToolUse({
+  tool,
+  projectFolderName,
+  sendEvent,
+  client,
+}) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
@@ -59,10 +64,11 @@ async function handleCTOToolUse(tool, projectFolderName, sendEvent) {
     sendEvent("progress", {
       message: `Generating code for ${file_name}`,
     });
-    const resp = await codeAssitant(
-      updatedFileContent,
-      `${projectFolderName}/${file_name}`
-    );
+    const resp = await codeAssitant({
+      query: updatedFileContent,
+      filePath: `${projectFolderName}/${file_name}`,
+      client,
+    });
     sendEvent("progress", {
       message: `Code generated for ${file_name}`,
     });
