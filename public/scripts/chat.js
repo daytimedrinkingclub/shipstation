@@ -140,12 +140,12 @@ function sendMessage(message, type = "prompt") {
     showSnackbar(error, "info");
   });
 
-  socket.on("websiteDeployed", ({ data: { slug } }) => {
-    const deployedUrl = window.location.host + "/" + slug;
+  socket.on("websiteDeployed", ({ slug }) => {
+    const deployedUrl = `/${slug}`;
     showSuccessOverlay(slug, deployedUrl);
   });
 
-  socket.on("progress", ({ data: { message } }) => {
+  socket.on("progress", ({ message }) => {
     document.getElementById("loaderText").innerHTML = message;
   });
 }
@@ -330,11 +330,6 @@ socket.on("apiKeyStatus", (response) => {
   } else {
     showSnackbar(response.message, "error");
   }
-});
-
-socket.on("needUserInput", ({ data: { message } }) => {
-  hideLoader();
-  showSnackbar("Please provide more details", "info");
 });
 
 function startWebsiteGeneration(requirements) {

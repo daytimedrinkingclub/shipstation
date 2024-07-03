@@ -3,9 +3,9 @@ const ctoService = require("../services/ctoService");
 const { toKebabCase } = require("../utils/file");
 const {
   insertShip,
-  insertConversation,
   getUserProfile,
   updateUserProfile,
+  updateConversation,
 } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
@@ -152,10 +152,9 @@ async function handleOnboardingToolUse({
     const profilePayload = { available_ships: available_ships - 1 }; // updated
     await updateUserProfile(userId, profilePayload);
     const convPayload = {
-      chat_json: messages,
       ship_id: id,
     };
-    await insertConversation(convPayload);
+    await updateConversation(client.conversationId, convPayload);
     return [
       {
         type: "tool_result",
