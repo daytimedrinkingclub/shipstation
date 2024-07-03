@@ -17,6 +17,7 @@ let isUserLoggedIn = false; // Add this line at the top of the file
 // Modify the event listeners for the cards
 document.getElementById("landing-page-card").addEventListener("click", () => {
   if (isUserLoggedIn) {
+    // sendMessage("landing_page", "shipType");
     cardContainer.classList.add("hidden");
     shipForm.classList.remove("hidden");
     userInput.placeholder =
@@ -30,6 +31,7 @@ document
   .getElementById("personal-website-card")
   .addEventListener("click", () => {
     if (isUserLoggedIn) {
+      // sendMessage("portfolio", "shipType");
       cardContainer.classList.add("hidden");
       shipForm.classList.remove("hidden");
       userInput.placeholder =
@@ -107,18 +109,23 @@ socket.on("connect", () => {
   }
 });
 
-function sendMessage(message) {
-  conversation.push({ role: "user", content: message });
-  const user = JSON.parse(localStorage.getItem("user"));
+function sendMessage(message, type = "prompt") {
+  const user = getUserFromLocalStorage();
   const userId = user?.id;
-  socket.emit("sendMessage", { conversation, roomId, message, userId });
+  socket.emit("startProject", {
+    roomId,
+    userId,
+    message,
+    type,
+    apiKey: localStorage.getItem("anthropicKey"),
+  });
   socket.on("newMessage", ({ conversation: messages }) => {
     if (messages) {
       conversation = messages;
     }
   });
 
-  socket.on("error", ({ data: { error } }) => {
+  socket.on("error", ({ error }) => {
     hideLoader();
     showSnackbar(
       "We are experiencing unusually high load, please try again later!",
@@ -133,12 +140,12 @@ function sendMessage(message) {
     showSnackbar(error, "info");
   });
 
-  socket.on("websiteDeployed", ({ data: { slug } }) => {
-    const deployedUrl = window.location.host + "/" + slug;
+  socket.on("websiteDeployed", ({ slug }) => {
+    const deployedUrl = `/${slug}`;
     showSuccessOverlay(slug, deployedUrl);
   });
 
-  socket.on("progress", ({ data: { message } }) => {
+  socket.on("progress", ({ message }) => {
     document.getElementById("loaderText").innerHTML = message;
   });
 }
@@ -317,17 +324,12 @@ function setupPaymentDialogHandlers() {
 socket.on("apiKeyStatus", (response) => {
   if (response.success) {
     showSnackbar(response.message, "success");
-    startWebsiteGeneration(requirementsTextarea.value.trim());
     optionsDialog.classList.add("hidden");
-    localStorage.setItem("userProvidedKey", "true");
+    localStorage.setItem("anthropicKey", response.key);
+    // todo do next stuff
   } else {
     showSnackbar(response.message, "error");
   }
-});
-
-socket.on("needUserInput", ({ data: { message } }) => {
-  hideLoader();
-  showSnackbar("Please provide more details", "info");
 });
 
 function startWebsiteGeneration(requirements) {
@@ -343,7 +345,7 @@ function startWebsiteGeneration(requirements) {
     Starting website creation...
   `;
 
-  sendMessage(requirements);
+  sendMessage(requirements, "prompt");
 }
 
 generateButton.addEventListener("click", generateWebsite);

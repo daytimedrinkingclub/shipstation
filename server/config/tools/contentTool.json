@@ -1,5 +1,5 @@
 {
-  "name": "contentTool",
+  "name": "content_tool",
   "description": "This tool can be used to create contents and copies that need to be added across the web application",
   "parameters": {
     "type": "object",

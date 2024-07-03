@@ -1,9 +1,15 @@
 const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
 const searchService = require("../services/aiSearchService");
+const { TOOLS } = require("../config/tools");
 
-async function handleToolUse(tool, projectFolderName, sendEvent) {
-  if (tool.name === "ai_research_assistant") {
+async function handleCTOToolUse({
+  tool,
+  projectFolderName,
+  sendEvent,
+  client,
+}) {
+  if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
     console.log("Performing search with query:", searchQuery);
     const searchResults = await searchService.performSearch(searchQuery);
@@ -14,11 +20,11 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
         content: [{ type: "text", text: JSON.stringify(searchResults) }],
       },
     ];
-  } else if (tool.name === "file_creator") {
+  } else if (tool.name === TOOLS.FILE_CREATOR) {
     const { file_name, file_comments } = tool.input;
-    console.log("projectFolderName: in file_creator", projectFolderName);
-    console.log("file_name: in file_creator", file_name);
-    console.log("file_comments: in file_creator", file_comments);
+    console.log("projectFolderName:", projectFolderName);
+    console.log("file_name:", file_name);
+    console.log("file_comments:", file_comments);
     await fileService.saveFile(
       `${projectFolderName}/${file_name}`,
       file_comments
@@ -38,7 +44,7 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
         ],
       },
     ];
-  } else if (tool.name === "task_assigner_tool") {
+  } else if (tool.name === TOOLS.TASK_ASSIGNER) {
     const { file_name, task_guidelines } = tool.input;
     console.log("projectFolderName: in task_assigner_tool", projectFolderName);
     console.log("file_name: in task_assigner_tool", file_name);
@@ -58,10 +64,11 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
     sendEvent("progress", {
       message: `Generating code for ${file_name}`,
     });
-    const resp = await codeAssitant(
-      updatedFileContent,
-      `${projectFolderName}/${file_name}`
-    );
+    const resp = await codeAssitant({
+      query: updatedFileContent,
+      filePath: `${projectFolderName}/${file_name}`,
+      client,
+    });
     sendEvent("progress", {
       message: `Code generated for ${file_name}`,
     });
@@ -77,7 +84,7 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
         ],
       },
     ];
-  } else if (tool.name === "deploy_project_tool") {
+  } else if (tool.name === TOOLS.DEPLOY_PROJECT) {
     return [
       {
         type: "tool_result",
@@ -96,5 +103,5 @@ async function handleToolUse(tool, projectFolderName, sendEvent) {
 }
 
 module.exports = {
-  handleToolUse,
+  handleCTOToolUse,
 };
