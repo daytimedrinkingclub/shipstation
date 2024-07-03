@@ -17,7 +17,11 @@ let isUserLoggedIn = false; // Add this line at the top of the file
 // Modify the event listeners for the cards
 document.getElementById("landing-page-card").addEventListener("click", () => {
   if (isUserLoggedIn) {
-    selectAppType("landing_page");
+    // sendMessage("landing_page", "shipType");
+    cardContainer.classList.add("hidden");
+    shipForm.classList.remove("hidden");
+    userInput.placeholder =
+      "Enter your landing page requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.";
   } else {
     openLoginModal();
   }
@@ -27,7 +31,11 @@ document
   .getElementById("personal-website-card")
   .addEventListener("click", () => {
     if (isUserLoggedIn) {
-      selectAppType("portfolio");
+      // sendMessage("portfolio", "shipType");
+      cardContainer.classList.add("hidden");
+      shipForm.classList.remove("hidden");
+      userInput.placeholder =
+        "Enter your personal website requirements...\nDescribe the type of website (portfolio, resume, etc.), layout, sections, and copy in detail.\nYou can also include your personal brand guidelines and color palette.";
     } else {
       openLoginModal();
     }
@@ -101,24 +109,15 @@ socket.on("connect", () => {
   }
 });
 
-function selectAppType(shipType) {
+function sendMessage(message, type = "prompt") {
+  const user = getUserFromLocalStorage();
+  const userId = user?.id;
   socket.emit("startProject", {
     roomId,
     userId,
-    shipType,
-    apiKey: localStorage.getItem("anthropicKey"),
-  });
-}
-
-function sendMessage(message) {
-  conversation.push({ role: "user", content: message });
-  const user = getUserFromLocalStorage();
-  const userId = user?.id;
-  socket.emit("sendMessage", {
-    conversation,
     message,
-    roomId,
-    userId,
+    type,
+    apiKey: localStorage.getItem("anthropicKey"),
   });
   socket.on("newMessage", ({ conversation: messages }) => {
     if (messages) {
@@ -126,7 +125,7 @@ function sendMessage(message) {
     }
   });
 
-  socket.on("error", ({ data: { error } }) => {
+  socket.on("error", ({ error }) => {
     hideLoader();
     showSnackbar(
       "We are experiencing unusually high load, please try again later!",
@@ -351,7 +350,7 @@ function startWebsiteGeneration(requirements) {
     Starting website creation...
   `;
 
-  sendMessage(requirements);
+  sendMessage(requirements, "prompt");
 }
 
 generateButton.addEventListener("click", generateWebsite);

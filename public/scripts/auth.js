@@ -32,7 +32,9 @@ function initializeSupabase() {
   });
 }
 
-initializeSupabase();
+window.onload = function () {
+  initializeSupabase();
+};
 
 function setupEventListeners(supabase) {
   const loginButton = document.getElementById("loginButton");

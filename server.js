@@ -12,6 +12,7 @@ const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
   insertPayment,
   getUserProfile,
+  updateUserProfile,
 } = require("./server/services/dbService");
 const {
   handleOnboardingSocketEvents,
@@ -37,21 +38,21 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
 
   if (validateRazorpayWebhook(req.body, signature, secret)) {
     const event = req.body.event;
-    const {} = req.body.payload;
+    const { payload } = req.body;
 
     if (event === "order.paid") {
       // Handle the payment_link.paid event
-      const email = req.body.payload.payment?.entity?.email;
+      const email = payload.payment?.entity?.email;
       const user_id = await getUserIdFromEmail(email);
-      const payload = {
-        payload: req.body,
+      const paymentPayload = {
+        payload,
         user_id,
-        transaction_id: req.body.payload.payment?.entity.acquirer_data?.rrn,
+        transaction_id: payload.payment?.entity.acquirer_data?.rrn,
         status: "successful",
         provider: "razorpay",
       };
 
-      await insertPayment(payload);
+      await insertPayment(paymentPayload);
 
       const profile = await getUserProfile(user_id);
       const { available_ships } = profile; // current

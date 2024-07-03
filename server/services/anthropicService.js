@@ -28,8 +28,10 @@ class AnthropicService {
     temperature = 0,
     maxTokens = 4000,
   }) {
-    this.client = null;
     this.isCustomKey = !!apiKey;
+    this.client = new Anthropic({
+      apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+    });
     this.apiKey = apiKey;
     this.tokensUsed = tokensUsed;
     this.userId = userId;
@@ -37,14 +39,10 @@ class AnthropicService {
     this.model = model;
     this.temperature = temperature;
     this.maxTokens = maxTokens;
+    this.startTimestamp = Date.now();
   }
 
-  async sendMessage({
-    system,
-    tools = [],
-    tool_choice = "auto",
-    messages = [],
-  }) {
+  async sendMessage({ system, tools = [], tool_choice, messages = [] }) {
     if (messages.length < 1) {
       throw new Error("No messages provided");
     }
@@ -54,8 +52,10 @@ class AnthropicService {
       temperature: this.temperature,
       messages,
       tools,
-      tool_choice,
     };
+    if (tool_choice) {
+      clientParams.tool_choice = tool_choice;
+    }
     if (system) {
       clientParams.system = system;
     }
@@ -66,11 +66,12 @@ class AnthropicService {
 
     if (!this.conversationId) {
       console.log("inserting conversation");
-      this.conversationId = await insertConversation({
-        userId: this.userId,
+      const conversation = await insertConversation({
+        user_id: this.userId,
         chat_json: messages,
         tokens_used: this.tokensUsed,
       });
+      this.conversationId = conversation.id;
     } else {
       console.log("updating conversation: ", this.conversationId);
       await updateConversation(this.conversationId, {

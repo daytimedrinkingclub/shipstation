@@ -3,7 +3,9 @@ const { supabaseClient } = require("./supabaseService");
 async function insertConversation(payload) {
   const { data, error } = await supabaseClient
     .from("conversations")
-    .insert({ ...payload });
+    .insert({ ...payload })
+    .select()
+    .single();
 
   if (error) {
     console.error("Error inserting conversation:", error);

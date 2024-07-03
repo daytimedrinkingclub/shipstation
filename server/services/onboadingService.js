@@ -2,6 +2,10 @@ const {
   getDataForPortfolioTool,
   getDataForLandingPageTool,
   ctoTool,
+  searchTool,
+  productManagerTool,
+  startShippingPortfolioTool,
+  startShippingLandingPageTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -12,7 +16,8 @@ const { SHIP_TYPES } = require("./constants");
 
 async function processConversation({
   client,
-  shipType,
+  type,
+  message,
   sendEvent,
   roomId,
   abortSignal,
@@ -25,16 +30,22 @@ async function processConversation({
 
     let currentMessage;
 
-    const messages = DEFAULT_MESSAGES[shipType];
-    const tools = [ctoTool];
+    let messages = [];
+    let tools = [ctoTool];
 
-    if (shipType === SHIP_TYPES.PORTFOLIO) {
-      tools.push(getDataForPortfolioTool);
-      tools.push(startShippingPortfolioTool);
-    }
-    if (shipType === SHIP_TYPES.LANDING_PAGE) {
-      tools.push(getDataForLandingPageTool);
-      tools.push(startShippingLandingPageTool);
+    if (type === "ship_type") {
+      if (message === SHIP_TYPES.PORTFOLIO) {
+        tools.push(getDataForPortfolioTool);
+        tools.push(startShippingPortfolioTool);
+      }
+      if (message === SHIP_TYPES.LANDING_PAGE) {
+        tools.push(getDataForLandingPageTool);
+        tools.push(startShippingLandingPageTool);
+      }
+    } else if (type === "prompt") {
+      tools.push(productManagerTool);
+      tools.push(searchTool);
+      messages = [{ role: "user", content: message }];
     }
 
     try {
@@ -133,7 +144,7 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      const { roomId, userId, shipType, apiKey } = data;
+      const { roomId, userId, type, apiKey, message } = data;
       const clientParams = { userId };
       if (apiKey) {
         // using own anthropic key
@@ -141,8 +152,9 @@ function handleOnboardingSocketEvents(io) {
       } else {
         const profile = await getUserProfile(userId);
         const { available_ships } = profile;
-        if (available_ships <= 0) {
-          // todo add check for !client.isCustomKey
+        console.log("available_ships", available_ships);
+        console.log("apiKey", !!apiKey);
+        if (available_ships <= 0 || !!apiKey) {
           socket.emit("showPaymentOptions", {
             error: "Please select an option to proceed!",
           });
@@ -162,9 +174,10 @@ function handleOnboardingSocketEvents(io) {
           client,
           sendEvent,
           roomId,
-          abortSignal,
+          abortSignal: abortController.signal,
           userId,
-          shipType,
+          type,
+          message,
         });
       } catch (error) {
         if (error.name === "AbortError") {

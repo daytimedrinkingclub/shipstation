@@ -33,13 +33,13 @@ async function handleOnboardingToolUse({
     ];
   } else if (tool.name === TOOLS.GET_DATA_FOR_LANDING_PAGE) {
     console.log("inside get_data_for_landing_page_tool", tool.input);
-    const {
-      question_format: questionType,
-      question_text: question,
-      question_meta: rawMeta,
-    } = tool.input;
+    // const {
+    //   question_format: questionType,
+    //   question_text: question,
+    //   question_meta: rawMeta,
+    // } = tool.input;
 
-    const meta = typeof rawMeta === "string" ? JSON.parse(rawMeta) : rawMeta;
+    // const meta = typeof rawMeta === "string" ? JSON.parse(rawMeta) : rawMeta;
     return [
       {
         type: "tool_result",
@@ -94,6 +94,34 @@ async function handleOnboardingToolUse({
         ],
       },
     ];
+  } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
+    console.log("inside product manager tool", tool.input);
+    const {
+      project_name,
+      project_description,
+      project_goal,
+      project_branding_style,
+    } = tool.input;
+    const generatedFolderName = generateProjectFolderName(project_name, roomId);
+    await fileService.saveFile(
+      `${generatedFolderName}/readme.md`,
+      `Project name : ${project_name}
+      Project description : ${project_description}
+      Project goal : ${project_goal}
+      Project branding style : ${project_branding_style}`
+    );
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: `PRD file created successfully at ${generatedFolderName}/readme.md`,
+          },
+        ],
+      },
+    ];
   } else if (tool.name === TOOLS.CTO) {
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
@@ -105,14 +133,18 @@ async function handleOnboardingToolUse({
       client,
     });
 
-    const mode = false ? "self-key" : "paid"; // todo fix
-
+    const mode = client.isCustomKey ? "self-key" : "paid";
+    const endTimestamp = Date.now();
+    const duration = (endTimestamp - client.startTimestamp) / 1000; // Convert to seconds
+    console.log("Time taken for CTO tool (in seconds):", duration);
     const ship = {
       user_id: userId,
       status: "completed",
       prompt: messages[0].content,
       mode,
       slug,
+      execution_time: duration,
+      tokens_used: client.tokensUsed,
     };
     const { id } = await insertShip(ship);
     const profile = await getUserProfile(userId);
