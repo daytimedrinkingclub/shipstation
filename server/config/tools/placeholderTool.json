@@ -1,7 +1,7 @@
 {
   "name": "placeholderTool",
   "description": "This tool finds and upadtes the relevant placeholder images accross the project, this can add placeholder, banners images, icons etc, this tool is used to update the placeholder images accross the project",
-  "parameters": {
+  "input_schema": {
     "type": "object",
     "properties": {
       "placeholder_requirements": {

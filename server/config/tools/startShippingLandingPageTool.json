@@ -1,6 +1,6 @@
 {
   "name": "start_shipping_landing_page_tool",
-  "description": "Generate a plan summary for the user to understand the requirements of the landing page or portfolio and coordinates with the cto_tool to create the project for the user.",
+  "description": "Generate a plan summary for the user to understand the requirements of the landing page and coordinate with the cto_tool to create the project for the user.",
   "input_schema": {
     "type": "object",
     "properties": {
