@@ -22,8 +22,7 @@ async function handleOnboardingToolUse({
   client,
 }) {
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
-    console.log("inside get_data_for_portfolio_tool", tool.input);
-
+    sendEvent("questions", { questions: tool.input.questions });
     return [
       {
         type: "tool_result",
@@ -32,14 +31,7 @@ async function handleOnboardingToolUse({
       },
     ];
   } else if (tool.name === TOOLS.GET_DATA_FOR_LANDING_PAGE) {
-    console.log("inside get_data_for_landing_page_tool", tool.input);
-    // const {
-    //   question_format: questionType,
-    //   question_text: question,
-    //   question_meta: rawMeta,
-    // } = tool.input;
-
-    // const meta = typeof rawMeta === "string" ? JSON.parse(rawMeta) : rawMeta;
+    sendEvent("questions", { questions: tool.input.questions });
     return [
       {
         type: "tool_result",

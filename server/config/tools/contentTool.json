@@ -1,7 +1,7 @@
 {
   "name": "content_tool",
   "description": "This tool can be used to create contents and copies that need to be added across the web application",
-  "parameters": {
+  "input_schema": {
     "type": "object",
     "properties": {
       "content_type": {
