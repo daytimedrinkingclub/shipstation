@@ -1,0 +1,31 @@
+{
+  "name": "start_shipping_landing_page_tool",
+  "description": "Generate a plan summary for the user to understand the requirements of the portfolio and coordinate with the cto_tool to create the project for the user,",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "person_name": {
+        "type": "string",
+        "description": "Name or alias of the person for whom we are going to create portfolio"
+      },
+      "portfolio_description": {
+        "type": "string",
+        "description": "The description of the portfolio that we want to create, this will be added to the readme file, as detailed as possible such as domain of the person like tech, music, government, healthcare etc as in what nature of service does that person give."
+      },
+      "sections": {
+        "type": "string",
+        "description": "Things needed to be shown on website like skills, education, projects, online profiles etc"
+      },
+      "design_style": {
+        "type": "string",
+        "description": "The type of looks the user wants for their portfolio website like professional, minimal, playful etc"
+      }
+    },
+    "required": [
+      "person_name",
+      "project_description",
+      "sections",
+      "design_style"
+    ]
+  }
+}

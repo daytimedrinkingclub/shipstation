@@ -3,9 +3,10 @@ const {
   insertPayment,
   updateUserProfile,
   insertShip,
-} = require("./server/services/dbService");
-const { PaymentService } = require("./server/services/paymentService");
-const { getUserIdFromEmail } = require("./server/services/supabaseService");
+  updateConversation,
+} = require("../server/services/dbService");
+const { PaymentService } = require("../server/services/paymentService");
+const { getUserIdFromEmail } = require("../server/services/supabaseService");
 
 async function testInsertConversation() {
   const sampleConversation = {
@@ -24,6 +25,26 @@ async function testInsertConversation() {
     console.error("Error during insert:", error);
   }
 }
+
+async function testUpdateConversation() {
+  const conversationId = 15; // Assuming this conversation exists
+  const updatedConversation = {
+    chat_json: {
+      user: "testUser",
+      message: "This is an updated test message",
+      timestamp: new Date().toISOString(),
+    },
+    tokens_used: 100, // Example value
+  };
+
+  try {
+    const result = await updateConversation(conversationId, updatedConversation);
+    console.log("Update successful, result:", result);
+  } catch (error) {
+    console.error("Error during update:", error);
+  }
+}
+
 
 async function testInsertPayment() {
   const req = {
@@ -139,7 +160,8 @@ async function testInsertShip() {
   console.log(result);
 }
 
-testInsertConversation();
+// testInsertConversation();
+testUpdateConversation();
 // testInsertShip();
 // testInsertPayment();
 // testUpdateProfile();

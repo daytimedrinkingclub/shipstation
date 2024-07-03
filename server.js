@@ -5,7 +5,6 @@ const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
 const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const chatController = require("./server/controllers/chatController");
 const { listFoldersInS3 } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
@@ -13,7 +12,11 @@ const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
   insertPayment,
   getUserProfile,
+  updateUserProfile,
 } = require("./server/services/dbService");
+const {
+  handleOnboardingSocketEvents,
+} = require("./server/services/onboadingService");
 
 require("dotenv").config();
 
@@ -35,21 +38,21 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
 
   if (validateRazorpayWebhook(req.body, signature, secret)) {
     const event = req.body.event;
-    const {} = req.body.payload;
+    const { payload } = req.body;
 
     if (event === "order.paid") {
       // Handle the payment_link.paid event
-      const email = req.body.payload.payment?.entity?.email;
+      const email = payload.payment?.entity?.email;
       const user_id = await getUserIdFromEmail(email);
-      const payload = {
-        payload: req.body,
+      const paymentPayload = {
+        payload,
         user_id,
-        transaction_id: req.body.payload.payment?.entity.acquirer_data?.rrn,
+        transaction_id: payload.payment?.entity.acquirer_data?.rrn,
         status: "successful",
         provider: "razorpay",
       };
 
-      await insertPayment(payload);
+      await insertPayment(paymentPayload);
 
       const profile = await getUserProfile(user_id);
       const { available_ships } = profile; // current
@@ -196,7 +199,7 @@ app.use("/site/:siteId", async (req, res, next) => {
   }
 });
 
-chatController.handleChat(io);
+handleOnboardingSocketEvents(io);
 
 const PORT = process.env.PORT || 5001;
 

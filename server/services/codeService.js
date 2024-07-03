@@ -1,16 +1,12 @@
 const { codeWriterTool } = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
-const { getAnthropicClient } = require("./anthropicService");
 require("dotenv").config();
 
-async function codeAssitant(query, filePath) {
+async function codeAssitant({ query, filePath, client }) {
   console.log("filePath in codeAssitant:", filePath);
   try {
-    const msg = await getAnthropicClient().messages.create({
-      model: "claude-3-5-sonnet-20240620",
-      max_tokens: 4000,
-      temperature: 0,
+    const msg = await client.sendMessage({
       system: `Write code as per the guidelines provided, use web-components architecture with the guidelines provided by user. Never use react. If you need to implement any functionality, use plain JS only. We are limited by web-components, tailwind and fontawsome only so never use any 3rd party library other than the ones mentioned previously.
       Use fontawesome cdn for icons and use icons from fontawesome only. Never use inline svgs.
       Always use images from https://picsum.photos/200/300 as src. 200 height and 300 is the width. You can also use any other height and width.
