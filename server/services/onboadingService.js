@@ -99,7 +99,7 @@ async function processConversation({
           "Sending request to Anthropic API with updated conversation:",
           JSON.stringify(messages)
         );
-        currentMessage = client.sendMessage({
+        currentMessage = await client.sendMessage({
           system:
             "Your task is to deploy a website for the user and share them the deployed url",
           messages,

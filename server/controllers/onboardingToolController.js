@@ -127,8 +127,8 @@ async function handleOnboardingToolUse({
     const generatedFolderName = prd_file_path.split("/")[0];
     const fileContent = await fileService.readFile(prd_file_path);
     const { message, slug } = await ctoService.ctoService({
-      fileContent,
-      generatedFolderName,
+      query: fileContent,
+      projectFolderName: generatedFolderName,
       sendEvent,
       client,
     });
