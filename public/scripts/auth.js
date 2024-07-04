@@ -50,12 +50,33 @@ function setupEventListeners(supabase) {
 
   // Add event listener for the email input
   const emailInput = document.getElementById("email");
+  emailInput.addEventListener("input", togglePasswordField);
   emailInput.addEventListener("keypress", (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       handleLoginSubmit(supabase);
     }
   });
+
+  // Add event listener for the password input
+  const passwordInput = document.getElementById("password");
+  passwordInput.addEventListener("keypress", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      handleLoginSubmit(supabase);
+    }
+  });
+}
+
+function togglePasswordField() {
+  const email = document.getElementById("email").value;
+  const passwordField = document.getElementById("passwordField");
+
+  if (email === "test@shipstation.ai") {
+    passwordField.classList.remove("hidden");
+  } else {
+    passwordField.classList.add("hidden");
+  }
 }
 
 function openLoginModal() {
@@ -75,6 +96,7 @@ function validateEmail(email) {
 
 async function handleLoginSubmit(supabase) {
   const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
   if (!validateEmail(email)) {
     showSnackbar("Please enter a valid email address", "error");
@@ -82,17 +104,33 @@ async function handleLoginSubmit(supabase) {
   }
 
   try {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) throw error;
-    showSnackbar("Check your email for the login link!", "success");
+    let result;
+    if (email === "test@shipstation.ai") {
+      if (!password) {
+        showSnackbar("Please enter your password", "error");
+        return;
+      }
+      result = await supabase.auth.signInWithPassword({ email, password });
+    } else {
+      result = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+    }
+
+    if (result.error) throw result.error;
+
+    if (email === "test@shipstation.ai") {
+      showSnackbar("Login successful!", "success");
+    } else {
+      showSnackbar("Check your email for the login link!", "success");
+    }
     closeLoginModal();
   } catch (error) {
     console.error("Error signing in:", error);
+    showSnackbar("Error signing in. Please try again.", "error");
   }
 }
 
