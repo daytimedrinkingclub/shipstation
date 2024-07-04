@@ -17,6 +17,7 @@ let isUserLoggedIn = false; // Add this line at the top of the file
 // Modify the event listeners for the cards
 document.getElementById("landing-page-card").addEventListener("click", () => {
   if (isUserLoggedIn) {
+    window.shipType = "landing_page";
     // sendMessage("landing_page", "shipType");
     cardContainer.classList.add("hidden");
     shipForm.classList.remove("hidden");
@@ -31,6 +32,7 @@ document
   .getElementById("personal-website-card")
   .addEventListener("click", () => {
     if (isUserLoggedIn) {
+      window.shipType = "portfolio";
       // sendMessage("portfolio", "shipType");
       cardContainer.classList.add("hidden");
       shipForm.classList.remove("hidden");
