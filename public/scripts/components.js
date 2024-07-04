@@ -160,11 +160,26 @@ Promise.all([
   chatScript.src = "scripts/chat.js";
   document.head.appendChild(chatScript);
 
-  // Initialize Razorpay payment button
-  const razorpayScript = document.createElement("script");
-  razorpayScript.src = "https://checkout.razorpay.com/v1/payment-button.js";
-  razorpayScript.setAttribute("data-payment_button_id", "pl_OTLsws336UXJ5J");
-  razorpayScript.async = true;
+  const landingPageProductRazorpayId = "pl_OTLsws336UXJ5J";
+  const portfolioProductRazorpayId = "pl_OUUAfK88DxjZ8I";
+
+  const productIds = {
+    landing_page: landingPageProductRazorpayId,
+    portfolio: portfolioProductRazorpayId,
+  };
+
+  // Initialize Razorpay payment button dynamically
+  function initializeRazorpayButton() {
+    const currentProductRazorpayId = productIds[window.shipType];
+    const razorpayScript = document.createElement("script");
+    razorpayScript.src = "https://checkout.razorpay.com/v1/payment-button.js";
+    razorpayScript.setAttribute(
+      "data-payment_button_id",
+      currentProductRazorpayId
+    );
+    razorpayScript.async = true;
+    return razorpayScript;
+  }
 
   // Wait for the dialog component to be fully loaded
   customElements.whenDefined("dialog-component").then(() => {
@@ -172,7 +187,7 @@ Promise.all([
       const razorpayContainer = document.getElementById("razorpayContainer");
       if (razorpayContainer && razorpayContainer.offsetParent !== null) {
         const form = document.createElement("form");
-        form.appendChild(razorpayScript);
+        form.appendChild(initializeRazorpayButton());
         razorpayContainer.appendChild(form);
         obs.disconnect(); // Stop observing once we've added the script
       }

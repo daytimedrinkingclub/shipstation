@@ -72,7 +72,7 @@ function togglePasswordField() {
   const email = document.getElementById("email").value;
   const passwordField = document.getElementById("passwordField");
 
-  if (email === "test@shipstation.ai") {
+  if (email === "test@shipstation.ai" || email === "zero@shipstation.ai") {
     passwordField.classList.remove("hidden");
   } else {
     passwordField.classList.add("hidden");
@@ -105,7 +105,7 @@ async function handleLoginSubmit(supabase) {
 
   try {
     let result;
-    if (email === "test@shipstation.ai") {
+    if (email === "test@shipstation.ai" || email === "zero@shipstation.ai") {
       if (!password) {
         showSnackbar("Please enter your password", "error");
         return;
@@ -122,8 +122,8 @@ async function handleLoginSubmit(supabase) {
 
     if (result.error) throw result.error;
 
-    if (email === "test@shipstation.ai") {
-      showSnackbar("Login successful!", "success");
+    if (email === "test@shipstation.ai" || email === "zero@shipstation.ai") {
+      showSnackbar("Logged in!", "success");
     } else {
       showSnackbar("Check your email for the login link!", "success");
     }
