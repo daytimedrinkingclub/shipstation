@@ -143,7 +143,7 @@ function sendMessage(message, type = "prompt") {
   });
 
   socket.on("websiteDeployed", ({ slug }) => {
-    const deployedUrl = `/${slug}`;
+    const deployedUrl = `${window.location.protocol}//${window.location.host}/${slug}`;
     showSuccessOverlay(slug, deployedUrl);
   });
 
