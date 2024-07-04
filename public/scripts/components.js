@@ -49,8 +49,51 @@ class RecentlyShippedComponent extends HTMLElement {
 // Footer Component
 class FooterComponent extends HTMLElement {
   async connectedCallback() {
-    const content = await loadHTML("components/footer-component.html");
+    const content = await loadHTML("components/app-footer.html");
     this.innerHTML = content;
+
+    // Add event listener to the dropdown toggle
+    const dropdownToggle = this.querySelector("#supportPoliciesToggle");
+    const dropdownMenu = this.querySelector("#supportPoliciesMenu");
+
+    if (dropdownToggle && dropdownMenu) {
+      dropdownToggle.addEventListener("click", (event) => {
+        event.stopPropagation();
+        dropdownMenu.classList.toggle("hidden");
+        // Toggle the arrow direction
+        const svg = dropdownToggle.querySelector("svg");
+        svg.classList.toggle("rotate-180");
+      });
+
+      // Close the dropdown when clicking outside
+      document.addEventListener("click", () => {
+        dropdownMenu.classList.add("hidden");
+        // Reset the arrow direction
+        const svg = dropdownToggle.querySelector("svg");
+        svg.classList.remove("rotate-180");
+      });
+    }
+
+    // Add event listeners to the footer links
+    const footerLinks = this.querySelectorAll("#supportPoliciesMenu a");
+    footerLinks.forEach((link) => {
+      link.addEventListener("click", this.handleFooterLinkClick.bind(this));
+    });
+  }
+
+  handleFooterLinkClick(event) {
+    // Don't prevent default behavior
+    const href = event.target.getAttribute("href");
+    console.log(`Opening page: ${href}`);
+
+    // Hide the dropdown after clicking a link
+    this.querySelector("#supportPoliciesMenu").classList.add("hidden");
+    // Reset the arrow direction
+    const svg = this.querySelector("#supportPoliciesToggle svg");
+    svg.classList.remove("rotate-180");
+
+    // If you want to ensure the link opens in a new tab, you can do:
+    // window.open(href, '_blank');
   }
 }
 
