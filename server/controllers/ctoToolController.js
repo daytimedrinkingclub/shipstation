@@ -17,7 +17,7 @@ async function handleCTOToolUse({
       {
         type: "tool_result",
         tool_use_id: tool.id,
-        content: [{ type: "text", text: JSON.stringify(searchResults) }],
+        content: [{ type: "text", text: JSON.stringify(searchResults.answer) }],
       },
     ];
   } else if (tool.name === TOOLS.FILE_CREATOR) {
