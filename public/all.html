@@ -1,37 +1,97 @@
-<script>
-  async function fetchAndDisplayItems() {
-    try {
-      const response = await fetch("/all-websites");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const { s3: s3Websites, local: serverWebsites } = await response.json();
-      const s3Container = document.getElementById("s3-websites-container");
-      const serverContainer = document.getElementById("server-websites-container");
-      s3Websites.forEach((item) => {
-        const link = document.createElement("a");
-        link.target = "_blank";
-        link.href = `site/${item}`;
-        link.textContent = item;
-        s3Container.appendChild(link);
-        s3Container.appendChild(document.createElement("br"));
-      });
-      serverWebsites.forEach((item) => {
-        const link = document.createElement("a");
-        link.target = "_blank";
-        link.href = `${item}`;
-        link.textContent = item;
-        serverContainer.appendChild(link);
-        serverContainer.appendChild(document.createElement("br"));
-      });
-    } catch (error) {
-      console.error("Failed to fetch items:", error);
-    }
-  }
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Website List</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              dark: {
+                100: "#1E293B",
+                200: "#334155",
+              },
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+  <body class="bg-dark-100 text-gray-200 min-h-screen p-8">
+    <div class="container mx-auto">
+      <h1 class="text-4xl font-bold mb-12 text-center">Website List</h1>
 
-  document.addEventListener("DOMContentLoaded", fetchAndDisplayItems);
-</script>
-<h2>S3 Websites</h2>
-<div id="s3-websites-container"></div>
-<h2>Server Websites</h2>
-<div id="server-websites-container"></div>
+      <section class="mb-16">
+        <h2 class="text-3xl font-semibold mb-6">Recent Server Websites</h2>
+        <div
+          id="recent-server-websites"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+        ></div>
+      </section>
+
+      <section>
+        <h2 class="text-3xl font-semibold mb-6">S3 Websites</h2>
+        <div>
+          <div
+            id="s3-websites-container"
+            class="grid grid-cols-1 sm:grid-cols-4 gap-6"
+          ></div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      async function fetchAndDisplayItems() {
+        try {
+          const response = await fetch("/all-websites");
+          if (!response.ok) {
+            throw new Error("Network response was not ok");
+          }
+          const { s3: s3Websites, local: serverWebsites } =
+            await response.json();
+          const recentServerContainer = document.getElementById(
+            "recent-server-websites"
+          );
+          const s3Container = document.getElementById("s3-websites-container");
+          const serverContainer = document.getElementById(
+            "server-websites-container"
+          );
+
+          function createCard(item, isS3) {
+            const card = document.createElement("a");
+            card.href = isS3 ? `site/${item}` : item;
+            card.target = "_blank";
+            card.className =
+              "block p-4 rounded-lg bg-dark-200 hover:bg-gray-700 transition-colors h-[150px] overflow-hidden";
+            card.innerHTML = `<div class="text-lg font-medium break-words">${item}</div>`;
+            return card;
+          }
+
+          // Display recent server websites (assuming the last 4 are the most recent)
+          serverWebsites
+            .slice(-4)
+            .reverse()
+            .forEach((item) => {
+              recentServerContainer.appendChild(createCard(item, false));
+            });
+
+          s3Websites.forEach((item) => {
+            s3Container.appendChild(createCard(item, true));
+          });
+
+          serverWebsites.forEach((item) => {
+            serverContainer.appendChild(createCard(item, false));
+          });
+        } catch (error) {
+          console.error("Failed to fetch items:", error);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchAndDisplayItems);
+    </script>
+  </body>
+</html>

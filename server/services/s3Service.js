@@ -22,8 +22,11 @@ async function saveFileToS3(bucketPath, content) {
     console.error(`Error uploading ${finalPath}:`, err);
   }
 }
-
-async function listFoldersInS3(prefix) {
+async function listFoldersInS3(
+  prefix,
+  sortBy = "modifiedAt",
+  sortOrder = "desc"
+) {
   const params = {
     Bucket: bucketName,
     Prefix: prefix,
@@ -31,12 +34,41 @@ async function listFoldersInS3(prefix) {
   };
   try {
     const data = await s3Handler.send(new ListObjectsV2Command(params));
-    // Strip the prefix from each folder name
-    const folders = data.CommonPrefixes.map((item) =>
-      item.Prefix.replace(prefix, "")
+
+    // Get folder details including LastModified
+    const folderDetails = await Promise.all(
+      data.CommonPrefixes.map(async (item) => {
+        const folderName = item.Prefix.replace(prefix, "");
+        const folderContentParams = {
+          Bucket: bucketName,
+          Prefix: item.Prefix,
+          MaxKeys: 1,
+        };
+        const folderContent = await s3Handler.send(
+          new ListObjectsV2Command(folderContentParams)
+        );
+        const modifiedAt =
+          folderContent.Contents[0]?.LastModified || new Date(0);
+        return { name: folderName, modifiedAt };
+      })
     );
-    console.log(`Folders in '${prefix}':`, folders);
-    return JSON.stringify(folders); // Return folders as a JSON array
+
+    // Sort folders based on sortBy and sortOrder
+    folderDetails.sort((a, b) => {
+      if (sortBy === "name") {
+        return sortOrder === "asc"
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else {
+        return sortOrder === "asc"
+          ? a.modifiedAt - b.modifiedAt
+          : b.modifiedAt - a.modifiedAt;
+      }
+    });
+
+    const sortedFolders = folderDetails.map((folder) => folder.name);
+    console.log(`Sorted folders in '${prefix}':`, sortedFolders);
+    return JSON.stringify(sortedFolders); // Return sorted folders as a JSON array
   } catch (err) {
     console.error(`Error listing folders in '${prefix}':`, err);
     return JSON.stringify([]); // Return an empty JSON array in case of error
