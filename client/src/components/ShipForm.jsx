@@ -38,6 +38,7 @@ const ShipForm = ({ type }) => {
         apiKey: anthropicKey,
         message: requirements,
       });
+      onLoaderOpen();
     }
   };
 
