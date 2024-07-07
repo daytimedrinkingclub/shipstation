@@ -14,11 +14,6 @@ const LoaderOverlay = ({ isOpen }) => {
       // You can add a function to show error messages here
     });
 
-    socket.on("websiteDeployed", ({ slug }) => {
-      const deployedUrl = `${window.location.protocol}//${window.location.host}/${slug}`;
-      // You can add a function to show success message here
-    });
-
     socket.on("progress", ({ message }) => {
       setLoaderText(message);
       // You can add a function to update progress here
@@ -26,10 +21,11 @@ const LoaderOverlay = ({ isOpen }) => {
 
     return () => {
       socket.off("error");
-      socket.off("websiteDeployed");
       socket.off("progress");
     };
   }, [socket]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md">

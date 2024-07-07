@@ -13,7 +13,7 @@ import SuccessOverlay from "./SuccessOverlay";
 const ShipForm = ({ type }) => {
   const [requirements, setRequirements] = useState("");
   const { sendMessage, socket } = useSocket();
-
+  const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isLoaderOpen,
@@ -71,9 +71,17 @@ const ShipForm = ({ type }) => {
       onOpen();
     });
 
+    
+  socket.on("websiteDeployed", ({ slug }) => {
+      onSuccessOpen();
+      onLoaderClose();
+      setDeployedWebsiteSlug(slug);
+    });
+
     return () => {
       socket.off("apiKeyStatus");
       socket.off("showPaymentOptions");
+      socket.off("websiteDeployed");
     };
   }, []);
 
@@ -84,7 +92,7 @@ const ShipForm = ({ type }) => {
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
-          className="w-full h-40 bg-gray-800 text-white border-gray-700 mb-4"
+          className="w-full h-40 bg-black text-white border-gray-600 mb-4"
           placeholder={`Enter your ${type} requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.`}
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
@@ -99,12 +107,13 @@ const ShipForm = ({ type }) => {
         onSubmitKey={handleSubmitAnthropicKey}
         anthropicKey={anthropicKey}
         setAnthropicKey={setAnthropicKey}
+        type={type}
       />
       <LoaderOverlay isOpen={isLoaderOpen} />
       <SuccessOverlay
         isOpen={isSuccessOpen}
         onClose={onSuccessClose}
-        websiteName={"websiteName"}
+        websiteName={deployedWebsiteSlug}
       />
     </div>
   );

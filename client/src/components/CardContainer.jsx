@@ -20,7 +20,7 @@ const CardContainer = ({ onCardClick }) => {
       title: "Ship Personal Websites",
       description:
         "Showcase your unique story and skills with a stunning personal website that leaves a lasting impression.",
-      type: "personal_website",
+      type: "portfolio",
     },
     {
       icon: <Cpu className="w-6 h-6" />,

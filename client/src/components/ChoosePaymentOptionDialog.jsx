@@ -17,6 +17,7 @@ const ChoosePaymentOptionDialog = ({
   onPayNow,
   anthropicKey,
   setAnthropicKey,
+  type,
 }) => {
   const [showKeyInput, setShowKeyInput] = useState(false);
 
@@ -27,6 +28,16 @@ const ChoosePaymentOptionDialog = ({
   const handleBack = () => {
     setShowKeyInput(false);
   };
+
+  const landingPageProductRazorpayId = "pl_OTLsws336UXJ5J";
+  const portfolioProductRazorpayId = "pl_OUUAfK88DxjZ8I";
+
+  const productIds = {
+    landing_page: landingPageProductRazorpayId,
+    portfolio: portfolioProductRazorpayId,
+  };
+
+  const productId = productIds[type];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -46,7 +57,7 @@ const ChoosePaymentOptionDialog = ({
                 Provide Anthropic Key
               </div>
             ) : (
-              "Choose an Option"
+              "Choose an option"
             )}
           </DialogTitle>
         </DialogHeader>
@@ -70,7 +81,7 @@ const ChoosePaymentOptionDialog = ({
                   Use your personal Anthropic API key for website generation.
                 </p>
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full"
                   onClick={() => setShowKeyInput(true)}
                 >
                   Free
@@ -85,12 +96,8 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4">
                   Secure payment for website generation service.
                 </p>
-                <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={onPayNow}
-                >
-                  Pay Now
-                </Button>
+               {/* Render button here */}
+               <p>coming soon</p>
               </div>
             </motion.div>
           ) : (
