@@ -21,9 +21,11 @@ const LoginDialog = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const bypassed = ["anuj@shipstation.ai", "test@shipstation.ai"];
+
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    setShowPassword(e.target.value === "anuj@shipstation.ai");
+    setShowPassword(bypassed.includes(e.target.value));
   };
 
   const handleSubmit = async (e) => {
@@ -70,7 +72,7 @@ const LoginDialog = ({ isOpen, onClose }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
           <DialogTitle>Login</DialogTitle>
           <DialogDescription>
@@ -83,6 +85,7 @@ const LoginDialog = ({ isOpen, onClose }) => {
             <Input
               id="email"
               type="email"
+              className="text-white bg-black"
               placeholder="Enter your email"
               value={email}
               onChange={handleEmailChange}
