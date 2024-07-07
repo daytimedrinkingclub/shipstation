@@ -29,7 +29,6 @@ const Header = () => {
           </Button>
         </div>
       </div>
-
       <LoginDialog isOpen={isOpen} onClose={onClose} />
     </header>
   );

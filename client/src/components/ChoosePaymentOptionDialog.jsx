@@ -62,7 +62,7 @@ const ChoosePaymentOptionDialog = ({
               className="grid grid-cols-2 gap-4 mt-4"
             >
               <div className="bg-gray-800 p-4 rounded-lg text-center relative">
-                <span className="absolute top-2 right-2 bg-blue-600 text-xs font-semibold px-2 py-1 rounded">
+                <span className="absolute top-2 right-2 bg-green-600 text-xs font-semibold px-1 py-1 rounded">
                   Free
                 </span>
                 <Key className="w-12 h-12 mx-auto mb-2" />
@@ -103,19 +103,16 @@ const ChoosePaymentOptionDialog = ({
               transition={{ duration: 0.2 }}
               className="mt-4"
             >
-              <Input
-                type="text"
-                placeholder="Enter your Anthropic API key"
-                value={anthropicKey}
-                onChange={(e) => setAnthropicKey(e.target.value)}
-                className="mb-2"
-              />
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700"
-                onClick={handleKeySubmit}
-              >
-                Submit Key
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Input
+                  type="text"
+                  placeholder="Enter your Anthropic API key"
+                  value={anthropicKey}
+                  onChange={(e) => setAnthropicKey(e.target.value)}
+                  className="flex-grow"
+                />
+                <Button onClick={handleKeySubmit}>Submit Key</Button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

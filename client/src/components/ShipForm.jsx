@@ -1,25 +1,30 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Ship } from "lucide-react";
 import { useSocket } from "@/context/SocketProvider";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
+import { AuthContext } from "@/context/AuthContext";
 
 const ShipForm = ({ type }) => {
   const [requirements, setRequirements] = useState("");
   const { sendMessage } = useSocket();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { availableShips } = useContext(AuthContext);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onOpen();
-    // sendMessage(requirements, "prompt");
-    // You can add additional logic here, such as showing a loading state
+    if (availableShips <= 0) {
+      onOpen();
+    } else {
+      sendMessage(requirements, "prompt");
+    }
   };
 
-  const handleSubmitKey = () => {
+  const handleSubmitAnthropicKey = () => {
+    // validate api key
     // sendMessage(requirements, "prompt");
   };
 
@@ -42,7 +47,7 @@ const ShipForm = ({ type }) => {
       <ChoosePaymentOptionDialog
         isOpen={isOpen}
         onClose={onClose}
-        onSubmitKey={handleSubmitKey}
+        onSubmitKey={handleSubmitAnthropicKey}
       />
     </div>
   );

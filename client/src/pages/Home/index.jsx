@@ -1,13 +1,24 @@
-import React, { useState } from "react";
+import { useContext, useState } from "react";
 import CardContainer from "@/components/CardContainer";
 import RecentlyShipped from "@/components/RecentlyShipped";
 import ShipForm from "@/components/ShipForm";
+import { AuthContext } from "@/context/AuthContext";
+import useDisclosure from "@/hooks/useDisclosure";
+import LoginDialog from "@/components/LoginDialog";
 
 const Home = () => {
   const [selectedType, setSelectedType] = useState(null);
 
+  const { user, availableShips } = useContext(AuthContext);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const handleCardClick = (type) => {
-    setSelectedType(type);
+    if (!user) {
+      onOpen();
+    } else {
+      setSelectedType(type);
+    }
   };
 
   return (
@@ -20,6 +31,7 @@ const Home = () => {
           <RecentlyShipped />
         </>
       )}
+      <LoginDialog isOpen={isOpen} onClose={onClose} />
     </div>
   );
 };
