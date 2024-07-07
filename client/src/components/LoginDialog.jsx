@@ -21,7 +21,11 @@ const LoginDialog = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const bypassed = ["anuj@shipstation.ai", "test@shipstation.ai"];
+  const bypassed = [
+    "anuj@shipstation.ai",
+    "test@shipstation.ai",
+    "zero@shipstation.ai",
+  ];
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
