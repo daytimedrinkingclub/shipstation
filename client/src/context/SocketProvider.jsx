@@ -39,7 +39,6 @@ export const SocketProvider = ({ children }) => {
   }, [socket, roomId]);
 
   const sendMessage = (event, data) => {
-    debugger;
     if (socket) {
       const userId = user?.id;
       socket.emit(event, {
