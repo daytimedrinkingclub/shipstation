@@ -126,7 +126,7 @@ function handleOnboardingSocketEvents(io) {
       console.log(`User joined room: ${roomId}`);
     });
 
-    socket.on("anthropicKey", (key) => {
+    socket.on("anthropicKey", ({ anthropicKey: key }) => {
       AnthropicService.validateKey(key).then((isValid) => {
         if (isValid) {
           console.log("Anthropic API key validated");
@@ -146,6 +146,7 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
+      console.log("startProject", data);
       const { roomId, userId, type, apiKey, message } = data;
       const clientParams = { userId };
       if (apiKey) {

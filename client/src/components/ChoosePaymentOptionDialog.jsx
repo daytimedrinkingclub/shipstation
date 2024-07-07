@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -15,14 +15,13 @@ const ChoosePaymentOptionDialog = ({
   onClose,
   onSubmitKey,
   onPayNow,
+  anthropicKey,
+  setAnthropicKey,
 }) => {
   const [showKeyInput, setShowKeyInput] = useState(false);
-  const [anthropicKey, setAnthropicKey] = useState("");
 
   const handleKeySubmit = () => {
     onSubmitKey(anthropicKey);
-    setAnthropicKey("");
-    setShowKeyInput(false);
   };
 
   const handleBack = () => {
@@ -109,7 +108,7 @@ const ChoosePaymentOptionDialog = ({
                   placeholder="Enter your Anthropic API key"
                   value={anthropicKey}
                   onChange={(e) => setAnthropicKey(e.target.value)}
-                  className="flex-grow"
+                  className="flex-grow bg-primary text-white"
                 />
                 <Button onClick={handleKeySubmit}>Submit Key</Button>
               </div>

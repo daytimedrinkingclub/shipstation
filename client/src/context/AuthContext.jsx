@@ -7,6 +7,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
+  const [anthropicKey, setAnthropicKey] = useState("");
   const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
@@ -15,26 +16,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     checkUser();
   }, []);
-
-  // useEffect(() => {
-  //   const { data: authListener } = supabase.auth.onAuthStateChange(
-  //     async (event, session) => {
-  //       setUser(session?.user ?? null);
-  //       debugger;
-  //       if (event === "SIGNED_IN") {
-  //         checkUser();
-  //       } else if (event === "SIGNED_OUT") {
-  //         setUser(null);
-  //         setAvailableShips(0);
-  //         setRecentlyShipped([]);
-  //       }
-  //     }
-  //   );
-
-  //   return () => {
-  //     authListener.subscription.unsubscribe();
-  //   };
-  // }, [supabase.auth]);
 
   const checkUser = async () => {
     const {
@@ -115,7 +96,17 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, supabase, availableShips, recentlyShipped, handleLogout, handleLogin, isLoading }}
+      value={{
+        user,
+        supabase,
+        availableShips,
+        recentlyShipped,
+        handleLogout,
+        handleLogin,
+        isLoading,
+        anthropicKey,
+        setAnthropicKey,
+      }}
     >
       {children}
     </AuthContext.Provider>
