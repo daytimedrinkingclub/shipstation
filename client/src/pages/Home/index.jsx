@@ -24,7 +24,7 @@ const Home = () => {
   return (
     <div className="flex-grow flex flex-col items-center justify-center">
       {selectedType ? (
-        <ShipForm type={selectedType} />
+        <ShipForm type={selectedType} reset={() => setSelectedType(null)} />
       ) : (
         <>
           <CardContainer onCardClick={handleCardClick} />
