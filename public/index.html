@@ -2,7 +2,6 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ShipStation.AI - Create stunning websites</title>
     <meta
       name="description"
@@ -29,40 +28,10 @@
       name="twitter:description"
       content="Create stunning websites with ease using our AI-powered platform."
     />
-    <link
-      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-      rel="stylesheet"
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="scripts/components.js" defer></script>
-    <link rel="stylesheet" href="styles/main.css" />
+    <script type="module" crossorigin src="/assets/index-BygjBODr.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CESnlU06.css">
   </head>
-  <body class="flex flex-col min-h-screen bg-black text-white">
-    <div
-      id="snackbar-container"
-      style="z-index: 1000"
-      class="fixed inset-x-0 bottom-0 pointer-events-none flex flex-col items-center"
-    ></div>
-    <div class="ship-background"></div>
-    <header-component class="w-full"></header-component>
-    <main
-      class="flex-grow flex flex-col items-center justify-center px-4 md:px-8"
-    >
-      <card-container-component></card-container-component>
-      <ship-form-component></ship-form-component>
-      <loader-overlay-component></loader-overlay-component>
-      <success-overlay-component></success-overlay-component>
-      <login-form-container></login-form-container>
-    </main>
-    <footer-component></footer-component>
+  <body class="flex flex-col min-h-screen">
+    <div id="root"></div>
   </body>
 </html>

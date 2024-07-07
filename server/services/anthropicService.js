@@ -4,6 +4,7 @@ require("dotenv").config();
 
 async function validateKey(key) {
   const testClient = new Anthropic({ apiKey: key });
+  console.log("testing key", key);
   try {
     await testClient.messages.create({
       model: process.env.DEFAULT_MODEL,
