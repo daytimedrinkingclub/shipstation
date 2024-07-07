@@ -10,7 +10,7 @@ import { toast } from "./ui/use-toast";
 import LoaderOverlay from "./LoaderOverlay";
 import SuccessOverlay from "./SuccessOverlay";
 
-const ShipForm = ({ type }) => {
+const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useState("");
   const { sendMessage, socket } = useSocket();
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
@@ -113,7 +113,7 @@ const ShipForm = ({ type }) => {
       <LoaderOverlay isOpen={isLoaderOpen} />
       <SuccessOverlay
         isOpen={isSuccessOpen}
-        onClose={onSuccessClose}
+        onClose={reset}
         websiteName={deployedWebsiteSlug}
       />
     </div>

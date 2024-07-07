@@ -29,14 +29,14 @@ const LoaderOverlay = ({ isOpen }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md">
-      <div className="text-center">
+      <div className="flex flex-col items-center justify-center">
         <Lottie
           loop
           animationData={lottieAnimation}
           play
           style={{ width: 256, height: 256 }}
         />
-        <p className="text-2xl font-semibold mt-6 text-white">{loaderText}</p>
+        <p className="text-2xl font-semibold mt-6 text-white text-center">{loaderText}</p>
       </div>
     </div>
   );
