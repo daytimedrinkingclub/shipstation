@@ -9,7 +9,7 @@ import LoginDialog from "@/components/LoginDialog";
 const Home = () => {
   const [selectedType, setSelectedType] = useState(null);
 
-  const { user, availableShips } = useContext(AuthContext);
+  const { user } = useContext(AuthContext);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 

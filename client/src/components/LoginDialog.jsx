@@ -80,6 +80,7 @@ const LoginDialog = ({ isOpen, onClose }) => {
                 id="password"
                 type="password"
                 placeholder="Enter your password"
+                className="text-white bg-black"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

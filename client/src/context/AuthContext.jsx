@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { toast } from "@/components/ui/use-toast";
 
 export const AuthContext = createContext();
 
@@ -56,6 +57,10 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been logged out",
+    });
     setUser(null);
     setAvailableShips(0);
     setRecentlyShipped([]);
