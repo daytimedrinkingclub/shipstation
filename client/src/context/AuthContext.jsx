@@ -5,12 +5,9 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [supabase] = useState(() =>
-    createClient(
-      'https://rqyiibvcszfszmdhhgkg.supabase.co',
-      'import.meta.env.SUPABASE_ANON_TOKEN'
-    )
-  );
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
+  const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
 
   useEffect(() => {
     const session = supabase.auth.getSession();
