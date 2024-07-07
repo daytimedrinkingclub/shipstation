@@ -35,20 +35,6 @@ export const SocketProvider = ({ children }) => {
           setConversation(messages);
         }
       });
-
-      socket.on("error", ({ error }) => {
-        console.error("Error:", error);
-        // You can add a function to show error messages here
-      });
-
-      socket.on("websiteDeployed", ({ slug }) => {
-        const deployedUrl = `${window.location.protocol}//${window.location.host}/${slug}`;
-        // You can add a function to show success message here
-      });
-
-      socket.on("progress", ({ message }) => {
-        // You can add a function to update progress here
-      });
     }
   }, [socket, roomId]);
 
