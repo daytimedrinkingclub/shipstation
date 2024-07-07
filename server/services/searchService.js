@@ -32,7 +32,7 @@ async function performSearch(query, options = {}) {
     return response.data;
   } catch (error) {
     console.error("Error performing search:", error);
-    return { answer: "No relevant data found" };
+    return { answer: "No search relevant data found" };
   }
 }
 
