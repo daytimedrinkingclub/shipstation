@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import io from "socket.io-client";
+import { AuthContext } from "./AuthContext";
+import { toast } from "@/components/ui/use-toast";
 
 const SocketContext = createContext();
 
@@ -9,9 +11,10 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [roomId, setRoomId] = useState(null);
   const [conversation, setConversation] = useState([]);
+  const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    const newSocket = io("http://localhost:3000");
+    const newSocket = io("https://shipstation.ai");
     setSocket(newSocket);
 
     return () => newSocket.close();
@@ -38,10 +41,6 @@ export const SocketProvider = ({ children }) => {
         // You can add a function to show error messages here
       });
 
-      socket.on("showPaymentOptions", ({ error }) => {
-        // You can add a function to show payment options here
-      });
-
       socket.on("websiteDeployed", ({ slug }) => {
         const deployedUrl = `${window.location.protocol}//${window.location.host}/${slug}`;
         // You can add a function to show success message here
@@ -50,30 +49,17 @@ export const SocketProvider = ({ children }) => {
       socket.on("progress", ({ message }) => {
         // You can add a function to update progress here
       });
-
-      socket.on("apiKeyStatus", (response) => {
-        if (response.success) {
-          localStorage.setItem("anthropicKey", response.key);
-          // You can add a function to show success message here
-        } else {
-          // You can add a function to show error message here
-        }
-      });
     }
   }, [socket, roomId]);
 
-  const sendMessage = (message, type = "prompt") => {
+  const sendMessage = (event, data) => {
+    debugger;
     if (socket) {
-      const user = JSON.parse(
-        localStorage.getItem("sb-rqyiibvcszfszmdhhgkg-auth-token")
-      )?.user;
       const userId = user?.id;
-      socket.emit("startProject", {
+      socket.emit(event, {
         roomId,
         userId,
-        message,
-        type,
-        apiKey: localStorage.getItem("anthropicKey"),
+        ...data,
       });
     }
   };

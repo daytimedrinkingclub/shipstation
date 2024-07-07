@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Ship } from "lucide-react";
@@ -6,27 +6,64 @@ import { useSocket } from "@/context/SocketProvider";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
 import { AuthContext } from "@/context/AuthContext";
+import { toast } from "./ui/use-toast";
 
 const ShipForm = ({ type }) => {
   const [requirements, setRequirements] = useState("");
-  const { sendMessage } = useSocket();
+  const { sendMessage, socket } = useSocket();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { availableShips } = useContext(AuthContext);
+  const { availableShips, anthropicKey, setAnthropicKey } =
+    useContext(AuthContext);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (availableShips <= 0) {
       onOpen();
     } else {
-      sendMessage(requirements, "prompt");
+      sendMessage("startProject", {
+        type: "prompt",
+        apiKey: anthropicKey,
+        message: requirements,
+      });
     }
   };
 
   const handleSubmitAnthropicKey = () => {
-    // validate api key
-    // sendMessage(requirements, "prompt");
+    sendMessage("anthropicKey", { anthropicKey });
   };
+
+  useEffect(() => {
+    socket.on("apiKeyStatus", (response) => {
+      if (response.success) {
+        setAnthropicKey(response.key);
+        sendMessage("startProject", {
+          type: "prompt",
+          apiKey: anthropicKey,
+          message: requirements,
+        });
+        toast({
+          title: "Success",
+          description: "Anthropic key is valid, starting generation!",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: response.message,
+          variant: "destructive",
+        });
+      }
+    });
+
+    socket.on("showPaymentOptions", ({ error }) => {
+      onOpen();
+    });
+
+    return () => {
+      socket.off("apiKeyStatus");
+      socket.off("showPaymentOptions");
+    };
+  }, []);
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
@@ -48,6 +85,8 @@ const ShipForm = ({ type }) => {
         isOpen={isOpen}
         onClose={onClose}
         onSubmitKey={handleSubmitAnthropicKey}
+        anthropicKey={anthropicKey}
+        setAnthropicKey={setAnthropicKey}
       />
     </div>
   );
