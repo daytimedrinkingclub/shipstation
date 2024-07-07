@@ -7,12 +7,24 @@ import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "./ui/use-toast";
+import LoaderOverlay from "./LoaderOverlay";
+import SuccessOverlay from "./SuccessOverlay";
 
 const ShipForm = ({ type }) => {
   const [requirements, setRequirements] = useState("");
   const { sendMessage, socket } = useSocket();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const {
+    isOpen: isLoaderOpen,
+    onOpen: onLoaderOpen,
+    onClose: onLoaderClose,
+  } = useDisclosure();
+  const {
+    isOpen: isSuccessOpen,
+    onOpen: onSuccessOpen,
+    onClose: onSuccessClose,
+  } = useDisclosure();
   const { availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
 
@@ -87,6 +99,12 @@ const ShipForm = ({ type }) => {
         onSubmitKey={handleSubmitAnthropicKey}
         anthropicKey={anthropicKey}
         setAnthropicKey={setAnthropicKey}
+      />
+      <LoaderOverlay isOpen={isLoaderOpen} />
+      <SuccessOverlay
+        isOpen={isSuccessOpen}
+        onClose={onSuccessClose}
+        websiteName={"websiteName"}
       />
     </div>
   );

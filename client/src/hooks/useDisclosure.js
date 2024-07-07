@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-const useDisclosure = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const useDisclosure = (initialState = false) => {
+  const [isOpen, setIsOpen] = useState(initialState);
   const onOpen = () => setIsOpen(true);
   const onClose = () => setIsOpen(false);
   return { isOpen, onOpen, onClose };
