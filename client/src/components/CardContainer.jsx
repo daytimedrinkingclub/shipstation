@@ -1,5 +1,3 @@
-// src/components/CardContainer.jsx
-import React from "react";
 import {
   Card,
   CardHeader,
@@ -8,19 +6,21 @@ import {
 } from "@/components/ui/card";
 import { Layout, User, Cpu } from "lucide-react";
 
-const CardContainer = () => {
+const CardContainer = ({ onCardClick }) => {
   const cards = [
     {
       icon: <Layout className="w-6 h-6" />,
       title: "Ship Landing Page",
       description:
         "Craft a sleek, high-converting landing page that captivates your audience from the first scroll.",
+      type: "landing page",
     },
     {
       icon: <User className="w-6 h-6" />,
       title: "Ship Personal Websites",
       description:
         "Showcase your unique story and skills with a stunning personal website that leaves a lasting impression.",
+      type: "personal website",
     },
     {
       icon: <Cpu className="w-6 h-6" />,
@@ -28,6 +28,7 @@ const CardContainer = () => {
       description:
         "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
       badge: "Shipping Soon",
+      type: "idea board",
     },
   ];
 
@@ -36,14 +37,15 @@ const CardContainer = () => {
       {cards.map((card, index) => (
         <Card
           key={index}
-          className="bg-gray-800 relative text-white hover:bg-gray-700 transition-colors cursor-pointer"
+          className="bg-primary text-primary-foreground relative cursor-pointer"
+          onClick={() => onCardClick(card.type)}
         >
           <CardHeader>
             {card.icon}
             <CardTitle>{card.title}</CardTitle>
             <CardDescription>{card.description}</CardDescription>
             {card.badge && (
-              <span className="absolute top-2 right-2 bg-gray-600 text-xs font-semibold px-2 py-1 rounded">
+              <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded">
                 {card.badge}
               </span>
             )}
