@@ -11,7 +11,7 @@ export const SocketProvider = ({ children }) => {
   const [conversation, setConversation] = useState([]);
 
   useEffect(() => {
-    const newSocket = io();
+    const newSocket = io("http://localhost:3000");
     setSocket(newSocket);
 
     return () => newSocket.close();

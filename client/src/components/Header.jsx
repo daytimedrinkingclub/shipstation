@@ -5,12 +5,12 @@ import useDisclosure from "@/hooks/useDisclosure";
 import { Button } from "./ui/button";
 
 const Header = () => {
-  const { user, supabase, availableShips } = useContext(AuthContext);
+  const { user, availableShips, handleLogout } = useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleLoginLogout = async () => {
     if (user) {
-      await supabase.auth.signOut();
+      await handleLogout();
     } else {
       onOpen();
     }

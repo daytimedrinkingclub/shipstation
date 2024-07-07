@@ -22,7 +22,12 @@ require("dotenv").config();
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketIo(server, {
+  cors: {
+    origin: "*", // Allow all origins
+    methods: ["GET", "POST"]
+  }
+});
 
 app.use(express.json());
 app.use(express.static("websites"));
