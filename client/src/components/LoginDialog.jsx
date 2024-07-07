@@ -17,8 +17,7 @@ const LoginDialog = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { supabase } = useContext(AuthContext);
-  const [isLoading, setIsLoading] = useState(false);
+  const { handleLogin, isLoading } = useContext(AuthContext);
   const { toast } = useToast();
 
   const bypassed = [
@@ -34,43 +33,21 @@ const LoginDialog = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      if (showPassword) {
-        // Sign in with email and password
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        toast({
-          title: "Login Successful",
-          description: "You have been successfully logged in.",
-        });
-      } else {
-        // Send magic link
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: window.location.origin,
-          },
-        });
-        if (error) throw error;
-        toast({
-          title: "Magic Link Sent",
-          description: "Check your email for the login link.",
-        });
-      }
+    const result = await handleLogin(email, showPassword ? password : null);
+    if (result.success) {
+      toast({
+        title: result.message,
+        description: showPassword
+          ? "You have been successfully logged in."
+          : "Check your email for the login link.",
+      });
       onClose();
-    } catch (error) {
-      console.error("Error:", error.message);
+    } else {
       toast({
         title: "Error",
-        description: error.message,
+        description: result.message,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 

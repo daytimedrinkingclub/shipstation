@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_ID;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -79,9 +80,42 @@ export const AuthProvider = ({ children }) => {
     setRecentlyShipped([]);
   };
 
+  const handleLogin = async (email, password = null) => {
+    setIsLoading(true);
+    try {
+      let result;
+      if (password) {
+        // Sign in with email and password
+        result = await supabase.auth.signInWithPassword({ email, password });
+      } else {
+        // Send magic link
+        result = await supabase.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin,
+          },
+        });
+      }
+
+      if (result.error) throw result.error;
+
+      if (password) {
+        await checkUser();
+        return { success: true, message: "Login Successful" };
+      } else {
+        return { success: true, message: "Magic Link Sent" };
+      }
+    } catch (error) {
+      console.error("Error:", error.message);
+      return { success: false, message: error.message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, supabase, availableShips, recentlyShipped, handleLogout }}
+      value={{ user, supabase, availableShips, recentlyShipped, handleLogout, handleLogin, isLoading }}
     >
       {children}
     </AuthContext.Provider>

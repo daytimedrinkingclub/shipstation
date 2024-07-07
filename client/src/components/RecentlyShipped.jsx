@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 const RecentlyShipped = () => {
   const { recentlyShipped } = useContext(AuthContext);
@@ -9,15 +9,16 @@ const RecentlyShipped = () => {
   }
 
   return (
-    <div id="recently-shipped" className="bg-black text-white py-8">
+    <div id="recently-shipped" className="text-white py-8">
       <div className="w-full max-w-3xl mx-auto px-4 md:px-8 mb-8">
         <hr className="border-t-2 border-dashed border-gray-700" />
       </div>
       <section className="w-full max-w-3xl mx-auto px-4 md:px-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          Shipped by you:
-        </h2>
-        <div className="flex flex-wrap justify-center gap-4" id="recently-shipped-list">
+        <h2 className="text-2xl font-bold mb-6 text-center">Shipped by you:</h2>
+        <div
+          className="flex flex-wrap justify-center gap-4"
+          id="recently-shipped-list"
+        >
           {recentlyShipped.map((ship, index) => (
             <a
               key={index}
