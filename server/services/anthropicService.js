@@ -41,6 +41,7 @@ class AnthropicService {
     this.temperature = temperature;
     this.maxTokens = maxTokens;
     this.startTimestamp = Date.now();
+    this.abortController = new AbortController();
   }
 
   async sendMessage({ system, tools = [], tool_choice, messages = [] }) {
@@ -60,29 +61,34 @@ class AnthropicService {
     if (system) {
       clientParams.system = system;
     }
-    const response = await this.client.messages.create(clientParams);
-    console.log("currently used tokens", this.tokensUsed);
-    this.tokensUsed += response.usage.output_tokens;
-    console.log("new tokens used", this.tokensUsed);
+    console.log("Calling anthropic with payload:", clientParams);
+    try {
+      const response = await this.client.messages.create(clientParams);
+      console.log("Anthropic response:", response);
+      this.tokensUsed += response.usage.output_tokens;
 
-    if (!this.conversationId) {
-      const conversation = await insertConversation({
-        user_id: this.userId,
-        chat_json: messages,
-        tokens_used: this.tokensUsed,
-      });
-      this.conversationId = conversation.id;
-      console.log("inserted conversation: ", this.conversationId);
+      if (!this.conversationId) {
+        const conversation = await insertConversation({
+          user_id: this.userId,
+          tokens_used: this.tokensUsed,
+        });
+        this.conversationId = conversation.id;
+        console.log("inserted conversation: ", this.conversationId);
+      }
+
+      return response;
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log("Request aborted");
+        throw new DOMException("Aborted", "AbortError");
+      }
+      throw error;
     }
-    // else { // disabling as we dont need to update it everytime
-    //   console.log("updating conversation: ", this.conversationId);
-    //   await updateConversation(this.conversationId, {
-    //     chat_json: messages,
-    //     tokens_used: this.tokensUsed,
-    //   });
-    // }
+  }
 
-    return response;
+  abortRequest() {
+    this.abortController.abort();
+    console.log("Request aborted");
   }
 
   static validateKey(key) {

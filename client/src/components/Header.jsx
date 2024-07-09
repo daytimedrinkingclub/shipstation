@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import LoginDialog from "./LoginDialog";
 import useDisclosure from "@/hooks/useDisclosure";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const { user, availableShips, handleLogout } = useContext(AuthContext);
@@ -18,13 +18,15 @@ const Header = () => {
 
   return (
     <header className="p-4 text-white">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">ShipStation.AI</h1>
+      <div className="container flex justify-between items-center">
+       <div>
+       <h1 className="text-2xl font-bold">ShipStation.AI</h1>
+        {user && (
+          <span className="text-sm">Available Ships: {availableShips}</span>
+        )}
+       </div>
         <div className="flex items-center space-x-4">
-          {user && (
-            <span className="text-sm">Available Ships: {availableShips}</span>
-          )}
-          <Button onClick={handleLoginLogout}>
+          <Button onClick={handleLoginLogout} variant="link" className="text-white">
             {user ? "Logout" : "Login"}
           </Button>
         </div>

@@ -74,6 +74,29 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
   }
 });
 
+app.get("/sitemap.xml", async (req, res) => {
+  try {
+    const s3Websites = await listFoldersInS3("websites/");
+    const websites = JSON.parse(s3Websites).filter((website) => !website.startsWith("."));
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${websites.map(website => `
+  <url>
+    <loc>${req.protocol}://${req.get('host')}/${website}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`).join('')}
+</urlset>`;
+
+    res.header('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (error) {
+    console.error("Error generating sitemap:", error);
+    res.status(500).send("Error generating sitemap");
+  }
+});
+
 app.get("/all-websites", async (req, res) => {
   const s3Websites = await listFoldersInS3("websites/");
   let localWebsites = [];

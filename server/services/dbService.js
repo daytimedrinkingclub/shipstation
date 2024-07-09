@@ -15,6 +15,21 @@ async function insertConversation(payload) {
   return data;
 }
 
+async function insertMessage(message) {
+  const { data, error } = await supabaseClient
+    .from("messages")
+    .insert([{ ...message }])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error inserting message:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 async function insertShip(ship) {
   const { data, error } = await supabaseClient
     .from("ships")
@@ -115,6 +130,7 @@ async function insertPayment(paymentData) {
 
 module.exports = {
   insertConversation,
+  insertMessage,
   insertShip,
   updateShip,
   getConversation,

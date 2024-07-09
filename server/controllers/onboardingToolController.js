@@ -23,23 +23,23 @@ async function handleOnboardingToolUse({
   client,
 }) {
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
-    sendEvent("questions", { questions: tool.input.questions });
-    return [
-      {
-        type: "tool_result",
-        tool_use_id: tool.id,
-        content: [{ type: "text", text: "Will get the data shortly" }],
-      },
-    ];
+    sendEvent("question", tool.input);
+    // return [
+    //   {
+    //     type: "tool_result",
+    //     tool_use_id: tool.id,
+    //     content: [{ type: "text", text: "Will get the data shortly" }],
+    //   },
+    // ];
   } else if (tool.name === TOOLS.GET_DATA_FOR_LANDING_PAGE) {
-    sendEvent("questions", { questions: tool.input.questions });
-    return [
-      {
-        type: "tool_result",
-        tool_use_id: tool.id,
-        content: [{ type: "text", text: "Will get the data shortly" }],
-      },
-    ];
+    sendEvent("question", tool.input);
+    // return [
+    //   {
+    //     type: "tool_result",
+    //     tool_use_id: tool.id,
+    //     content: [{ type: "text", text: "Will get the data shortly" }],
+    //   },
+    // ];
   } else if (tool.name === TOOLS.START_SHIPPING_PORTFOLIO) {
     const { person_name, portfolio_description, sections, design_style } =
       tool.input;
@@ -51,18 +51,18 @@ async function handleOnboardingToolUse({
       Sections : ${sections}
       Design style : ${design_style}`
     );
-    return [
-      {
-        type: "tool_result",
-        tool_use_id: tool.id,
-        content: [
-          {
-            type: "text",
-            text: `Portfolio requirements created successfully at ${generatedFolderName}/readme.md`,
-          },
-        ],
-      },
-    ];
+    // return [
+    //   {
+    //     type: "tool_result",
+    //     tool_use_id: tool.id,
+    //     content: [
+    //       {
+    //         type: "text",
+    //         text: `Portfolio requirements created successfully at ${generatedFolderName}/readme.md`,
+    //       },
+    //     ],
+    //   },
+    // ];
   } else if (tool.name === TOOLS.START_SHIPPING_LANDING_PAGE) {
     const { project_name, project_description, sections, design_style } =
       tool.input;
@@ -75,18 +75,18 @@ async function handleOnboardingToolUse({
       Sections : ${sections}
       Design style : ${design_style}`
     );
-    return [
-      {
-        type: "tool_result",
-        tool_use_id: tool.id,
-        content: [
-          {
-            type: "text",
-            text: `Landing page requirements created successfully at ${generatedFolderName}/readme.md`,
-          },
-        ],
-      },
-    ];
+    // return [
+    //   {
+    //     type: "tool_result",
+    //     tool_use_id: tool.id,
+    //     content: [
+    //       {
+    //         type: "text",
+    //         text: `Landing page requirements created successfully at ${generatedFolderName}/readme.md`,
+    //       },
+    //     ],
+    //   },
+    // ];
   } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
     console.log("inside product manager tool", tool.input);
     const {
@@ -140,10 +140,12 @@ async function handleOnboardingToolUse({
       tokens_used: client.tokensUsed,
     };
     const { id } = await insertShip(ship);
-    const profile = await getUserProfile(userId);
-    const { available_ships } = profile; // current
-    const profilePayload = { available_ships: available_ships - 1 }; // updated
-    await updateUserProfile(userId, profilePayload);
+    if (mode === 'paid') {
+      const profile = await getUserProfile(userId);
+      const { available_ships } = profile; // current
+      const profilePayload = { available_ships: available_ships - 1 }; // updated
+      await updateUserProfile(userId, profilePayload);
+    }
     const convPayload = {
       ship_id: id,
     };

@@ -5,9 +5,11 @@ import ShipForm from "@/components/ShipForm";
 import { AuthContext } from "@/context/AuthContext";
 import useDisclosure from "@/hooks/useDisclosure";
 import LoginDialog from "@/components/LoginDialog";
+import { useSocket } from "@/context/SocketProvider";
 
 const Home = () => {
   const [selectedType, setSelectedType] = useState(null);
+  const { sendMessage, socket } = useSocket();
 
   const { user } = useContext(AuthContext);
 
@@ -18,11 +20,14 @@ const Home = () => {
       onOpen();
     } else {
       setSelectedType(type);
+      // sendMessage("startProject", {
+      //   shipType: type,
+      // });
     }
   };
 
   return (
-    <div className="flex-grow flex flex-col items-center justify-center">
+    <div className="container flex flex-col items-center justify-center">
       {selectedType ? (
         <ShipForm type={selectedType} reset={() => setSelectedType(null)} />
       ) : (

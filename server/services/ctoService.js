@@ -121,6 +121,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
     sendEvent("websiteDeployed", {
       slug,
     });
+    client.abortRequest();
     return {
       message: `Website successfully built with  slug: ${slug}`,
       slug,

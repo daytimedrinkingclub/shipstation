@@ -1,67 +1,58 @@
 {
   "name": "get_data_for_landing_page_tool",
-  "description": "Get the relevant information needed to create the website like their product/project name, industry, purpose of landing page like marketing, event promotion, for a social cause etc. Start with 4-5 questions and then depending on the answers given ask further questions.",
+  "description": "Get the relevant information needed to create the website like their product/project name, industry, purpose of landing page like marketing, event promotion, for a social cause etc. Wait for user before asking next question.",
   "input_schema": {
     "type": "object",
     "properties": {
-      "questions": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "question_format": {
-              "type": "string",
-              "enum": ["text", "radio", "checkbox", "scale", "datepicker"],
-              "description": "The format of the question, and expected answer format"
+      "question_format": {
+        "type": "string",
+        "enum": ["text", "radio", "checkbox", "scale", "datepicker"],
+        "description": "The format of the question, and expected answer format"
+      },
+      "question_text": {
+        "type": "string",
+        "description": "The actual question text string that the user will be asked to answer"
+      },
+      "question_meta": {
+        "type": "object",
+        "description": "Additional metadata based on the question_format",
+        "oneOf": [
+          {
+            "properties": {
+              "options": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "An array of options for radio and checkbox question_format"
+              }
             },
-            "question_text": {
-              "type": "string",
-              "description": "The actual question text string that the user will be asked to answer"
-            },
-            "question_meta": {
-              "type": "object",
-              "description": "Additional metadata based on the question_format",
-              "oneOf": [
-                {
-                  "properties": {
-                    "options": {
-                      "type": "array",
-                      "items": { "type": "string" },
-                      "description": "An array of options for radio and checkbox question_format"
-                    }
-                  },
-                  "required": ["options"]
-                },
-                {
-                  "properties": {
-                    "min": { "type": "number" },
-                    "max": { "type": "number" }
-                  },
-                  "required": ["min", "max"]
-                },
-                { "type": "object" }
-              ]
-            },
-            "answer_type": {
-              "type": "string",
-              "enum": ["text", "radio", "checkbox", "scale", "datepicker"],
-              "description": "The expected answer type"
-            },
-            "answer_values": {
-              "type": "string",
-              "description": "The expected answer values, for radio and checkbox answer type, comma separated options will work. Use 'NULL' for questions without predefined answer values."
-            }
+            "required": ["options"]
           },
-          "required": [
-            "question_format",
-            "question_text",
-            "question_meta",
-            "answer_type",
-            "answer_values"
-          ]
-        }
+          {
+            "properties": {
+              "min": { "type": "number" },
+              "max": { "type": "number" }
+            },
+            "required": ["min", "max"]
+          },
+          { "type": "object" }
+        ]
+      },
+      "answer_type": {
+        "type": "string",
+        "enum": ["text", "radio", "checkbox", "scale", "datepicker"],
+        "description": "The expected answer type"
+      },
+      "answer_values": {
+        "type": "string",
+        "description": "The expected answer values, for radio and checkbox answer type, comma separated options will work. Use 'NULL' for questions without predefined answer values."
       }
     },
-    "required": ["questions"]
+    "required": [
+      "question_format",
+      "question_text",
+      "question_meta",
+      "answer_type",
+      "answer_values"
+    ]
   }
 }

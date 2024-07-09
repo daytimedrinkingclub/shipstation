@@ -6,22 +6,23 @@ const {
   productManagerTool,
   startShippingPortfolioTool,
   startShippingLandingPageTool,
+  TOOLS,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
-const { getUserProfile } = require("../services/dbService");
+const { getUserProfile, insertMessage } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
 async function processConversation({
   client,
-  type,
-  message,
   sendEvent,
   roomId,
   abortSignal,
   userId,
+  shipType,
+  message,
 }) {
   while (true) {
     if (abortSignal.aborted) {
@@ -31,26 +32,34 @@ async function processConversation({
     let currentMessage;
 
     let messages = [];
-    let tools = [ctoTool];
+    let tools = [];
 
-    if (type === "shipType") {
-      if (message === SHIP_TYPES.PORTFOLIO) {
+    if (shipType) {
+      if (shipType === SHIP_TYPES.PORTFOLIO) {
         tools.push(getDataForPortfolioTool);
         tools.push(startShippingPortfolioTool);
-        messages = DEFAULT_MESSAGES[message];
+        messages = DEFAULT_MESSAGES[shipType];
       }
-      if (message === SHIP_TYPES.LANDING_PAGE) {
+      if (shipType === SHIP_TYPES.LANDING_PAGE) {
         tools.push(getDataForLandingPageTool);
         tools.push(startShippingLandingPageTool);
-        messages = DEFAULT_MESSAGES[message];
+        messages = DEFAULT_MESSAGES[shipType];
       }
-    } else if (type === "prompt") {
-      tools.push(productManagerTool);
-      tools.push(searchTool);
-      messages = [{ role: "user", content: message }];
+      if (shipType === SHIP_TYPES.PROMPT) {
+        tools.push(ctoTool);
+        tools.push(productManagerTool);
+        tools.push(searchTool);
+        messages = [{ role: "user", content: message }];
+      }
+
     }
 
     try {
+      // insertMessage({
+      //   chat_id: roomId,
+      //   role: "user",
+      //   content: messages[0].content,
+      // });
       currentMessage = await client.sendMessage({
         system:
           "Your task is to deploy a website for the user and share them the deployed url",
@@ -72,6 +81,9 @@ async function processConversation({
       messages.push({
         role: currentMessage.role,
         content: currentMessage.content,
+      });
+      sendEvent("needMoreInfo", {
+        message: currentMessage.content[0].text,
       });
       break;
     }
@@ -147,7 +159,7 @@ function handleOnboardingSocketEvents(io) {
 
     socket.on("startProject", async (data) => {
       console.log("startProject", data);
-      const { roomId, userId, type, apiKey, message } = data;
+      const { roomId, userId, apiKey, shipType, message } = data;
       const clientParams = { userId };
       if (apiKey) {
         // using own anthropic key
@@ -179,9 +191,9 @@ function handleOnboardingSocketEvents(io) {
           roomId,
           abortSignal: abortController.signal,
           userId,
-          type,
-          message,
+          shipType,
           socket,
+          message,
         });
       } catch (error) {
         if (error.name === "AbortError") {

@@ -18,6 +18,7 @@ const ChoosePaymentOptionDialog = ({
   anthropicKey,
   setAnthropicKey,
   type,
+  isKeyValidating,
 }) => {
   const [showKeyInput, setShowKeyInput] = useState(false);
 
@@ -117,7 +118,9 @@ const ChoosePaymentOptionDialog = ({
                   onChange={(e) => setAnthropicKey(e.target.value)}
                   className="flex-grow bg-primary text-white"
                 />
-                <Button onClick={handleKeySubmit}>Submit Key</Button>
+                <Button onClick={handleKeySubmit}>
+                  {isKeyValidating ? "Validating..." : "Submit Key"}
+                </Button>
               </div>
             </motion.div>
           )}

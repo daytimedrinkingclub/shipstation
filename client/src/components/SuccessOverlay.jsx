@@ -1,10 +1,11 @@
 import Lottie from "react-lottie-player";
-import { toast } from "./ui/use-toast";
+import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
 import { X } from "lucide-react";
 
 const SuccessOverlay = ({ isOpen, onClose, websiteName }) => {
   if (!isOpen) return null;
+  const { toast } = useToast();
 
   const successText = `Your website "${websiteName}" has been deployed successfully!`;
   const link = `${window.location.protocol}//${window.location.host}/${websiteName}`;

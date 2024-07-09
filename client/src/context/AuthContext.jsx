@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 export const AuthContext = createContext();
 
@@ -13,6 +13,8 @@ export const AuthProvider = ({ children }) => {
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
   const [isLoading, setIsLoading] = useState(false);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     checkUser();
@@ -69,31 +71,23 @@ export const AuthProvider = ({ children }) => {
   const handleLogin = async (email, password = null) => {
     setIsLoading(true);
     try {
-      let result;
-      if (password) {
-        // Sign in with email and password
+      let result = await supabase.auth.signUp({ email, password });
+      if (result?.error?.message === 'User already registered') {
         result = await supabase.auth.signInWithPassword({ email, password });
-      } else {
-        // Send magic link
-        result = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: window.location.origin,
-          },
+      }
+      if (result.error) {
+        toast({
+          title: "Error",
+          description: result?.error?.message,
+          variant: "destructive",
         });
+        return { success: false, message: result?.error?.message };
       }
-
-      if (result.error) throw result.error;
-
-      if (password) {
-        await checkUser();
-        return { success: true, message: "Login Successful" };
-      } else {
-        return { success: true, message: "Magic Link Sent" };
-      }
+      await checkUser();
+      return { success: true, message: "Login Successful" };
     } catch (error) {
-      console.error("Error:", error.message);
-      return { success: false, message: error.message };
+      console.error("Error:", error);
+      return { success: false, message: error };
     } finally {
       setIsLoading(false);
     }

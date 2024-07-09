@@ -9,11 +9,11 @@ const RecentlyShipped = () => {
   }
 
   return (
-    <div id="recently-shipped" className="text-white py-8">
+    <div className="text-white py-8">
       <div className="w-full max-w-3xl mx-auto px-4 md:px-8 mb-8">
         <hr className="border-t-2 border-dashed border-gray-700" />
       </div>
-      <section className="w-full max-w-3xl mx-auto px-4 md:px-8">
+      <section className="w-full mx-auto px-4 md:px-8">
         <h2 className="text-2xl font-bold mb-6 text-center">Shipped by you:</h2>
         <div
           className="flex flex-wrap justify-center gap-4"

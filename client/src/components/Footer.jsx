@@ -1,5 +1,4 @@
 // src/components/Footer.jsx
-import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -9,7 +8,7 @@ import {
 
 const Footer = () => {
   return (
-    <footer className="p-4 text-center">
+    <footer className="p-4 flex justify-between items-center container">
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="link" className="text-gray-400 hover:text-white">
@@ -41,6 +40,13 @@ const Footer = () => {
           </ul>
         </PopoverContent>
       </Popover>
+      <a
+        href="https://discord.gg/w7JGfsjt99"
+        target="_blank"
+        className="inline-block w-[120px] h-[40px] bg-no-repeat bg-center mr-4"
+        style={{ backgroundImage: `url(/assets/discord.svg)` }}
+        aria-label="Join our Discord"
+      ></a>
     </footer>
   );
 };

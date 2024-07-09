@@ -10,21 +10,21 @@ const CardContainer = ({ onCardClick }) => {
   const cards = [
     {
       icon: <Layout className="w-6 h-6" />,
-      title: "Ship Landing Page",
+      title: "Ship landing page",
       description:
         "Craft a sleek, high-converting landing page that captivates your audience from the first scroll.",
       type: "landing_page",
     },
     {
       icon: <User className="w-6 h-6" />,
-      title: "Ship Personal Websites",
+      title: "Ship personal website",
       description:
         "Showcase your unique story and skills with a stunning personal website that leaves a lasting impression.",
       type: "portfolio",
     },
     {
       icon: <Cpu className="w-6 h-6" />,
-      title: "Ship Idea Board",
+      title: "Ship AI agent",
       description:
         "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
       badge: "Shipping Soon",
@@ -33,7 +33,7 @@ const CardContainer = ({ onCardClick }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {cards.map((card, index) => (
         <Card
           key={index}

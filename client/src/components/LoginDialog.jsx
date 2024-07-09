@@ -10,36 +10,26 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogIn, Mail } from "lucide-react";
+import { Loader2, LogIn } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const LoginDialog = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const { handleLogin, isLoading } = useContext(AuthContext);
   const { toast } = useToast();
 
-  const bypassed = [
-    "anuj@shipstation.ai",
-    "test@shipstation.ai",
-    "zero@shipstation.ai",
-  ];
-
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    setShowPassword(bypassed.includes(e.target.value));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await handleLogin(email, showPassword ? password : null);
+    const result = await handleLogin(email, password);
     if (result.success) {
       toast({
         title: result.message,
-        description: showPassword
-          ? "You have been successfully logged in."
-          : "Check your email for the login link.",
+        description: "You have been successfully logged in.",
       });
       onClose();
     } else {
@@ -55,9 +45,9 @@ const LoginDialog = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
+          <DialogTitle>Enter account details</DialogTitle>
           <DialogDescription>
-            Enter your email to receive a login link
+            Enter your login details. An account will be created for you if you don't have one.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -73,35 +63,28 @@ const LoginDialog = ({ isOpen, onClose }) => {
               required
             />
           </div>
-          {showPassword && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                className="text-white bg-black"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="Enter your password"
+              className="text-white bg-black"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading...
               </>
-            ) : showPassword ? (
+            ) :  (
               <>
                 <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </>
-            ) : (
-              <>
-                <Mail className="mr-2 h-4 w-4" />
-                Send Magic Link
+                Continue
               </>
             )}
           </Button>
