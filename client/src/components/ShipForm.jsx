@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Ship } from "lucide-react";
@@ -9,10 +9,11 @@ import { AuthContext } from "@/context/AuthContext";
 import LoaderOverlay from "./LoaderOverlay";
 import SuccessOverlay from "./SuccessOverlay";
 import { useToast } from "@/components/ui/use-toast";
+import useLocalStorage from "@/hooks/useLocalStorage";
 
 
 const ShipForm = ({ type, reset }) => {
-  const [requirements, setRequirements] = useState("");
+  const [requirements, setRequirements] = useLocalStorage("requirements", "");
   const { sendMessage, socket } = useSocket();
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -89,6 +90,7 @@ const ShipForm = ({ type, reset }) => {
     socket.on("websiteDeployed", ({ slug }) => {
       onSuccessOpen();
       onLoaderClose();
+      setRequirements("");
       setDeployedWebsiteSlug(slug);
     });
 
@@ -128,7 +130,7 @@ const ShipForm = ({ type, reset }) => {
       <SuccessOverlay
         isOpen={isSuccessOpen}
         onClose={reset}
-        websiteName={deployedWebsiteSlug}
+        slug={deployedWebsiteSlug}
       />
     </div>
   );

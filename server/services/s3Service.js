@@ -3,6 +3,8 @@ const {
   ListObjectsV2Command,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
+const { Readable } = require('stream');
+const archiver = require('archiver');
 const { s3Handler } = require("../config/awsConfig");
 require("dotenv").config();
 
@@ -99,6 +101,43 @@ async function saveDirectoryToS3(directoryPath, remotePath) {
   }
 }
 
+async function createZipFromS3Directory(directoryPath) {
+  const params = {
+    Bucket: bucketName,
+    Prefix: `websites/${directoryPath}`,
+  };
+
+  try {
+    const data = await s3Handler.send(new ListObjectsV2Command(params));
+    
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Sets the compression level
+    });
+
+    const streamPassThrough = new (require('stream').PassThrough)();
+    archive.pipe(streamPassThrough);
+
+    for (const item of data.Contents) {
+      const fileData = await s3Handler.send(new GetObjectCommand({
+        Bucket: bucketName,
+        Key: item.Key,
+      }));
+      
+      const fileStream = fileData.Body;
+      const fileName = item.Key.replace(`websites/${directoryPath}/`, '');
+      
+      archive.append(Readable.from(fileStream), { name: fileName });
+    }
+
+    await archive.finalize();
+
+    return streamPassThrough;
+  } catch (err) {
+    console.error(`Error creating zip from '${directoryPath}':`, err);
+    throw err;
+  }
+}
+
 async function getFileFromS3(bucketPath) {
   const params = {
     Bucket: bucketName,
@@ -109,9 +148,12 @@ async function getFileFromS3(bucketPath) {
   return data?.Body;
 }
 
+
+
 module.exports = {
   saveFileToS3,
   saveDirectoryToS3,
   listFoldersInS3,
   getFileFromS3,
+  createZipFromS3Directory
 };

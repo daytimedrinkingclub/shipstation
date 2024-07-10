@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { X, Key, CreditCard, ArrowLeft } from "lucide-react";
+import { Key, CreditCard, ArrowLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ChoosePaymentOptionDialog = ({
@@ -97,8 +97,8 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4">
                   Secure payment for website generation service.
                 </p>
-               {/* Render button here */}
-               <p>coming soon</p>
+                {/* Render button here */}
+                <p>coming soon</p>
               </div>
             </motion.div>
           ) : (

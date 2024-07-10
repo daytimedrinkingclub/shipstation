@@ -107,6 +107,11 @@ async function processConversation({
           client,
         });
         console.log("Received tool result:", toolResult);
+
+        if (tool.name === TOOLS.CTO) {
+          console.log("Project creation completed");
+          break;
+        }
         messages.push({ role: "user", content: toolResult });
 
         console.log(

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 const RecentlyShipped = () => {
@@ -22,7 +22,7 @@ const RecentlyShipped = () => {
           {recentlyShipped.map((ship, index) => (
             <a
               key={index}
-              href={`/${ship.slug}`}
+              href={`${import.meta.env.VITE_BACKEND_URL}/site/${ship.slug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105"

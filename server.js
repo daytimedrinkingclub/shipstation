@@ -5,7 +5,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
 const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const { listFoldersInS3 } = require("./server/services/s3Service");
+const { listFoldersInS3, createZipFromS3Directory } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
@@ -182,6 +182,28 @@ app.get("/:websiteId", async (req, res) => {
     res.status(404).send("Website not found");
   }
 });
+
+app.get('/download/:slug', async (req, res) => {
+  const slug = req.params.slug;
+  const folderPath = `websites/${slug}`;
+
+  try {
+    const zipStream = await createZipFromS3Directory(slug);
+
+    if (!zipStream) {
+      return res.status(404).send('Folder not found');
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename=${slug}.zip`);
+    res.setHeader('Content-Type', 'application/zip');
+
+    zipStream.pipe(res);
+  } catch (error) {
+    console.error(`Error downloading folder ${folderPath}:`, error);
+    res.status(500).send('An error occurred');
+  }
+});
+
 
 app.use("/site/:siteId", async (req, res, next) => {
   const siteName = req.params.siteId;

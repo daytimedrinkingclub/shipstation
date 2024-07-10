@@ -45,9 +45,9 @@ const LoginDialog = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
-          <DialogTitle>Enter account details</DialogTitle>
+          <DialogTitle>Login or Signup</DialogTitle>
           <DialogDescription>
-            Enter your login details. An account will be created for you if you don't have one.
+            Enter your email to login or signup.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

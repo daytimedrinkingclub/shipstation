@@ -9,7 +9,7 @@ import { useSocket } from "@/context/SocketProvider";
 
 const Home = () => {
   const [selectedType, setSelectedType] = useState(null);
-  const { sendMessage, socket } = useSocket();
+  // const { sendMessage, socket } = useSocket();
 
   const { user } = useContext(AuthContext);
 
