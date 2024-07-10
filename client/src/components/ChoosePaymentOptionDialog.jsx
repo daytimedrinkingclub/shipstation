@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -7,8 +7,9 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Key, CreditCard, ArrowLeft } from "lucide-react";
+import { Key, CreditCard, ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import RazorpayButton from "./RazorpayButton";
 
 const ChoosePaymentOptionDialog = ({
   isOpen,
@@ -39,24 +40,22 @@ const ChoosePaymentOptionDialog = ({
   };
 
   const productId = productIds[type];
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-black text-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
+          <DialogTitle className="text-2xl font-bold">
             {showKeyInput ? (
-              <div className="flex items-center">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="mr-2"
-                  onClick={handleBack}
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-                Provide Anthropic Key
-              </div>
+              <>
+                <div className="flex items-center cursor-pointer" onClick={handleBack}>
+                  <ArrowLeft height={24} width={24} className="mr-2" />
+                  Provide Anthropic Key
+                </div>
+                <p className="text-sm text-gray-400 mt-2">
+                  <ShieldCheck className="inline-block mr-1 h-4 w-4" />
+                  Your key is never stored on our servers.
+                </p>
+              </>
             ) : (
               "Choose an option"
             )}
@@ -85,7 +84,7 @@ const ChoosePaymentOptionDialog = ({
                   className="w-full"
                   onClick={() => setShowKeyInput(true)}
                 >
-                  Free
+                  Continue
                 </Button>
               </div>
               <div className="bg-gray-800 p-4 rounded-lg text-center relative">
@@ -97,8 +96,7 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4">
                   Secure payment for website generation service.
                 </p>
-                {/* Render button here */}
-                <p>coming soon</p>
+                <RazorpayButton productId={productId} />
               </div>
             </motion.div>
           ) : (
@@ -112,14 +110,21 @@ const ChoosePaymentOptionDialog = ({
             >
               <div className="flex items-center space-x-2">
                 <Input
-                  type="text"
+                  type="password"
                   placeholder="Enter your Anthropic API key"
                   value={anthropicKey}
                   onChange={(e) => setAnthropicKey(e.target.value)}
                   className="flex-grow bg-primary text-white"
                 />
                 <Button onClick={handleKeySubmit}>
-                  {isKeyValidating ? "Validating..." : "Submit Key"}
+                  {isKeyValidating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    "Start shipping"
+                  )}
                 </Button>
               </div>
             </motion.div>
