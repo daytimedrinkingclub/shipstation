@@ -27,14 +27,14 @@ const Home = () => {
   };
 
   return (
-    <div className="flex container flex-col items-center justify-center">
-      <h1 className="sm:text-4xl font-bold text-white mb-8 text-2xl">
-        What would you like to create today?
-      </h1>
+    <div className="flex container flex-col items-center">
       {selectedType ? (
         <ShipForm type={selectedType} reset={() => setSelectedType(null)} />
       ) : (
         <>
+          <h1 className="sm:text-4xl font-bold text-white my-8 text-2xl">
+            What would you like to ship?
+          </h1>
           <CardContainer onCardClick={handleCardClick} />
           <RecentlyShipped />
         </>

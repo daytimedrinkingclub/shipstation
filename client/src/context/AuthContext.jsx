@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
   const [isLoading, setIsLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
+  const [myProjectsLoading, setMyProjectsLoading] = useState(true);
 
   const { toast } = useToast();
 
@@ -30,10 +31,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
   const getAvailableShips = async () => {
     let { data: user_profiles, error } = await supabase
       .from("user_profiles")
@@ -47,6 +44,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getRecentlyShipped = async () => {
+    setMyProjectsLoading(true);
     let { data: ships, error } = await supabase
       .from("ships")
       .select("slug")
@@ -58,6 +56,7 @@ export const AuthProvider = ({ children }) => {
     } else {
       setRecentlyShipped(ships);
     }
+    setMyProjectsLoading(false);
   };
 
   const handleLogout = async () => {
@@ -96,6 +95,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  
+  useEffect(() => {
+    checkUser();
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -107,6 +111,7 @@ export const AuthProvider = ({ children }) => {
         handleLogout,
         handleLogin,
         isLoading,
+        myProjectsLoading,
         anthropicKey,
         setAnthropicKey,
       }}

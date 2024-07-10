@@ -33,7 +33,7 @@ const CardContainer = ({ onCardClick }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 sm:mx-8">
       {cards.map((card, index) => (
         <Card
           key={index}

@@ -110,6 +110,9 @@ const ShipForm = ({ type, reset }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
+      <h1 className="sm:text-4xl font-bold text-white my-8 text-2xl">
+        What would you like to create today?
+      </h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
           className="w-full h-60 bg-black text-white border-gray-600 mb-8"
@@ -121,7 +124,7 @@ const ShipForm = ({ type, reset }) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <p className="text-sm text-white"><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} credits</p>
+                <p className={`text-sm ${availableShips < 5 ? 'text-red-500' : 'text-white'}`} onClick={(e) => e.preventDefault()} ><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} credits available</p>
               </TooltipTrigger>
               <TooltipContent>
                 Your balance is {availableShips} credits. <br />
