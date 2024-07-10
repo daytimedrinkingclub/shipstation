@@ -13,11 +13,13 @@ import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const LoginDialog = ({ isOpen, onClose }) => {
+const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { handleLogin, isLoading } = useContext(AuthContext);
   const { toast } = useToast();
+
+  const [isSigningUp, setIsSigningUp] = useState(createAccount);
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
@@ -28,8 +30,8 @@ const LoginDialog = ({ isOpen, onClose }) => {
     const result = await handleLogin(email, password);
     if (result.success) {
       toast({
-        title: result.message,
-        description: "You have been successfully logged in.",
+        title: 'Welcome back',
+        description: 'Lets start creating something beautiful!',
       });
       onClose();
     } else {
@@ -45,9 +47,9 @@ const LoginDialog = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
-          <DialogTitle>Login or Signup</DialogTitle>
+          <DialogTitle>{isSigningUp ? "Sign up for free" : "Sign in"}</DialogTitle>
           <DialogDescription>
-            Enter your email to login or signup.
+            {isSigningUp ? "Enter your email address and password to continue." : "Enter your email and password to create account."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -68,26 +70,31 @@ const LoginDialog = ({ isOpen, onClose }) => {
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Please enter your password"
               className="text-white bg-black"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) :  (
-              <>
-                <LogIn className="mr-2 h-4 w-4" />
-                Continue
-              </>
-            )}
-          </Button>
+          <div className="flex justify-between items-center">
+            <Button variant="link" type="button" className="underline" size="sm" onClick={() => setIsSigningUp(!isSigningUp)}>
+              {isSigningUp ? "Already have an account?" : "Create a new account?"}
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Checking...
+                </>
+              ) : (
+                <>
+                  <LogIn className="mr-2 h-4 w-4" />
+                  {isSigningUp ? "Submit" : "Sign in"}
+                </>
+              )}
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

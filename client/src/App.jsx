@@ -9,7 +9,7 @@ function App() {
     <Router>
       <div className="flex flex-col min-h-screen bg-primary">
         <Header />
-        <main className="flex-grow flex flex-col items-center justify-center px-4 md:px-8">
+        <main className="flex-grow flex flex-col items-center justify-center">
           <Routes>
             <Route path="/" element={<Home />} />
           </Routes>

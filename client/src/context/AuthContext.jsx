@@ -13,23 +13,26 @@ export const AuthProvider = ({ children }) => {
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
   const [isLoading, setIsLoading] = useState(false);
+  const [userLoading, setUserLoading] = useState(true);
 
   const { toast } = useToast();
 
-  useEffect(() => {
-    checkUser();
-  }, []);
-
   const checkUser = async () => {
+    setUserLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
     setUser(user);
+    setUserLoading(false);
     if (user) {
       await getAvailableShips();
       await getRecentlyShipped();
     }
   };
+
+  useEffect(() => {
+    checkUser();
+  }, []);
 
   const getAvailableShips = async () => {
     let { data: user_profiles, error } = await supabase
@@ -61,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     await supabase.auth.signOut();
     toast({
       title: "Logged out",
-      description: "You have been logged out",
+      description: "You have been logged out successfully!",
     });
     setUser(null);
     setAvailableShips(0);
@@ -97,6 +100,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        userLoading,
         supabase,
         availableShips,
         recentlyShipped,

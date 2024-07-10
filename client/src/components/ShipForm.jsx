@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Ship } from "lucide-react";
+import { Fuel, Sparkles } from "lucide-react";
 import { useSocket } from "@/context/SocketProvider";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
@@ -10,6 +10,12 @@ import LoaderOverlay from "./LoaderOverlay";
 import SuccessOverlay from "./SuccessOverlay";
 import { useToast } from "@/components/ui/use-toast";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 
 const ShipForm = ({ type, reset }) => {
@@ -18,6 +24,7 @@ const ShipForm = ({ type, reset }) => {
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isKeyValidating, setIsKeyValidating] = useState(false);
+
   const { toast } = useToast();
   const {
     isOpen: isLoaderOpen,
@@ -102,20 +109,34 @@ const ShipForm = ({ type, reset }) => {
   }, [anthropicKey, requirements]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4">
-      <h1 className="text-4xl font-bold text-white mb-6">
-        What will you ship today?
-      </h1>
+    <div className="w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
-          className="w-full h-40 bg-black text-white border-gray-600 mb-4"
-          placeholder={`Enter your ${type} requirements...\nDescribe the layout, sections, and copy in detail.\nYou can also include brand guidelines and color palette.`}
+          className="w-full h-60 bg-black text-white border-gray-600 mb-8"
+          placeholder={`Lets start collecting your requirements for your ${type}. \n\nDescribe the layout, and confirm the needed sections.\nYou can also include brand guidelines and color palette. \n \nYou can also enter image urls in your prompt to be used as reference.`}
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
         />
-        <Button type="submit" className="bg-white text-black hover:bg-gray-200">
-          Ship it! <Ship className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="flex w-full justify-between items-center">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <p className="text-sm text-white"><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} credits</p>
+              </TooltipTrigger>
+              <TooltipContent>
+                Your balance is {availableShips} credits. <br />
+                1 credit is equal to 1 individual website/app.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <Button
+            type="submit"
+            className="transition-all duration-300 hover:bg-purple-700 hover:shadow-[0_0_10px_#8b5cf6] hover:text-purple-100 group"
+          >
+            Start generating website
+            <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-180" />
+          </Button>
+        </div>
       </form>
       <ChoosePaymentOptionDialog
         isOpen={isOpen}

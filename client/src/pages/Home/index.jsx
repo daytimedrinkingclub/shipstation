@@ -27,7 +27,10 @@ const Home = () => {
   };
 
   return (
-    <div className="container flex flex-col items-center justify-center">
+    <div className="flex container flex-col items-center justify-center">
+      <h1 className="sm:text-4xl font-bold text-white mb-8 text-2xl">
+        What would you like to create today?
+      </h1>
       {selectedType ? (
         <ShipForm type={selectedType} reset={() => setSelectedType(null)} />
       ) : (
@@ -36,7 +39,7 @@ const Home = () => {
           <RecentlyShipped />
         </>
       )}
-      <LoginDialog isOpen={isOpen} onClose={onClose} />
+      <LoginDialog isOpen={isOpen} onClose={onClose} createAccount />
     </div>
   );
 };

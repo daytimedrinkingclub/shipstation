@@ -4,7 +4,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Layout, User, Cpu } from "lucide-react";
+import { Layout, Cpu, Wallpaper } from "lucide-react";
 
 const CardContainer = ({ onCardClick }) => {
   const cards = [
@@ -16,7 +16,7 @@ const CardContainer = ({ onCardClick }) => {
       type: "landing_page",
     },
     {
-      icon: <User className="w-6 h-6" />,
+      icon: <Wallpaper className="w-6 h-6" />,
       title: "Ship personal website",
       description:
         "Showcase your unique story and skills with a stunning personal website that leaves a lasting impression.",
@@ -27,25 +27,27 @@ const CardContainer = ({ onCardClick }) => {
       title: "Ship AI agent",
       description:
         "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
-      badge: "Shipping Soon",
+      badge: "Launching Soon",
       type: "idea_board",
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       {cards.map((card, index) => (
         <Card
           key={index}
-          className="bg-foreground text-primary-foreground relative cursor-pointer"
+          className="dark relative cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:bg-surface"
           onClick={() => onCardClick(card.type)}
         >
           <CardHeader>
-            {card.icon}
+            <div>
+              {card.icon}
+            </div>
             <CardTitle className="pt-4">{card.title}</CardTitle>
             <CardDescription>{card.description}</CardDescription>
             {card.badge && (
-              <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded bg-gradient-to-r from-primary to-secondary animate-shimmer bg-[length:200%_100%]">
+              <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded bg-gradient-to-r from-gray-800 to-gray-900 animate-shimmer">
                 {card.badge}
               </span>
             )}

@@ -69,9 +69,9 @@ const ChoosePaymentOptionDialog = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="grid grid-cols-2 gap-4 mt-4"
+              className="grid grid-cols-2 gap-4 mt-2"
             >
-              <div className="bg-gray-800 p-4 rounded-lg text-center relative">
+              <div className="bg-gray-800 p-4 rounded-lg text-center relative" onClick={() => setShowKeyInput(true)}>
                 <span className="absolute top-2 right-2 bg-green-600 text-xs font-semibold px-1 py-1 rounded">
                   Free
                 </span>
@@ -82,7 +82,6 @@ const ChoosePaymentOptionDialog = ({
                 </p>
                 <Button
                   className="w-full"
-                  onClick={() => setShowKeyInput(true)}
                 >
                   Continue
                 </Button>
@@ -96,7 +95,13 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4">
                   Secure payment for website generation service.
                 </p>
-                <RazorpayButton productId={productId} />
+                {/* <RazorpayButton productId={productId} /> */}
+                <Button
+                  className="w-full opacity-50 cursor-not-allowed"
+                  disabled
+                >
+                  Coming today
+                </Button>
               </div>
             </motion.div>
           ) : (
@@ -106,7 +111,6 @@ const ChoosePaymentOptionDialog = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="mt-4"
             >
               <div className="flex items-center space-x-2">
                 <Input
