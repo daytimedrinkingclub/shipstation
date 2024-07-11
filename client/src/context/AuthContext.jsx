@@ -9,8 +9,8 @@ export const AuthProvider = ({ children }) => {
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
   const [anthropicKey, setAnthropicKey] = useState("");
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_TOKEN;
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
   const [isLoading, setIsLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);

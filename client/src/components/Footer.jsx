@@ -24,22 +24,22 @@ const Footer = () => {
           <PopoverContent className="bg-zinc-800 border-zinc-700 ml-8">
             <ul className="space-y-2">
               <li>
-                <a href="/contact" className="text-gray-300 hover:text-white">
+                <a href="/contact.html" className="text-gray-300 hover:text-white">
                   Contact Us
                 </a>
               </li>
               <li>
-                <a href="/terms" className="text-gray-300 hover:text-white">
+                <a href="/terms.html" className="text-gray-300 hover:text-white">
                   Terms of Service
                 </a>
               </li>
               <li>
-                <a href="/privacy" className="text-gray-300 hover:text-white">
+                <a href="/privacy.html" className="text-gray-300 hover:text-white">
                   Privacy Policy
                 </a>
               </li>
               <li>
-                <a href="/refunds" className="text-gray-300 hover:text-white">
+                <a href="/refunds.html" className="text-gray-300 hover:text-white">
                   Refund Policy
                 </a>
               </li>
