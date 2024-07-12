@@ -16,6 +16,7 @@ const getDataForLandingPageTool = require("./tools/getDataForLandingPage.json");
 const startShippingLandingPageTool = require("./tools/startShippingLandingPageTool.json");
 const startShippingPortfolioTool = require("./tools/startShippingPortfolioTool.json");
 const productManagerTool = require("./tools/productManagerTool.json");
+const imageFinderTool = require("./tools/imageFinderTool.json");
 
 const TOOLS = {
   SEARCH: "search_tool",
@@ -29,6 +30,7 @@ const TOOLS = {
   CODE_WRITER: "code_writer_tool",
   DEPLOY_PROJECT: "deploy_project_tool",
   PRODUCT_MANAGER: "product_manager_tool",
+  IMAGE_FINDER: "image_finder_tool",
 };
 
 module.exports = {
@@ -43,5 +45,6 @@ module.exports = {
   startShippingLandingPageTool,
   startShippingPortfolioTool,
   productManagerTool,
+  imageFinderTool,
   TOOLS,
 };

@@ -124,11 +124,11 @@ const ShipForm = ({ type, reset }) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <p className={`text-sm ${availableShips < 5 ? 'text-red-500' : 'text-white'}`} onClick={(e) => e.preventDefault()} ><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} credits available</p>
+                <p className={`text-sm ${availableShips < 1 ? 'text-red-500' : 'text-white'}`} onClick={(e) => e.preventDefault()} ><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} container available</p>
               </TooltipTrigger>
               <TooltipContent>
-                Your balance is {availableShips} credits. <br />
-                1 credit is equal to 1 individual website/app.
+                Your balance is {availableShips} container. <br />
+                1 container is equal to 1 individual website/app.
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

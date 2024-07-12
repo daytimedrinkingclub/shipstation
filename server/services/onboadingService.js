@@ -7,6 +7,7 @@ const {
   startShippingPortfolioTool,
   startShippingLandingPageTool,
   TOOLS,
+  imageFinderTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -106,14 +107,12 @@ async function processConversation({
           userId,
           client,
         });
+        messages.push({ role: "user", content: toolResult });
         console.log("Received tool result:", toolResult);
-
         if (tool.name === TOOLS.CTO) {
           console.log("Project creation completed");
           break;
         }
-        messages.push({ role: "user", content: toolResult });
-
         console.log(
           "Sending request to Anthropic API with updated conversation:",
           JSON.stringify(messages)

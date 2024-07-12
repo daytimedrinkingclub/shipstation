@@ -67,7 +67,7 @@ class AnthropicService {
       console.log("Anthropic response:", response);
       this.tokensUsed += response.usage.output_tokens;
 
-      if (!this.conversationId) {
+      if (process.env.NODE_ENV !== 'development' && !this.conversationId) {
         const conversation = await insertConversation({
           user_id: this.userId,
           tokens_used: this.tokensUsed,

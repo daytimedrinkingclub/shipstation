@@ -8,7 +8,7 @@ const SuccessOverlay = ({ isOpen, onClose, slug }) => {
   const { toast } = useToast();
 
   const successText = `Your website "${slug}" has been deployed successfully!`;
-  const link = `${import.meta.env.VITE_BACKEND_URL}/site/${slug}`;
+  const link = `${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`;
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);

@@ -20,7 +20,26 @@ async function handleCTOToolUse({
         content: [{ type: "text", text: JSON.stringify(searchResults.answer) }],
       },
     ];
-  } else if (tool.name === TOOLS.FILE_CREATOR) {
+  } 
+  else if (tool.name === TOOLS.IMAGE_FINDER) {
+    const searchQuery = tool.input.query;
+    console.log("Performing image search with query:", searchQuery);
+    const imageResults = await searchService.imageSearch(searchQuery);
+    console.log("imageResults:", imageResults);
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: imageResults.length === 0 ? "No relevant images found" : JSON.stringify(imageResults)
+          }
+        ],
+      },
+    ];
+  }
+  else if (tool.name === TOOLS.FILE_CREATOR) {
     const { file_name, file_comments } = tool.input;
     console.log("projectFolderName:", projectFolderName);
     console.log("file_name:", file_name);

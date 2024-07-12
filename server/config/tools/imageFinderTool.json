@@ -1,0 +1,15 @@
+{
+    "name": "image_finder_tool",
+    "description": "This tool retuns images as per the query",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "The query to find the image"
+        }
+      },
+      "required": ["query"]
+    }
+  }
+  
