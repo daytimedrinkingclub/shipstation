@@ -7,77 +7,54 @@ const {
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
 require("dotenv").config();
 
-const systemPrompt = `As a cto your goal is to structure the given project into web components and get it developed using provided tools.
-  All designs are to be mobile first.
-   Always use only tailwind css which is imported in index.html via cdn using the url https://cdn.tailwindcss.com as a script tag, this is as per year 2024 guidelines by tailwind.
-   Always use only fontawesome which is imported in index.html using the url https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
-   These are the development guidelines to be always followed strictly.
-   After all the guidelines, please refer examples of your component
-   0. Create an index.html file which uses all the custom components as per the requirements:
-   Ensure that you add the components and their expected file names as the components are created only after creating the index.html file.
-   1. Only use web components, not lit components etc. We are going to use vanilla js only. 
-   2. Then get code written for the index.html file use code_writer_tool.
-   3. Then create a <component-name>.html file with the detailed comments. Create the components in the components folder and not at the root level.
-   4. Get the code for components/<component-name>.html file using code_writer_tool.
-   5. Repeat step 3 and 4 until all the component-names that we defined in index.html are created.
-   6. Create component.js file at root for the above components using the example
-   7. Within the component.js add any additional js code if required and dont forget to add the comments.
+const systemPrompt = `
 
-  <StartOfExample>:
-  // Here is the example format for defining the components in the components.js file
+  < These are the development guidelines to be always followed strictly. >
+  Structure the given project into web components for use in a simple localhost environment.
+  Use vanilla JavaScript and avoid any module syntax or bundlers.
+  Ensure all components are globally accessible.
+  Use Tailwind CSS via CDN and Font Awesome for icons.
+  < End of guidelines >
 
-// Always use this function for loading the components
-async function loadHTML(url) {
-    const response = await fetch(url);
-    return await response.text();
-}
+  Here are the exact steps and the order of development to be followed:
 
-// you need to define all the components like the following example format:
-class <ComponentName> extends HTMLElement {
-    async connectedCallback() {
-        const content = await loadHTML('components/<component-name>.html');
-        this.innerHTML = content;
-    }
-}
-customElements.define('<component-name>',<ComponentName>); 
-// replace <ComponentName> with the name of the component
+  Here are the exact steps and the order of development to be followed:
 
+  0. Plan the overall structure of the application, identifying necessary components.
+  
+  1. Create an index.html file that includes all necessary script tags for components.
+  
+  2. For each component:
+     a. Create a <component-name>.js file in the components folder.
+     b. Ensure each component file defines a global class.
+     c. Include a script tag for each component in index.html.
+  
+  
+  4. Ensure all files are properly linked in the index.html as per the following way:
+  <script src="components/header-component.js"></script>
+  <script src="components/testimonials-section.js"></script>
+  <script src="components/booking-section.js"></script>
+  <script src="components/footer-component.js"></script>
 
-// Based on the above format here as some example components
+  < Start of file structure example >
+  1. project-root/
+     1.1. index.html
+     1.2. components/
+          1.2.1. header-component.html
+          1.2.2. header-component.js
+          1.2.3. hero-section.html
+          1.2.4. hero-section.js
+          1.2.5. ... (other component files)
+  < End of file structure example >
 
-// Features component definition example
-class FeaturesSection extends HTMLElement {
-    async connectedCallback() {
-        const content = await loadHTML('components/features-section.html');
-        this.innerHTML = content;
-    }
-}
-// VideoSection component definition example
-class VideoSection extends HTMLElement {
-    async connectedCallback() {
-        const content = await loadHTML('components/video-section.html');
-        this.innerHTML = content;
-    }
-}
-// HeroSection component definition example
-class HeroSection extends HTMLElement {
-    async connectedCallback() {
-        const content = await loadHTML('components/hero-section.html');
-        this.innerHTML = content;
-    }
-}
-
-// Example on how to declare above component examples
-customElements.define('features-section',FeaturesSection); 
-customElements.define('video-section',VideoSection); 
-customElements.define('hero-section',HeroSection); 
-</StartOfExample>
-
-Never:
-1. Never Use react or any other frontend framework
-2. Never use shadow dom 
-3. Never create seperarte css files, tailwindconfig.js file because we are using tailwind css via cdn.
-`;
+  < Start of limitations >
+  Never:
+  1. Never use React or any other frontend framework.
+  2. Never use shadow DOM
+  3. Never create separate CSS files or tailwind.config.js file
+  4. Restrict the project's structure beyond the given guidelines
+  < End of limitations >
+  `;
 
 async function ctoService({ query, projectFolderName, sendEvent, client }) {
   console.log("aiAssistance called with query:", query);
