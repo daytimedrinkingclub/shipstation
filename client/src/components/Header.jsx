@@ -32,14 +32,20 @@ const Header = () => {
           {user && <div className="hidden sm:flex items-center">
             <User className="w-4 h-4 mr-2" /> {user?.email}
           </div>}
-          <Button variant="link" onClick={handleLoginLogout}>
-            {user ? (
-              <LogOut className="w-4 h-4 mr-2" />
-            ) : (
-              <LogIn className="w-4 h-4 mr-2" />
-            )}
-            {user ? "Log out" : "Sign In"}
-          </Button>
+          {userLoading ? (
+            <Button variant="link" className="animate-pulse">
+              <div className="w-24 h-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded"></div>
+            </Button>
+          ) : (
+            <Button variant="link" onClick={handleLoginLogout}>
+              {user ? (
+                <LogOut className="w-4 h-4 mr-2" />
+              ) : (
+                <LogIn className="w-4 h-4 mr-2" />
+              )}
+              {user ? "Log out" : "Sign In"}
+            </Button>
+          )}
         </div>
       </div>
       <LoginDialog isOpen={isOpen} onClose={onClose} />

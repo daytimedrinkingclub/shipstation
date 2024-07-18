@@ -29,6 +29,7 @@ const CardContainer = ({ onCardClick }) => {
         "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
       badge: "Launching Soon",
       type: "idea_board",
+      isComingSoon: true,
     },
   ];
 
@@ -38,7 +39,7 @@ const CardContainer = ({ onCardClick }) => {
         <Card
           key={index}
           className="dark relative cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:bg-surface"
-          onClick={() => onCardClick(card.type)}
+          onClick={() => !card.isComingSoon && onCardClick(card.type)}
         >
           <CardHeader>
             <div>

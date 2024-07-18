@@ -65,7 +65,6 @@ const ChoosePaymentOptionDialog = ({
                   <a
                     href="https://freeaifinder.com/how-to/get-anthropic-api-key"
                     target="_blank"
-                    rel="noopener noreferrer"
                     className="text-primary hover:text-primary/90 underline ml-1"
                   >
                     Get Anthropic API key
