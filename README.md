@@ -81,7 +81,7 @@ https://shipstation.ai/site/website-slug
 ## Next moves
 
 Since you came here looking for it, it was also waiting for you to contribute to the project.
-As for the next rabbithole, visit https://freeaitools.com
+As for the next rabbithole, visit https://freeaifinder.com
 We all are limited by the desire to learn things and energy to validate. Thankfully, we are making it easier for you.
 
 ## Contributing
