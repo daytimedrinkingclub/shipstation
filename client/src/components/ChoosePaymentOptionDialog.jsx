@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Key, CreditCard, ArrowLeft, ShieldCheck, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import RazorpayButton from "./RazorpayButton";
+import PaypalButton from "./PaypalButton";
 
 const ChoosePaymentOptionDialog = ({
   isOpen,
@@ -39,7 +40,14 @@ const ChoosePaymentOptionDialog = ({
     portfolio: portfolioProductRazorpayId,
   };
 
+  const paypalProductIds = {
+    landing_page: "3ZRLN4LJVSRVY",
+    portfolio: "M3CSSZ43CE75J",
+  };
+
   const productId = productIds[type];
+  const paypalProductId = paypalProductIds[type];
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="dark bg-background text-foreground border border-border sm:max-w-[625px]">
@@ -55,12 +63,12 @@ const ChoosePaymentOptionDialog = ({
                   <ShieldCheck className="inline-block mr-1 h-4 w-4" />
                   Your key is never stored on our servers.
                   <a
-                    href="https://github.com/daytimedrinkingclub/shipstation-backend/"
+                    href="https://freeaifinder.com/how-to/get-anthropic-api-key"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:text-primary/90 underline ml-1"
                   >
-                    You can verify here. 
+                    Get Anthropic API key
                   </a>
                 </p>
               </>
@@ -95,20 +103,13 @@ const ChoosePaymentOptionDialog = ({
                 </Button>
               </div>
               <div className="bg-card p-6 rounded-lg text-center relative transition-colors duration-200">
-                <span className="absolute top-2 right-2 bg-secondary text-secondary-foreground text-xs font-semibold px-2 py-1 rounded">
-                  Old money
-                </span>
                 <CreditCard className="w-12 h-12 mx-auto mb-3 text-primary" />
                 <h3 className="font-bold mb-2 text-lg">Pay to create</h3>
                 <p className="text-sm mb-4 text-muted-foreground">
                   Secure payment for website generation service.
                 </p>
-                <Button
-                  className="w-full bg-secondary text-secondary-foreground cursor-not-allowed"
-                  disabled
-                >
-                  Coming today
-                </Button>
+                <RazorpayButton productId={productId} />
+                {/* <PaypalButton productId={paypalProductId} /> */}
               </div>
             </motion.div>
           ) : (

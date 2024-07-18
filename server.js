@@ -37,6 +37,11 @@ app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
+// Serve React app for all other routes (including 404)
+app.get('/ship', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.post("/payment-webhook", express.json(), async (req, res) => {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers["x-razorpay-signature"];

@@ -64,49 +64,51 @@ const ShipForm = ({ type, reset }) => {
   };
 
   useEffect(() => {
-    socket.on("apiKeyStatus", (response) => {
-      setIsKeyValidating(false);
-      if (response.success) {
-        startProject();
-        toast({
-          title: "Success",
-          description: "Anthropic key is valid, starting generation!",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: response.message,
-          variant: "destructive",
-        });
-      }
-    });
-
-    socket.on("showPaymentOptions", ({ error }) => {
-      onOpen();
-    });
-
-    socket.on("needMoreInfo", ({ message }) => {
-      toast({
-        title: "Please add more details regarding the website",
-        // description: message,
+    if (socket) {
+      socket.on("apiKeyStatus", (response) => {
+        setIsKeyValidating(false);
+        if (response.success) {
+          startProject();
+          toast({
+            title: "Success",
+            description: "Anthropic key is valid, starting generation!",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: response.message,
+            variant: "destructive",
+          });
+        }
       });
-      onLoaderClose();
-    });
 
+      socket.on("showPaymentOptions", ({ error }) => {
+        onOpen();
+      });
 
-    socket.on("websiteDeployed", ({ slug }) => {
-      onSuccessOpen();
-      onLoaderClose();
-      setRequirements("");
-      setDeployedWebsiteSlug(slug);
-    });
+      socket.on("needMoreInfo", ({ message }) => {
+        toast({
+          title: "Please add more details regarding the website",
+          // description: message,
+        });
+        onLoaderClose();
+      });
 
-    return () => {
-      socket.off("apiKeyStatus");
-      socket.off("showPaymentOptions");
-      socket.off("websiteDeployed");
-    };
-  }, [anthropicKey, requirements]);
+      socket.on("websiteDeployed", ({ slug }) => {
+        onSuccessOpen();
+        onLoaderClose();
+        setRequirements("");
+        setDeployedWebsiteSlug(slug);
+      });
+
+      return () => {
+        socket.off("apiKeyStatus");
+        socket.off("showPaymentOptions");
+        socket.off("websiteDeployed");
+        socket.off("needMoreInfo");
+      };
+    }
+  }, [socket, anthropicKey, requirements]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
