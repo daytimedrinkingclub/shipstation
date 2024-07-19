@@ -63,7 +63,7 @@ async function processConversation({
       // });
       currentMessage = await client.sendMessage({
         system:
-          "Your task is to deploy a website for the user and share them the deployed url",
+          "Your task is to deploy a website for the user and share them the deployed url. Use the search tool to get the initial data and pass it on to product manager tool",
         messages,
         tools,
       });

@@ -165,7 +165,7 @@ async function handleOnboardingToolUse({
       {
         type: "tool_result",
         tool_use_id: tool.id,
-        content: [{ type: "text", text: JSON.stringify(searchResults.answer) }],
+        content: [{ type: "text", text: JSON.stringify(searchResults) }],
       },
     ];
   }

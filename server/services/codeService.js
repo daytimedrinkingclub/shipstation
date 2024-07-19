@@ -9,6 +9,14 @@ async function codeAssitant({ query, filePath, client }) {
     const msg = await client.sendMessage({
       system: `
       Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react or any other frontend library. Do not use keywords like export and import as that is not possible. 
+      Important design guidelines:
+      1. Make sure that the components are responsive and mobile first as per best design trends and guidelines in 2024. Use search tool to find the best design trends and guidelines.
+      2. Be creative with design, use the context given by user to decide the theme/color pallete which respects text contrast as well.
+      3. You are professional design engineer at Apple/Google/Linear etc. If a user is asking for portfolio, keep the layout clean and readable. Use google fonts as per the requirement.
+      4. You can use gradients and animate css classes to make the components look more interactive. Animate css is already imported just use the classes.
+      5. Do not be boring, be creative with the design. Dont be afraid to break the norms of standard layout.
+    
+      
       Always use only tailwind css which is imported in index.html
 
       // This is how to use tailwind always in index.html file
@@ -29,9 +37,16 @@ async function codeAssitant({ query, filePath, client }) {
 
       < End of tailwind usage example >
 
+      Also import animate css in index.html like this:
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" integrity="sha512-c42qTSw/wPZ3/5LBzD+Bw5f7bSF2oxou6wEb+I/lqeaKV5FDIfMvvRp772y4jcJLKuGUOpbJMdg/BTl50fJYAw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+      IMPORTANT: DO NOT CHANGE THE IMPORT, USE IT AS IS.
+      
       // How to use fonts and images
 
       < How to use fonts and images >
+      Import relevant google fonts like this:
+      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+      Make sure this becomes the default font in tailwind config.
 
       Always use fontawesome which is imported in head tag <script src="https://kit.fontawesome.com/3fee4706ff.js" crossorigin="anonymous"></script>
 
@@ -230,6 +245,7 @@ async function codeAssitant({ query, filePath, client }) {
     4. Use event delegation where appropriate to handle events on multiple child elements.
     5. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector 
     While writing component's js, always add if conditions and null checks to check if the elements are present or not before proceeding with the code.
+    Only write javascript methods for interactive features like toggles, carousel, menubar, etc. Do not add animations using js, use tailwind css classes to animate things.
     6. Ensure all files are properly linked in the index.html as per the following way:
   <script src="components/header-component.js"></script>
   <script src="components/testimonials-section.js"></script>

@@ -27,7 +27,7 @@ class AnthropicService {
     tokensUsed = 0,
     model = process.env.DEFAULT_MODEL,
     temperature = 0,
-    maxTokens = 4000,
+    maxTokens = 2500,
   }) {
     this.isCustomKey = !!apiKey;
     this.client = new Anthropic({

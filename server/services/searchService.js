@@ -6,7 +6,7 @@ const BASE_URL = "https://api.tavily.com/";
 async function performSearch(query, options = {}) {
   const {
     searchDepth = "advanced",
-    includeImages = false,
+    includeImages = true,
     includeAnswer = true,
     includeRawContent = false,
     maxResults = 3,
@@ -28,7 +28,7 @@ async function performSearch(query, options = {}) {
 
   try {
     const response = await axios.post(`${BASE_URL}search`, requestData);
-    console.log("response", response);
+    console.log("response", response.data);
     return response.data;
   } catch (error) {
     console.error("Error performing search:", error);

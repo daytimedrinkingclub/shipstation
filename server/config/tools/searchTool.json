@@ -1,12 +1,12 @@
 {
   "name": "search_tool",
-  "description": "This tool will search for information on the web",
+  "description": "To search for website or portfolio's content so that we can build relevant and highly accurate website and portfolio.",
   "input_schema": {
     "type": "object",
     "properties": {
       "query": {
         "type": "string",
-        "description": "The query to search and return the top 3 links and available information about the query"
+        "description": "search query to get relevant data/information about users, always try to pass important keywords like person name, company name, designation, location, etc. Additionally, to research about design references, factual content, color pallete even information like recent news etc as per the current trends and best practices in 2024"
       }
     },
     "required": ["query"]
