@@ -10,7 +10,7 @@
       },
       "file_comments": {
         "type": "string",
-        "description": "The implemtation detail of the file."
+        "description": "The implemtation detail of the file including all necessary information to cross refernce the code like classname, id, etc."
       }
     },
     "required": ["file_name", "file_comments"]
