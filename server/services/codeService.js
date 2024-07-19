@@ -8,7 +8,7 @@ async function codeAssitant({ query, filePath, client }) {
   try {
     const msg = await client.sendMessage({
       system: `
-      Write code as per the guidelines provided, use web-components architecture with the guidelines provided by user. Never use react or any other frontend library. Do not use keywords like export and import as that is not possible. 
+      Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react or any other frontend library. Do not use keywords like export and import as that is not possible. 
       Always use only tailwind css which is imported in index.html
 
       // This is how to use tailwind always in index.html file
@@ -87,7 +87,7 @@ async function codeAssitant({ query, filePath, client }) {
           initializeComponent() {
               // Add any necessary JavaScript for interactivity here
               // For example:
-              // const button = this.querySelector('#someButton');
+              // const button = document.querySelector('#someButton');
               // if (button) {
               //     button.addEventListener('click', () => {
               //         // Handle click event
@@ -114,8 +114,8 @@ async function codeAssitant({ query, filePath, client }) {
           }
       
           initializeMenu() {
-              const mobileMenuButton = this.querySelector('#mobile-menu-button');
-              const mobileMenu = this.querySelector('#mobile-menu');
+              const mobileMenuButton = document.querySelector('#mobile-menu-button');
+              const mobileMenu = document.querySelector('#mobile-menu');
               if (mobileMenuButton && mobileMenu) {
                   mobileMenuButton.addEventListener('click', () => {
                       mobileMenu.classList.toggle('hidden');
@@ -138,11 +138,11 @@ async function codeAssitant({ query, filePath, client }) {
           }
       
           initializeFAQToggles() {
-              const faqButtons = this.querySelectorAll('button[aria-controls]');
+              const faqButtons = document.querySelectorAll('button[aria-controls]');
               faqButtons.forEach(button => {
                   button.addEventListener('click', () => {
                       const targetId = button.getAttribute('aria-controls');
-                      const targetElement = this.querySelector(#.......)
+                      const targetElement = document.querySelector(#.......)
                       if (targetElement) {
                           targetElement.classList.toggle('hidden');
                           button.setAttribute('aria-expanded', targetElement.classList.contains('hidden') ? 'false' : 'true');
@@ -225,10 +225,11 @@ async function codeAssitant({ query, filePath, client }) {
 
     Important notes for JavaScript implementation:
     1. Always include necessary event listeners within the component's class methods.
-    2. Use 'this' to refer to the component's root element when querying for child elements.
-    3. Implement interactive features (like toggles, form submissions, etc.) within the component's methods.
-    4. Ensure all interactive elements have proper aria attributes for accessibility.
-    5. Use event delegation where appropriate to handle events on multiple child elements.
+    2. Implement interactive features (like toggles, form submissions, menubar, etc.) within the component's js file.
+    3. Ensure all interactive elements have proper aria attributes for accessibility.
+    4. Use event delegation where appropriate to handle events on multiple child elements.
+    5. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector 
+    While writing component's js, always add if conditions and null checks to check if the elements are present or not before proceeding with the code.
     6. Ensure all files are properly linked in the index.html as per the following way:
   <script src="components/header-component.js"></script>
   <script src="components/testimonials-section.js"></script>

@@ -8,28 +8,19 @@ const { handleCTOToolUse } = require("../controllers/ctoToolController");
 require("dotenv").config();
 
 const systemPrompt = `
-
-  < These are the development guidelines to be always followed strictly. >
+  These are the development guidelines to be always followed strictly.
   Structure the given project into web components for use in a simple localhost environment.
   Use vanilla JavaScript and avoid any module syntax or bundlers.
   Ensure all components are globally accessible.
   Use Tailwind CSS via CDN and Font Awesome for icons.
-  < End of guidelines >
 
   Here are the exact steps and the order of development to be followed:
-
-  Here are the exact steps and the order of development to be followed:
-
   0. Plan the overall structure of the application, identifying necessary components.
-  
   1. Create an index.html file that includes all necessary script tags for components.
-  
   2. For each component:
      a. Create a <component-name>.js file in the components folder.
-     b. Ensure each component file defines a global class.
-     c. Include a script tag for each component in index.html.
-  
-  
+     b. create a <component-name>.html file in the components folder.
+     c. Ensure each component file defines a global class bby loading the component from html file. Seperate the javascript needed and the markup in js and html files.
   4. Ensure all files are properly linked in the index.html as per the following way:
   <script src="components/header-component.js"></script>
   <script src="components/testimonials-section.js"></script>
