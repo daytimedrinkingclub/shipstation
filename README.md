@@ -47,26 +47,31 @@ git clone https://github.com/daytimedrinkingclub/shipstation-backend.git
 ```bash
 npm install
 ```
-3. Install client depenencies
+3. Setup environments: Copy `.env.template` to `.env` and fill in the required environment variables.
+4. Start the backend server from the repo directory
+```bash
+npm run dev
+```
+5. Install client depenencies, in a new terminal
 ```bash
 cd client
 npm install
-cd ../
-```
-4. Setup environments: Copy `.env.template` to `.env` and fill in the required environment variables. Do this for both server and client folders, it needs to be done for both.
-5. Start the backend server from the repo directory
-```bash
-npm run dev
 ```
 6. Start the client from the client directory
 ```bash
 cd client
 npm run dev
 ```
+7. Build the client
+```bash
+cd client
+npm run build
+```
 
 ## Environment Variables
 
 Ensure all environment variables are properly set in both `.env` files. Refer to the `.env.template` files for the required variables.
+Use .env.local and .env.production for development and production environments respectively.
 
 ## Usage
 
@@ -77,6 +82,16 @@ Ensure all environment variables are properly set in both `.env` files. Refer to
 
 The websites are stored in s3 bucket and served on the path
 https://shipstation.ai/site/website-slug
+
+# Deploying to Heroku
+1. Build the client project
+```bash
+cd client
+npm run build
+```
+2. Commit the changes
+3. Push to the main branch
+4. Heroku will automatically detect the changes and deploy the app
 
 ## Next moves
 
