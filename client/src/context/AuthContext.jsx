@@ -68,6 +68,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setAvailableShips(0);
     setRecentlyShipped([]);
+    // Redirect to the home page
+    window.location.href = '/';
   };
 
   const handleLogin = async (email, password = null) => {

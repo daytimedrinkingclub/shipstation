@@ -17,6 +17,7 @@ const {
 const {
   handleOnboardingSocketEvents,
 } = require("./server/services/onboadingService");
+const { postToDiscordWebhook } = require("./server/services/webhookService");
 
 require("dotenv").config();
 
@@ -37,6 +38,11 @@ app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
+// Serve React app for all other routes (including 404)
+app.get('/ship', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.post("/payment-webhook", express.json(), async (req, res) => {
   const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
   const signature = req.headers["x-razorpay-signature"];
@@ -48,6 +54,9 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
     if (event === "order.paid") {
       // Handle the payment_link.paid event
       const email = payload.payment?.entity?.email;
+      const amountInRs = payload.payment?.entity?.amount / 100;
+      const orderId = payload.order?.entity?.id;
+      const paymentId = payload.payment?.entity?.id;
       const user_id = await getUserIdFromEmail(email);
       const paymentPayload = {
         payload,
@@ -64,6 +73,20 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
       const profilePayload = { available_ships: available_ships + 1 }; // updated
 
       await updateUserProfile(user_id, profilePayload);
+
+      const webhookPayload = {
+        "content": "New payment received!",
+        "embeds": [{
+          "title": "Payment Details",
+          "fields": [
+            { "name": "Amount", "value": `Rs ${amountInRs}` },
+            { "name": "Email", "value": email },
+            { "name": "Order ID", "value": orderId },
+            { "name": "Payment ID", "value": paymentId }
+          ]
+        }]
+      };
+      postToDiscordWebhook(webhookPayload);
 
       res.status(200).json({ status: "Ships added!" });
     } else {

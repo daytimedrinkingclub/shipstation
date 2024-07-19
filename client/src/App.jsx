@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import Home from "./pages/Home";
 import Footer from "./components/Footer";
 import { Toaster } from "./components/ui/toaster";
+import Ship from "./pages/ship";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <main className="flex-grow flex flex-col items-center justify-center">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/ship" element={<Ship />} />
           </Routes>
         </main>
         <Footer />

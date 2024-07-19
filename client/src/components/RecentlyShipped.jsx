@@ -1,10 +1,10 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { Separator } from "@/components/ui/separator"
-import { Code, Trophy, ExternalLink } from "lucide-react";
+import { Code, Trophy, ExternalLink, CircleFadingPlus } from "lucide-react";
 
 const RecentlyShipped = () => {
-  const { recentlyShipped, myProjectsLoading, user } = useContext(AuthContext);
+  const {myProjectsLoading, recentlyShipped, user } = useContext(AuthContext);
 
   const featuredWebsites = [
     { name: "N times Y - The Curiosity App", url: "https://shipstation.ai/site/n-times-y-the-curiosity-app-vhzphn8pn/" },
@@ -42,8 +42,15 @@ const RecentlyShipped = () => {
                   </a>
                 ))
               ) : (
-                <p className="text-gray-400 bg-gray-800 p-4 rounded-lg text-italic">No projects created yet. No worries, this is your call to get into the Arena and start creating. Even if it doesn't make any sense or add any value, you can start creating. <br /><br />
-                  Decide what you need right now the most and when its a website, remember me :)</p>
+                <div className="text-gray-400 bg-gray-800 p-8 rounded flex items-center">
+                  <CircleFadingPlus className="w-12 h-12 mr-8" />
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+                    <p>
+                      Start shipping to see your creations here!
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
           </div>

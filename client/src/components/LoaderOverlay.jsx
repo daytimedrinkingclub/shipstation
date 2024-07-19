@@ -9,20 +9,22 @@ const LoaderOverlay = ({ isOpen }) => {
   const [loaderText, setLoaderText] = useState("Generating your website...");
 
   useEffect(() => {
-    socket.on("error", ({ error }) => {
-      console.error("Error:", error);
-      // You can add a function to show error messages here
-    });
+    if (socket) {
+      socket.on("error", ({ error }) => {
+        console.error("Error:", error);
+        // You can add a function to show error messages here
+      });
 
-    socket.on("progress", ({ message }) => {
-      setLoaderText(message);
-      // You can add a function to update progress here
-    });
+      socket.on("progress", ({ message }) => {
+        setLoaderText(message);
+        // You can add a function to update progress here
+      });
 
-    return () => {
-      socket.off("error");
-      socket.off("progress");
-    };
+      return () => {
+        socket.off("error");
+        socket.off("progress");
+      };
+    }
   }, [socket]);
 
   if (!isOpen) return null;
