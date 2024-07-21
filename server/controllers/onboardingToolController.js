@@ -10,14 +10,15 @@ const {
 } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
-const generateProjectFolderName = (projectName, roomId) => {
-  return toKebabCase(projectName) + "-" + roomId;
+const { nanoid } = require('nanoid');
+
+const generateProjectFolderName = (projectName) => {
+  return toKebabCase(projectName) + "-" + nanoid(8);
 };
 
 async function handleOnboardingToolUse({
   tool,
   sendEvent,
-  roomId,
   messages,
   userId,
   client,
@@ -44,7 +45,7 @@ async function handleOnboardingToolUse({
     const { person_name, portfolio_description, sections, design_style } =
       tool.input;
     console.log("starting portfolio shipping tool", tool.input);
-    const generatedFolderName = generateProjectFolderName(person_name, roomId);
+    const generatedFolderName = generateProjectFolderName(person_name);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Portfolio description : ${portfolio_description}
@@ -67,7 +68,7 @@ async function handleOnboardingToolUse({
     const { project_name, project_description, sections, design_style } =
       tool.input;
     console.log("starting landing page shipping tool", tool.input);
-    const generatedFolderName = generateProjectFolderName(project_name, roomId);
+    const generatedFolderName = generateProjectFolderName(project_name);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
@@ -95,7 +96,7 @@ async function handleOnboardingToolUse({
       project_goal,
       project_branding_style,
     } = tool.input;
-    const generatedFolderName = generateProjectFolderName(project_name, roomId);
+    const generatedFolderName = generateProjectFolderName(project_name);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
@@ -140,6 +141,7 @@ async function handleOnboardingToolUse({
       tokens_used: client.tokensUsed,
     };
     const { id } = await insertShip(ship);
+    console.log("Inserted ship", id);
     if (mode === 'paid') {
       const profile = await getUserProfile(userId);
       const { available_ships } = profile; // current
@@ -148,7 +150,9 @@ async function handleOnboardingToolUse({
     }
     const convPayload = {
       ship_id: id,
+      tokens_used: client.tokensUsed,
     };
+    console.log("Updating conversation", convPayload);
     await updateConversation(client.conversationId, convPayload);
     return [
       {

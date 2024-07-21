@@ -16,7 +16,8 @@ async function codeAssitant({ query, filePath, client }) {
       2. Try to produce the best work for the users specific use cases, search the web, follow your knowledge.
       3. Use google fonts as per the requirement.
       4. Use Animate css if needed for the components, and animations are to be added.
-      5. Since desing is always subjective, the final decsion to make the perfect output is your call.
+      5. make sure the elements are of appropriate height and width, if required. Do not assume it will render correctly, make sure it is responsive. Circles should be circular, squares should be square, etc.
+      6. Since desing is always subjective, the final decision to make the perfect output is your call.
       ** End of design guideline **
 
       ** Important Notes! **
@@ -44,7 +45,7 @@ async function codeAssitant({ query, filePath, client }) {
 
       3- How to use fonts and images 
         Use google fonts
-        In place of images, use colored placeholders of relevant sizes, dont create SVG for placeholders
+        In place of images, use colored placeholders of relevant sizes, dont create SVG for placeholders. Do not assume image paths to exist. We do not have any local images.
         Use fontawesome icons
         Try to use animate css if animations are needed
         follow latest best practces for tailwind css as per 2024 March
@@ -102,7 +103,7 @@ async function codeAssitant({ query, filePath, client }) {
           }
 
           initializeComponent() {
-              // Add any necessary JavaScript for interactivity here
+              // Add any necessary JavaScript for interactivity here if needed.
               // For example:
               // const button = document.querySelector('#someButton');
               // if (button) {
@@ -130,7 +131,7 @@ async function codeAssitant({ query, filePath, client }) {
               this.initializeMenu();
           }
       
-          initializeMenu() {
+          initializeMenu() { // only added as header component needs to have a mobile menu.
               const mobileMenuButton = document.querySelector('#mobile-menu-button');
               const mobileMenu = document.querySelector('#mobile-menu');
               if (mobileMenuButton && mobileMenu) {
@@ -145,17 +146,6 @@ async function codeAssitant({ query, filePath, client }) {
 
     // Based on the above format here as some example components
 
-    // HeaderComponent example usage
-    async function loadHTML(url) {
-        const response = await fetch(url);
-        return await response.text();
-    }
-    class HeaderComponent extends HTMLElement {
-        async connectedCallback() {
-            const content = await loadHTML('components/header-component.html');
-            this.innerHTML = content;
-        }
-    }
     // FooterComponent example usage
     async function loadHTML(url) {
         const response = await fetch(url);
@@ -199,11 +189,11 @@ async function codeAssitant({ query, filePath, client }) {
     < End of examples on how to use formats >
 
     Important notes for JavaScript implementation:
-    1. Always include necessary event listeners within the component's class methods.
-    2. Implement interactive features (like toggles, form submissions, menubar, etc.) within the component's js file.
-    3. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector 
+    1. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector 
     While writing component's js, always add if conditions and null checks to check if the elements are present or not before proceeding with the code.
     Only write javascript methods for interactive features like toggles, carousel, menubar, etc. Do not add animations using js, use animate css classes to animate things.
+    2. In JS files, Do not write code for 3rd party libraries, Use js only for basic dom operations.
+    3. Content and animations are to be added in html files only. the JS file is mainly to initialise the web component and very important usecases like mobile menu as that cant be done with html.
     4. Ensure all files are properly linked in the index.html as per the following way:
         <script src="components/header-component.js"></script>
         <script src="components/testimonials-section.js"></script>

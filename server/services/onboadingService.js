@@ -111,7 +111,7 @@ async function processConversation({
         console.log("Received tool result:", toolResult);
         if (tool.name === TOOLS.CTO) {
           console.log("Project creation completed");
-          break;
+          return;
         }
         console.log(
           "Sending request to Anthropic API with updated conversation:",
@@ -199,6 +199,7 @@ function handleOnboardingSocketEvents(io) {
           socket,
           message,
         });
+        return;
       } catch (error) {
         if (error.name === "AbortError") {
           console.log("Website creation aborted");

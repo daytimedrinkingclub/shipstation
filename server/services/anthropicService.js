@@ -27,7 +27,7 @@ class AnthropicService {
     tokensUsed = 0,
     model = process.env.DEFAULT_MODEL,
     temperature = 0,
-    maxTokens = 2500,
+    maxTokens = 4000,
   }) {
     this.isCustomKey = !!apiKey;
     this.client = new Anthropic({
@@ -69,7 +69,7 @@ class AnthropicService {
       console.log("Anthropic response:", response);
       this.tokensUsed += response.usage.output_tokens;
 
-      if (process.env.NODE_ENV !== 'development' && !this.conversationId) {
+      if (!this.conversationId) {
         const conversation = await insertConversation({
           user_id: this.userId,
           tokens_used: this.tokensUsed,
