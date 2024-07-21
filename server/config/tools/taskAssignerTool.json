@@ -6,7 +6,7 @@
     "properties": {
       "file_name": {
         "type": "string",
-        "description": "file name where the file is to be created, like index.html, script.js, components/header.html etc"
+        "description": "file name and path where the file is to be created, like index.html, script.js, components/header.html etc"
       },
       "task_guidelines": {
         "type": "string",

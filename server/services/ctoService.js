@@ -41,10 +41,11 @@ const systemPrompt = `
 
   < Never do the following things >
   Never:
+  0. All js is to be written in individual component's js file only. DO NOT make script.js, js/main.js etc.
   1. Never use React or any other frontend framework.
   2. Never use shadow DOM
   3. Never create separate CSS files or tailwind.config.js file
-  4. Never deviate from the fromat, rest judgements depend on you as the CTO.
+  4. Never deviate from the format, rest judgements depend on you as the CTO.
   < End of limitations >
   `;
 

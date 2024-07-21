@@ -18,6 +18,7 @@ async function codeAssitant({ query, filePath, client }) {
       4. Use Animate css if needed for the components, and animations are to be added.
       5. make sure the elements are of appropriate height and width, if required. Do not assume it will render correctly, make sure it is responsive. Circles should be circular, squares should be square, etc.
       6. Since desing is always subjective, the final decision to make the perfect output is your call.
+      You can make changes to the design as per the requirements, but the final output should be the best possible output.
       ** End of design guideline **
 
       ** Important Notes! **
@@ -189,7 +190,8 @@ async function codeAssitant({ query, filePath, client }) {
     < End of examples on how to use formats >
 
     Important notes for JavaScript implementation:
-    1. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector 
+    0. All js is to be written in individual component's js file only. DO NOT make script.js, js/main.js etc.
+    1. Always use document.querySelector to query for the elements. Do Not use this.shadowRoot.querySelector or this.querySelector or shadowRoot or      this.attachShadow({ mode: 'open' }); Do not make intersection observers etc for animations. Animations will be added in html files already.
     While writing component's js, always add if conditions and null checks to check if the elements are present or not before proceeding with the code.
     Only write javascript methods for interactive features like toggles, carousel, menubar, etc. Do not add animations using js, use animate css classes to animate things.
     2. In JS files, Do not write code for 3rd party libraries, Use js only for basic dom operations.
