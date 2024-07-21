@@ -41,7 +41,8 @@
   "nodemonConfig": {
     "ignore": [
       "websites/",
-      "client/"
+      "client/",
+      "public/"
     ]
   }
 }

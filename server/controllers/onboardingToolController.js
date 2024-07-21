@@ -104,6 +104,9 @@ async function handleOnboardingToolUse({
       Project goal : ${project_goal}
       Project branding style : ${project_branding_style}`
     );
+    sendEvent("project_started", {
+      slug: generatedFolderName,
+    });
     return [
       {
         type: "tool_result",
