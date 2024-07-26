@@ -1,7 +1,6 @@
 # [ShipStation](https://shipstation.ai)
 
-ShipStation, https://shipstation.ai is ever growing work on agents and tools that empowers Dick and John et al to consume the wonders of AI for getting tasks done reliably.
-This project leverages Anthropic's AI tools capabilities to streamline the website creation process.
+ShipStation, https://shipstation.ai is an AI based website and agents generation platform.
 
 To begin with, we are optimising simple landing page websites, next stop being generic connect-anything-to-anything services.
 
