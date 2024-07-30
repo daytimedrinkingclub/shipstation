@@ -314,7 +314,7 @@ const Edit = () => {
       <div className="h-full p-4 flex flex-col items-center justify-center">
         <IframePreview device={currentDevice} ref={iframeRef} slug={shipId} />
         <div className="absolute bottom-8 right-8 z-10">
-          <Dice animationType="chaotic" onRoll={shuffleDevice} />
+          <Dice onRoll={shuffleDevice} />
         </div>
       </div>
     </div>

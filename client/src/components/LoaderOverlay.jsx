@@ -67,7 +67,6 @@ const LoaderOverlay = ({ isOpen, type }) => {
       </div>
       <div className="absolute bottom-8 right-8 z-10">
         <Dice
-          animationType="chaotic"
           onRoll={() =>
             setCurrentDevice(
               DEVICE_FRAMES[Math.floor(Math.random() * DEVICE_FRAMES.length)]
