@@ -3,8 +3,8 @@ const {
   ListObjectsV2Command,
   GetObjectCommand,
 } = require("@aws-sdk/client-s3");
-const { Readable } = require('stream');
-const archiver = require('archiver');
+const { Readable } = require("stream");
+const archiver = require("archiver");
 const { s3Handler } = require("../config/awsConfig");
 require("dotenv").config();
 
@@ -109,23 +109,25 @@ async function createZipFromS3Directory(directoryPath) {
 
   try {
     const data = await s3Handler.send(new ListObjectsV2Command(params));
-    
-    const archive = archiver('zip', {
-      zlib: { level: 9 } // Sets the compression level
+
+    const archive = archiver("zip", {
+      zlib: { level: 9 }, // Sets the compression level
     });
 
-    const streamPassThrough = new (require('stream').PassThrough)();
+    const streamPassThrough = new (require("stream").PassThrough)();
     archive.pipe(streamPassThrough);
 
     for (const item of data.Contents) {
-      const fileData = await s3Handler.send(new GetObjectCommand({
-        Bucket: bucketName,
-        Key: item.Key,
-      }));
-      
+      const fileData = await s3Handler.send(
+        new GetObjectCommand({
+          Bucket: bucketName,
+          Key: item.Key,
+        })
+      );
+
       const fileStream = fileData.Body;
-      const fileName = item.Key.replace(`websites/${directoryPath}/`, '');
-      
+      const fileName = item.Key.replace(`websites/${directoryPath}/`, "");
+
       archive.append(Readable.from(fileStream), { name: fileName });
     }
 
@@ -148,12 +150,60 @@ async function getFileFromS3(bucketPath) {
   return data?.Body;
 }
 
+async function getProjectDirectoryStructure(s3Path) {
+  const params = {
+    Bucket: bucketName,
+    Prefix: `websites/${s3Path}`,
+    Delimiter: '/'
+  };
 
+  try {
+    const data = await s3Handler.send(new ListObjectsV2Command(params));
+    const structure = [];
+
+    // Process directories
+    for (const prefix of data.CommonPrefixes || []) {
+      const dirName = prefix.Prefix.split('/').slice(-2)[0];
+      const dirPath = prefix.Prefix.replace('websites/', '');
+      structure.push({
+        name: dirName,
+        type: 'directory',
+        path: dirPath,
+        children: await getProjectDirectoryStructure(dirPath)
+      });
+    }
+
+    // Process files
+    for (const content of data.Contents || []) {
+      const fileName = content.Key.split('/').pop();
+      if (fileName && content.Key !== `websites/${s3Path}`) {
+        const filePath = content.Key.replace('websites/', '');
+        structure.push({
+          name: fileName,
+          type: 'file',
+          path: filePath,
+          lastModified: content.LastModified
+        });
+      }
+    }
+
+    // If this is the top-level call, return the children of the first directory
+    if (s3Path.split('/').length === 1 && structure.length === 1 && structure[0].type === 'directory') {
+      return structure[0].children;
+    }
+
+    return structure;
+  } catch (err) {
+    console.error(`Error getting directory structure for '${s3Path}':`, err);
+    return [];
+  }
+}
 
 module.exports = {
   saveFileToS3,
   saveDirectoryToS3,
   listFoldersInS3,
   getFileFromS3,
-  createZipFromS3Directory
+  createZipFromS3Directory,
+  getProjectDirectoryStructure,
 };

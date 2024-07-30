@@ -1,3 +1,5 @@
+@import "./dice.css";
+
 :root {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -30,4 +32,17 @@ body {
   100% {
     transform: translate(50px, 50px);
   }
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-progress-bar {
+  animation: progress 1.5s ease-in-out infinite;
 }

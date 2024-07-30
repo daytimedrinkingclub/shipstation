@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 export const AuthContext = createContext();
 
@@ -15,8 +15,6 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
   const [myProjectsLoading, setMyProjectsLoading] = useState(true);
-
-  const { toast } = useToast();
 
   const checkUser = async () => {
     setUserLoading(true);
@@ -61,22 +59,19 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully!",
-    });
+    toast("You have been logged out successfully!");
     setUser(null);
     setAvailableShips(0);
     setRecentlyShipped([]);
     // Redirect to the home page
-    window.location.href = '/';
+    window.location.href = "/";
   };
 
   const handleLogin = async (email, password = null) => {
     setIsLoading(true);
     try {
       let result = await supabase.auth.signUp({ email, password });
-      if (result?.error?.message === 'User already registered') {
+      if (result?.error?.message === "User already registered") {
         result = await supabase.auth.signInWithPassword({ email, password });
       }
       if (result.error) {
@@ -97,7 +92,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
   useEffect(() => {
     checkUser();
   }, []);

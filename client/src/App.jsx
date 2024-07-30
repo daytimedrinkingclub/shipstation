@@ -1,24 +1,18 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Header from "./components/Header";
 import Home from "./pages/Home";
-import Footer from "./components/Footer";
-import { Toaster } from "./components/ui/toaster";
-import Ship from "./pages/ship";
+import { Toaster } from "sonner";
+import Ship from "./pages/Ship";
+import Edit from "./pages/Edit";
 
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen bg-primary">
-        <Header />
-        <main className="flex-grow flex flex-col items-center justify-center">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/ship" element={<Ship />} />
-          </Routes>
-        </main>
-        <Footer />
-        <Toaster />
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/ship" element={<Ship />} />
+        <Route path="/project/:shipId" element={<Edit />} />
+      </Routes>
+      <Toaster richColors position="bottom-center" invert />
     </Router>
   );
 }

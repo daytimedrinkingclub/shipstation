@@ -1,20 +1,46 @@
 import { useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/components/ui/separator";
 import { Code, Trophy, ExternalLink, CircleFadingPlus } from "lucide-react";
 
 const RecentlyShipped = () => {
-  const {myProjectsLoading, recentlyShipped, user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const { myProjectsLoading, recentlyShipped, user } = useContext(AuthContext);
 
   const featuredWebsites = [
-    { name: "8bit portfolio - Subhash Chaudhary", url: "https://shipstation.ai/site/subhash-chaudhary-portfolio-room_iz4bfls86/" },
-    { name: "Neon portfolio", url: "https://shipstation.ai/site/neel-seth-8-bit-neon-portfolio-null/" },
-    { name: "Ray Kroc - Tribute Portfolio", url: "https://shipstation.ai/site/ray-kroc-tribute-portfolio-room_tpq5did89//" },
-    { name: "N times Y - The Curiosity App", url: "https://shipstation.ai/site/n-times-y-the-curiosity-app-vhzphn8pn/" },
-    { name: "TeacherOP - Education Excellence", url: "https://shipstation.ai/site/teacherop-landing-page-8hv6oa8tz/" },
-    { name: "Tankr Design portfolio", url: "https://shipstation.ai/site/rachit-tank-tankr-design-portfolio-room_njf2lirzu/" },
-    { name: "Alexis - AI Companion", url: "https://shipstation.ai/site/alexis-ai-companion-55bp42f2x/" },
-    { name: "Tarot Card Services - Portfolio", url: "https://shipstation.ai/site/tarot-by-sakshi-room_vcmdpyfb9/" },
+    {
+      name: "8bit portfolio - Subhash Chaudhary",
+      url: "https://shipstation.ai/site/subhash-chaudhary-portfolio-room_iz4bfls86/",
+    },
+    {
+      name: "Neon portfolio",
+      url: "https://shipstation.ai/site/neel-seth-8-bit-neon-portfolio-null/",
+    },
+    {
+      name: "Ray Kroc - Tribute Portfolio",
+      url: "https://shipstation.ai/site/ray-kroc-tribute-portfolio-room_tpq5did89//",
+    },
+    {
+      name: "N times Y - The Curiosity App",
+      url: "https://shipstation.ai/site/n-times-y-the-curiosity-app-vhzphn8pn/",
+    },
+    {
+      name: "TeacherOP - Education Excellence",
+      url: "https://shipstation.ai/site/teacherop-landing-page-8hv6oa8tz/",
+    },
+    {
+      name: "Tankr Design portfolio",
+      url: "https://shipstation.ai/site/rachit-tank-tankr-design-portfolio-room_njf2lirzu/",
+    },
+    {
+      name: "Alexis - AI Companion",
+      url: "https://shipstation.ai/site/alexis-ai-companion-55bp42f2x/",
+    },
+    {
+      name: "Tarot Card Services - Portfolio",
+      url: "https://shipstation.ai/site/tarot-by-sakshi-room_vcmdpyfb9/",
+    },
   ];
 
   return (
@@ -28,30 +54,33 @@ const RecentlyShipped = () => {
               my projects
             </h2>
             <div className="flex flex-wrap gap-4 mb-8">
-              {(myProjectsLoading && user) ? (
-                Array(4).fill().map((_, index) => (
-                  <div key={index} className="animate-pulse bg-gray-700 rounded-lg h-10 w-64"></div>
-                ))
+              {myProjectsLoading && user ? (
+                Array(4)
+                  .fill()
+                  .map((_, index) => (
+                    <div
+                      key={index}
+                      className="animate-pulse bg-gray-700 rounded-lg h-10 w-64"
+                    ></div>
+                  ))
               ) : recentlyShipped.length > 0 ? (
                 recentlyShipped.map((ship, index) => (
-                  <a
+                  <Link
                     key={index}
-                    href={`${import.meta.env.VITE_BACKEND_URL}/site/${ship.slug}/`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    to={`/project/${ship.slug}`}
                     className="text-cerulean hover:text-berkeley-blue border border-cerulean rounded-lg px-4 py-2 transition duration-300 ease-in-out transform hover:scale-105"
                   >
                     {ship.slug}
-                  </a>
+                  </Link>
                 ))
               ) : (
                 <div className="text-gray-400 bg-gray-800 p-8 rounded flex items-center">
                   <CircleFadingPlus className="w-12 h-12 mr-8" />
                   <div>
-                    <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
-                    <p>
-                      Start shipping to see your creations here!
-                    </p>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No projects yet
+                    </h3>
+                    <p>Start shipping to see your creations here!</p>
                   </div>
                 </div>
               )}
