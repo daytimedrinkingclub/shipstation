@@ -220,7 +220,7 @@ const Edit = () => {
                   size="sm"
                   onClick={() => {
                     window.open(
-                      `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}`,
+                      `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
                       "_blank"
                     );
                   }}
