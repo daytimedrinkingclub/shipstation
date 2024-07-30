@@ -1,13 +1,17 @@
-import Lottie from "react-lottie-player";
-import lottieAnimation from "../assets/lottie/ship.json";
 import { useEffect, useState, useRef } from "react";
 import { useSocket } from "@/context/SocketProvider";
+import IframePreview, { DEVICE_FRAMES } from "./IframePreview";
+import Dice from "./random/Dice";
 
 const LoaderOverlay = ({ isOpen, type }) => {
   const { socket } = useSocket();
 
-  const [loaderText, setLoaderText] = useState("");
+  const [loaderText, setLoaderText] = useState(
+    "It will take around 2-4 minutes"
+  );
+  const [currentDevice, setCurrentDevice] = useState(DEVICE_FRAMES[0]);
   const [slug, setSlug] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const iframeRef = useRef(null);
 
   useEffect(() => {
@@ -20,12 +24,13 @@ const LoaderOverlay = ({ isOpen, type }) => {
       socket.on("progress", ({ message }) => {
         setLoaderText(message);
         if (iframeRef.current) {
-          iframeRef.current.src = iframeRef.current.src;
+          iframeRef.current.reload();
         }
       });
 
       socket.on("project_started", ({ slug }) => {
         setSlug(slug);
+        setIsLoading(false);
       });
 
       return () => {
@@ -37,34 +42,38 @@ const LoaderOverlay = ({ isOpen, type }) => {
   }, [socket]);
 
   if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md">
-      <div className="flex flex-col items-center justify-center">
-        <h2 className="text-3xl font-bold mb-4 text-white text-center">{type === "portfolio" ? "Generating your portfolio" : "Generating your landing page"}</h2>
-        <span className="text-lg mb-8 text-white text-center">It will take around 2-4 minutes</span>
-        <p className="text-2xl font-semibold mb-6 text-white text-center">{loaderText}</p>
-        <div className="h-full flex justify-center items-center">
-          <div className="w-[375px] sm:w-[390px] max-w-[80%] sm:h-[700px] h-[600px] bg-white rounded-[40px] shadow-lg overflow-hidden relative">
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-40 h-6 bg-black rounded-b-3xl"></div>
-            {slug ? (
-              <iframe
-                ref={iframeRef}
-                src={`${import.meta.env.VITE_BACKEND_URL}/${slug}/`}
-                className="w-full h-full border-0 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100"
-              ></iframe>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Lottie
-                  loop
-                  animationData={lottieAnimation}
-                  play
-                  style={{ width: 150, height: 150 }}
-                />
-              </div>
-            )}
+    <div className="fixed inset-0 flex bg-black bg-opacity-90 backdrop-filter backdrop-blur-md">
+      <div className="sm:w-1/2 w-full flex flex-col items-center justify-center p-12">
+        <div className="relative">
+          <h2 className="text-4xl font-bold text-white text-center leading-tight mb-2">
+            {type === "portfolio"
+              ? "Generating your portfolio"
+              : "Generating your landing page"}
+          </h2>
+          <div className="absolute bottom-0 left-0 w-full h-1 overflow-hidden">
+            <div className="animate-progress-bar w-full h-full bg-blue-500 rounded-full"></div>
           </div>
         </div>
+        <p className="text-lg text-gray-300 text-center mt-4">{loaderText}</p>
+      </div>
+      <div className="w-1/2 sm:flex justify-center items-center hidden">
+        <IframePreview
+          device={currentDevice}
+          ref={iframeRef}
+          slug={slug}
+          isLoading={isLoading}
+        />
+      </div>
+      <div className="absolute bottom-8 right-8 z-10">
+        <Dice
+          animationType="chaotic"
+          onRoll={() =>
+            setCurrentDevice(
+              DEVICE_FRAMES[Math.floor(Math.random() * DEVICE_FRAMES.length)]
+            )
+          }
+        />
       </div>
     </div>
   );

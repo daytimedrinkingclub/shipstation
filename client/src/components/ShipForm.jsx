@@ -8,15 +8,14 @@ import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
 import { AuthContext } from "@/context/AuthContext";
 import LoaderOverlay from "./LoaderOverlay";
 import SuccessOverlay from "./SuccessOverlay";
-import { useToast } from "@/components/ui/use-toast";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
-
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useLocalStorage("requirements", "");
@@ -25,7 +24,6 @@ const ShipForm = ({ type, reset }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isKeyValidating, setIsKeyValidating] = useState(false);
 
-  const { toast } = useToast();
   const {
     isOpen: isLoaderOpen,
     onOpen: onLoaderOpen,
@@ -47,7 +45,7 @@ const ShipForm = ({ type, reset }) => {
     });
     onClose();
     onLoaderOpen();
-  }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -69,16 +67,9 @@ const ShipForm = ({ type, reset }) => {
         setIsKeyValidating(false);
         if (response.success) {
           startProject();
-          toast({
-            title: "Success",
-            description: "Anthropic key is valid, starting generation!",
-          });
+          toast("Anthropic key is valid, starting generation!");
         } else {
-          toast({
-            title: "Error",
-            description: response.message,
-            variant: "destructive",
-          });
+          toast.error(response.message);
         }
       });
 
@@ -87,10 +78,7 @@ const ShipForm = ({ type, reset }) => {
       });
 
       socket.on("needMoreInfo", ({ message }) => {
-        toast({
-          title: "Please add more details regarding the website",
-          // description: message,
-        });
+        toast("Please add more details regarding the website");
         onLoaderClose();
       });
 
@@ -126,11 +114,19 @@ const ShipForm = ({ type, reset }) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
-                <p className={`text-sm ${availableShips < 1 ? 'text-red-500' : 'text-white'}`} onClick={(e) => e.preventDefault()} ><Fuel className="inline-block mr-2" height={18} width={18} />{availableShips} container available</p>
+                <p
+                  className={`text-sm ${
+                    availableShips < 1 ? "text-red-500" : "text-white"
+                  }`}
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <Fuel className="inline-block mr-2" height={18} width={18} />
+                  {availableShips} container available
+                </p>
               </TooltipTrigger>
               <TooltipContent>
-                Your balance is {availableShips} container. <br />
-                1 container is equal to 1 individual website/app.
+                Your balance is {availableShips} container. <br />1 container is
+                equal to 1 individual website/app.
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

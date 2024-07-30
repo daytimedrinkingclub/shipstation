@@ -81,7 +81,7 @@ async function handleCTOToolUse({
       fileContent;
 
     sendEvent("progress", {
-      message: `Generating code for ${file_name} 🔄`,
+      message: `Writing code for ${file_name}`,
     });
     const resp = await codeAssitant({
       query: updatedFileContent,

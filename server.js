@@ -1,11 +1,17 @@
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const cors = require("cors");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
 const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const { listFoldersInS3, createZipFromS3Directory } = require("./server/services/s3Service");
+const {
+  listFoldersInS3,
+  createZipFromS3Directory,
+  getProjectDirectoryStructure,
+  saveFileToS3,
+} = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
@@ -26,21 +32,22 @@ const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
     origin: "*", // Allow all origins
-    methods: ["GET", "POST"]
-  }
+    methods: ["GET", "POST"],
+  },
 });
 
 app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
+app.use(cors());
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
 // Serve React app for all other routes (including 404)
-app.get('/ship', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get("/ship", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.post("/payment-webhook", express.json(), async (req, res) => {
@@ -75,16 +82,18 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
       await updateUserProfile(user_id, profilePayload);
 
       const webhookPayload = {
-        "content": "New payment received!",
-        "embeds": [{
-          "title": "Payment Details",
-          "fields": [
-            { "name": "Amount", "value": `Rs ${amountInRs}` },
-            { "name": "Email", "value": email },
-            { "name": "Order ID", "value": orderId },
-            { "name": "Payment ID", "value": paymentId }
-          ]
-        }]
+        content: "New payment received!",
+        embeds: [
+          {
+            title: "Payment Details",
+            fields: [
+              { name: "Amount", value: `Rs ${amountInRs}` },
+              { name: "Email", value: email },
+              { name: "Order ID", value: orderId },
+              { name: "Payment ID", value: paymentId },
+            ],
+          },
+        ],
       };
       postToDiscordWebhook(webhookPayload);
 
@@ -113,6 +122,29 @@ app.get("/all-websites", async (req, res) => {
     s3: JSON.parse(s3Websites).filter((website) => !website.startsWith(".")),
     local: localWebsites,
   });
+});
+
+app.get("/project-structure/:slug", async (req, res) => {
+  const slug = req.params.slug;
+  console.log(slug);
+  try {
+    const structure = await getProjectDirectoryStructure(slug);
+    res.json(structure);
+  } catch (error) {
+    console.error(`Error fetching project structure for ${slug}:`, error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/update-file", async (req, res) => {
+  const { filePath, content } = req.body;
+  try {
+    await saveFileToS3(filePath, content);
+    res.status(200).json({ message: "File updated successfully" });
+  } catch (error) {
+    console.error(`Error updating file ${filePath}:`, error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 async function serializeDom(filePath, baseUrl) {
@@ -183,7 +215,7 @@ app.get("/:websiteId", async (req, res) => {
   }
 });
 
-app.get('/download/:slug', async (req, res) => {
+app.get("/download/:slug", async (req, res) => {
   const slug = req.params.slug;
   const folderPath = `websites/${slug}`;
 
@@ -191,19 +223,18 @@ app.get('/download/:slug', async (req, res) => {
     const zipStream = await createZipFromS3Directory(slug);
 
     if (!zipStream) {
-      return res.status(404).send('Folder not found');
+      return res.status(404).send("Folder not found");
     }
 
-    res.setHeader('Content-Disposition', `attachment; filename=${slug}.zip`);
-    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader("Content-Disposition", `attachment; filename=${slug}.zip`);
+    res.setHeader("Content-Type", "application/zip");
 
     zipStream.pipe(res);
   } catch (error) {
     console.error(`Error downloading folder ${folderPath}:`, error);
-    res.status(500).send('An error occurred');
+    res.status(500).send("An error occurred");
   }
 });
-
 
 app.use("/site/:siteId", async (req, res, next) => {
   const siteName = req.params.siteId;

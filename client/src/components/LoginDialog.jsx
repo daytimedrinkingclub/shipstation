@@ -11,13 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { handleLogin, isLoading } = useContext(AuthContext);
-  const { toast } = useToast();
 
   const [isSigningUp, setIsSigningUp] = useState(createAccount);
 
@@ -29,16 +28,14 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
     e.preventDefault();
     const result = await handleLogin(email, password);
     if (result.success) {
-      toast({
-        title: 'Welcome back',
-        description: 'Lets start creating something beautiful!',
+      toast("Welcome back 👋", {
+        description: "Lets start creating something beautiful!",
+        position: "bottom-right",
       });
       onClose();
     } else {
-      toast({
-        title: "Error",
+      toast.error("Unable to login", {
         description: result.message,
-        variant: "destructive",
       });
     }
   };
@@ -47,9 +44,13 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
-          <DialogTitle>{isSigningUp ? "Sign up for free" : "Sign in"}</DialogTitle>
+          <DialogTitle>
+            {isSigningUp ? "Sign up for free" : "Sign in"}
+          </DialogTitle>
           <DialogDescription>
-            {isSigningUp ? "Enter your email address and password to continue." : "Enter your email and password to create account."}
+            {isSigningUp
+              ? "Enter your email address and password to continue."
+              : "Enter your email and password to create account."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,8 +79,16 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
             />
           </div>
           <div className="flex justify-between items-center">
-            <Button variant="link" type="button" className="underline" size="sm" onClick={() => setIsSigningUp(!isSigningUp)}>
-              {isSigningUp ? "Already have an account?" : "Create a new account?"}
+            <Button
+              variant="link"
+              type="button"
+              className="underline"
+              size="sm"
+              onClick={() => setIsSigningUp(!isSigningUp)}
+            >
+              {isSigningUp
+                ? "Already have an account?"
+                : "Create a new account?"}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (

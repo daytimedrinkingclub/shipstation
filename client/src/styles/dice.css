@@ -1,0 +1,178 @@
+/* Container styles */
+.dice-container {
+  width: 40px;
+  height: 40px;
+  perspective: 1000px;
+  cursor: pointer;
+}
+
+.dice-container.jumping {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+}
+
+/* Dice styles */
+.dice {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+
+.rolling {
+  animation: roll 2s linear;
+}
+
+.jumping {
+  animation: jump 2s ease-in-out;
+}
+
+/* Face styles */
+.face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #dc2626;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  padding: 3px;
+}
+
+.dot {
+  background-color: white;
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+  place-self: center;
+}
+
+/* Face transformations */
+.front {
+  transform: rotateY(0deg) translateZ(20px);
+}
+.back {
+  transform: rotateY(180deg) translateZ(20px);
+}
+.right {
+  transform: rotateY(90deg) translateZ(20px);
+}
+.left {
+  transform: rotateY(-90deg) translateZ(20px);
+}
+.top {
+  transform: rotateX(90deg) translateZ(20px);
+}
+.bottom {
+  transform: rotateX(-90deg) translateZ(20px);
+}
+
+/* Dot positions for each face */
+.face-1 .dot:nth-child(1) {
+  grid-area: 2 / 2;
+}
+
+.face-2 .dot:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.face-2 .dot:nth-child(2) {
+  grid-area: 3 / 3;
+}
+
+.face-3 .dot:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.face-3 .dot:nth-child(2) {
+  grid-area: 2 / 2;
+}
+.face-3 .dot:nth-child(3) {
+  grid-area: 3 / 3;
+}
+
+.face-4 .dot:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.face-4 .dot:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.face-4 .dot:nth-child(3) {
+  grid-area: 3 / 1;
+}
+.face-4 .dot:nth-child(4) {
+  grid-area: 3 / 3;
+}
+
+.face-5 .dot:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.face-5 .dot:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.face-5 .dot:nth-child(3) {
+  grid-area: 2 / 2;
+}
+.face-5 .dot:nth-child(4) {
+  grid-area: 3 / 1;
+}
+.face-5 .dot:nth-child(5) {
+  grid-area: 3 / 3;
+}
+
+.face-6 .dot:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.face-6 .dot:nth-child(2) {
+  grid-area: 1 / 3;
+}
+.face-6 .dot:nth-child(3) {
+  grid-area: 2 / 1;
+}
+.face-6 .dot:nth-child(4) {
+  grid-area: 2 / 3;
+}
+.face-6 .dot:nth-child(5) {
+  grid-area: 3 / 1;
+}
+.face-6 .dot:nth-child(6) {
+  grid-area: 3 / 3;
+}
+
+/* Animations */
+@keyframes roll {
+  0% {
+    transform: rotateX(0deg) rotateY(0deg);
+  }
+  25% {
+    transform: rotateX(180deg) rotateY(90deg);
+  }
+  50% {
+    transform: rotateX(360deg) rotateY(180deg);
+  }
+  75% {
+    transform: rotateX(540deg) rotateY(270deg);
+  }
+  100% {
+    transform: rotateX(720deg) rotateY(360deg);
+  }
+}
+
+@keyframes jump {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-50vw, -30vh);
+  }
+  40% {
+    transform: translate(30vw, -50vh);
+  }
+  60% {
+    transform: translate(-20vw, 40vh);
+  }
+  80% {
+    transform: translate(40vw, 20vh);
+  }
+}

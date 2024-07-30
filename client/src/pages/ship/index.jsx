@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ShipForm from "@/components/ShipForm";
+import AppLayout from "@/components/layout/AppLayout";
 
 
 const Ship = () => {
@@ -22,9 +23,9 @@ const Ship = () => {
   };
 
   return (
-    <div className="flex container flex-col items-center">
+    <AppLayout>
       <ShipForm type={selectedType} reset={handleReset} />
-    </div>
+    </AppLayout>
   );
 };
 

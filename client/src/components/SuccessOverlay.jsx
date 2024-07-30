@@ -1,21 +1,19 @@
 import Lottie from "react-lottie-player";
-import { useToast } from "./ui/use-toast";
 import { Button } from "./ui/button";
-import { Copy, Download, ExternalLinkIcon, X } from "lucide-react";
+import { CodeXml, ExternalLinkIcon, FolderOpen, X } from "lucide-react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 
 const SuccessOverlay = ({ isOpen, onClose, slug }) => {
-  if (!isOpen) return null;
-  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const successText = `Your website "${slug}" has been deployed successfully!`;
+  const successText = `Your website "${slug}" is live!`;
   const link = `${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`;
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text);
-    toast({
-      title: "Copied to clipboard",
-      description: "Link copied to clipboard",
-    });
+    toast("Link copied to clipboard");
   };
 
   const handledownloadzip = () => {
@@ -23,58 +21,44 @@ const SuccessOverlay = ({ isOpen, onClose, slug }) => {
     window.open(zipLink, "_blank");
   };
 
+  const handleEditProject = () => {
+    navigate(`/project/${slug}`);
+  };
+
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-black bg-opacity-90 backdrop-filter backdrop-blur-md z-[9999] overflow-hidden">
-      <Button
-        onClick={onClose}
-        className="absolute top-4 text-white right-4  transition-colors duration-300 z-20"
-        variant="ghost"
-        size="icon"
-      >
-        <X className="w-10 h-10" />
-      </Button>
-      <div className="absolute inset-0 w-full h-full">
-        <Lottie
-          play
-          path="https://assets9.lottiefiles.com/packages/lf20_u4yrau.json"
-          loop={false}
-        />
-      </div>
-
-      <div className="text-center relative z-10 bg-gray-900 bg-opacity-95 max-w-3xl border border-gray-700 rounded">
-        <p className="text-2xl font-semibold m-8 p-4 text-white">
-          {successText}
-        </p>
-        <div className="my-8 px-8 space-x-4 flex justify-between">
-          <div className="flex gap-4 items-center justify-center">
-            <button
-              onClick={handledownloadzip}
-              className="border border-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
-            >
-              <span>Download ZIP</span>
-              <Download className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => handleCopy(link)}
-              className="border border-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
-            >
-              <span>Copy link</span>
-              <Copy className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="flex gap-4 items-center justify-center">
-
-            <button
-              onClick={() => window.open(link, "_blank")}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
-            >
-              <span>Visit now</span>
-              <ExternalLinkIcon className="w-4 h-4" />
-            </button>
-          </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="bg-black text-white p-8">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-semibold text-white">
+            {successText}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="absolute inset-0 w-full h-full -z-10">
+          <Lottie
+            play
+            path="https://assets9.lottiefiles.com/packages/lf20_u4yrau.json"
+            loop={false}
+          />
         </div>
-      </div>
-    </div>
+        <div className="mt-4 flex justify-between gap-4">
+          <Button
+            onClick={handleEditProject}
+            variant="secondary"
+            className="w-full"
+          >
+            <CodeXml className="w-4 h-4 mr-2" />
+            Open Editor
+          </Button>
+          <Button
+            onClick={() => window.open(link, "_blank")}
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center space-x-2"
+          >
+            <span>Visit now</span>
+            <ExternalLinkIcon className="w-4 h-4" />
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
