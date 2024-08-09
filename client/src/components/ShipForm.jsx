@@ -16,6 +16,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import { pluralize } from "@/lib/utils";
+import { PROMPT_PLACEHOLDERS } from "@/constants";
 
 const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useLocalStorage("requirements", "");
@@ -49,6 +51,10 @@ const ShipForm = ({ type, reset }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!requirements.trim()) {
+      toast.info("Easy there, what do you want to make?");
+      return;
+    }
     if (availableShips <= 0) {
       onOpen();
     } else {
@@ -106,11 +112,11 @@ const ShipForm = ({ type, reset }) => {
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
           className="w-full h-60 bg-black text-white border-gray-600 mb-8"
-          placeholder={`Lets start collecting your requirements for your ${type}. \n\nDescribe the layout, and confirm the needed sections.\nYou can also include brand guidelines and color palette. \n \nYou can also enter image urls in your prompt to be used as reference.`}
+          placeholder={PROMPT_PLACEHOLDERS[type]}
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
         />
-        <div className="flex w-full justify-between items-center">
+        <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 sm:space-y-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
@@ -121,18 +127,20 @@ const ShipForm = ({ type, reset }) => {
                   onClick={(e) => e.preventDefault()}
                 >
                   <Fuel className="inline-block mr-2" height={18} width={18} />
-                  {availableShips} container available
+                  {availableShips} {pluralize(availableShips, "container")}{" "}
+                  available
                 </p>
               </TooltipTrigger>
               <TooltipContent>
-                Your balance is {availableShips} container. <br />1 container is
-                equal to 1 individual website/app.
+                Your balance is {availableShips}{" "}
+                {pluralize(availableShips, "container")}. <br />1 container is
+                equal to 1 individual project.
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <Button
             type="submit"
-            className="transition-all duration-300 hover:bg-purple-700 hover:shadow-[0_0_10px_#8b5cf6] hover:text-purple-100 group"
+            className="w-full sm:w-auto transition-all duration-300 hover:bg-purple-700 hover:shadow-[0_0_10px_#8b5cf6] hover:text-purple-100 group"
           >
             Start generating website
             <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-180" />

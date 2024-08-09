@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Separator } from "@/components/ui/separator";
-import { Code, Trophy, ExternalLink, CircleFadingPlus } from "lucide-react";
+import { Code, Trophy, ExternalLink, CircleFadingPlus, Sparkles } from "lucide-react";
 
 const RecentlyShipped = () => {
   const navigate = useNavigate();
@@ -10,8 +10,8 @@ const RecentlyShipped = () => {
 
   const featuredWebsites = [
     {
-      name: "8bit portfolio - Subhash Chaudhary",
-      url: "https://shipstation.ai/site/subhash-chaudhary-portfolio-room_iz4bfls86/",
+      name: "Sam Altman - Spotify themed portfolio",
+      url: "https://shipstation.ai/site/sam-altman-spotify-portfolio-66Qmav1g/",
     },
     {
       name: "Neon portfolio",
@@ -22,8 +22,8 @@ const RecentlyShipped = () => {
       url: "https://shipstation.ai/site/ray-kroc-tribute-portfolio-room_tpq5did89//",
     },
     {
-      name: "N times Y - The Curiosity App",
-      url: "https://shipstation.ai/site/n-times-y-the-curiosity-app-vhzphn8pn/",
+      name: "Vintage Ink Emporium",
+      url: "https://shipstation.ai/site/vintage-ink-emporium-SvxCZNk0/",
     },
     {
       name: "TeacherOP - Education Excellence",
@@ -74,7 +74,7 @@ const RecentlyShipped = () => {
                   </Link>
                 ))
               ) : (
-                <div className="text-gray-400 bg-gray-800 p-8 rounded flex items-center">
+                <div className="text-gray-400 border border-gray-700 p-8 rounded flex items-center">
                   <CircleFadingPlus className="w-12 h-12 mr-8" />
                   <div>
                     <h3 className="text-lg font-semibold mb-2">
@@ -88,7 +88,7 @@ const RecentlyShipped = () => {
           </div>
           <div className="flex-1">
             <h2 className="text-2xl font-bold mb-6">
-              <Trophy className="inline-block w-5 h-5 mr-2 stroke-yellow-500" />
+              <Sparkles className="inline-block w-5 h-5 mr-2" />
               featured websites
             </h2>
             <div className="flex flex-wrap gap-4">

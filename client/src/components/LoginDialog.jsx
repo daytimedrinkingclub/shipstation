@@ -16,7 +16,8 @@ import { toast } from "sonner";
 const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, isLoading } = useContext(AuthContext);
+  const { handleLogin, isLoading, sendLoginLink, isSendingLoginLink } =
+    useContext(AuthContext);
 
   const [isSigningUp, setIsSigningUp] = useState(createAccount);
 
@@ -34,7 +35,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
       });
       onClose();
     } else {
-      toast.error("Unable to login", {
+      toast.error("Unable to proceed", {
         description: result.message,
       });
     }
@@ -45,12 +46,18 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
         <DialogHeader>
           <DialogTitle>
-            {isSigningUp ? "Sign up for free" : "Sign in"}
+            {isSigningUp ? "Sign up for free" : "Identify yourself"}
           </DialogTitle>
           <DialogDescription>
-            {isSigningUp
-              ? "Enter your email address and password to continue."
-              : "Enter your email and password to create account."}
+            {isSigningUp ? (
+              "Enter your email and password to create account."
+            ) : (
+              <>
+                Enter your email address and password to continue.
+                <br />
+                An account will be created for you if none exists.
+              </>
+            )}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,7 +74,19 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <div className="flex justify-between items-center">
+              <Label htmlFor="password">Password</Label>
+              <span
+                className="text-sm text-gray-400 hover:text-white cursor-pointer"
+                onClick={() => {
+                  sendLoginLink(email).then(() => {
+                    toast.success("Login link sent successfully, check your email.");
+                  });
+                }}
+              >
+                {isSendingLoginLink ? "Sending..." : "Email me a login link!"}
+              </span>
+            </div>
             <Input
               id="password"
               type="password"
@@ -76,6 +95,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={!email}
             />
           </div>
           <div className="flex justify-between items-center">

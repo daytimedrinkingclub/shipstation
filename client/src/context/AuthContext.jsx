@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
   const [isLoading, setIsLoading] = useState(false);
+  const [isSendingLoginLink, setIsSendingLoginLink] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
   const [myProjectsLoading, setMyProjectsLoading] = useState(true);
 
@@ -75,11 +76,6 @@ export const AuthProvider = ({ children }) => {
         result = await supabase.auth.signInWithPassword({ email, password });
       }
       if (result.error) {
-        toast({
-          title: "Error",
-          description: result?.error?.message,
-          variant: "destructive",
-        });
         return { success: false, message: result?.error?.message };
       }
       await checkUser();
@@ -89,6 +85,25 @@ export const AuthProvider = ({ children }) => {
       return { success: false, message: error };
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const sendLoginLink = async (email) => {
+    if (!email) {
+      return { success: false, message: "Please enter an email address" };
+    }
+    setIsSendingLoginLink(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email });
+      if (error) {
+        return { success: false, message: error.message };
+      }
+      return { success: true, message: "Login link sent successfully" };
+    } catch (error) {
+      console.error("Error sending login link:", error);
+      return { success: false, message: "Failed to send login link" };
+    } finally {
+      setIsSendingLoginLink(false);
     }
   };
 
@@ -106,6 +121,8 @@ export const AuthProvider = ({ children }) => {
         recentlyShipped,
         handleLogout,
         handleLogin,
+        sendLoginLink,
+        isSendingLoginLink,
         isLoading,
         myProjectsLoading,
         anthropicKey,

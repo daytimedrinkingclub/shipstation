@@ -43,7 +43,7 @@ const Header = () => {
               ) : (
                 <LogIn className="w-4 h-4 mr-2" />
               )}
-              {user ? "Log out" : "Sign In"}
+              {user ? "Log out" : "Login or Sign up"}
             </Button>
           )}
         </div>

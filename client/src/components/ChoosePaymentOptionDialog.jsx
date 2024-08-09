@@ -16,7 +16,6 @@ const ChoosePaymentOptionDialog = ({
   isOpen,
   onClose,
   onSubmitKey,
-  onPayNow,
   anthropicKey,
   setAnthropicKey,
   type,

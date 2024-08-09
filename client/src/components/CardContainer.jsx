@@ -4,6 +4,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { SHIP_AI_AGENT, SHIP_LANDING_PAGE, SHIP_PORTFOLIO } from "@/constants";
 import { Layout, Cpu, Wallpaper } from "lucide-react";
 
 const CardContainer = ({ onCardClick }) => {
@@ -13,14 +14,14 @@ const CardContainer = ({ onCardClick }) => {
       title: "Ship landing page",
       description:
         "Craft a sleek, high-converting landing page that captivates your audience from the first scroll.",
-      type: "landing_page",
+      type: SHIP_LANDING_PAGE,
     },
     {
       icon: <Wallpaper className="w-6 h-6" />,
       title: "Ship personal website",
       description:
         "Showcase your unique story and skills with a stunning personal website that leaves a lasting impression.",
-      type: "portfolio",
+      type: SHIP_PORTFOLIO,
     },
     {
       icon: <Cpu className="w-6 h-6" />,
@@ -28,7 +29,7 @@ const CardContainer = ({ onCardClick }) => {
       description:
         "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
       badge: "Launching Soon",
-      type: "idea_board",
+      type: SHIP_AI_AGENT,
       isComingSoon: true,
     },
   ];
@@ -42,9 +43,7 @@ const CardContainer = ({ onCardClick }) => {
           onClick={() => !card.isComingSoon && onCardClick(card.type)}
         >
           <CardHeader>
-            <div>
-              {card.icon}
-            </div>
+            <div>{card.icon}</div>
             <CardTitle className="pt-4">{card.title}</CardTitle>
             <CardDescription>{card.description}</CardDescription>
             {card.badge && (
