@@ -62,7 +62,7 @@ const ChoosePaymentOptionDialog = ({
                   <ShieldCheck className="inline-block mr-1 h-4 w-4" />
                   Your key is never stored on our servers.
                   <a
-                    href="https://freeaifinder.com/how-to/get-anthropic-api-key"
+                    href="https://www.merge.dev/blog/anthropic-api-key"
                     target="_blank"
                     className="text-primary hover:text-primary/90 underline ml-1"
                   >

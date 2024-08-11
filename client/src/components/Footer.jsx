@@ -68,13 +68,23 @@ const Footer = () => {
         </Popover>
       </div>
 
-      <div className="flex items-center flex-col sm:flex-row">
+      <div className="flex items-center flex-col sm:flex-row gap-4">
         <a
           href="https://github.com/daytimedrinkingclub/shipstation"
           target="_blank"
           className="text-gray-300 inline-flex items-center gap-1 hover:text-white"
         >
           <Star height={16} width={16} /> us on GitHub
+        </a>
+        <a
+          href="https://theresanaiforthat.com/ai/shipstation/?ref=featured&v=1467925"
+          target="_blank"
+          rel="nofollow"
+        >
+          <img
+            width="200"
+            src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600"
+          />
         </a>
       </div>
     </footer>
