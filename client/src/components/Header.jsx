@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { LogIn, LogOut, Ship, User } from "lucide-react";
 
 const Header = () => {
-  const { user, availableShips, handleLogout, userLoading } = useContext(AuthContext);
+  const { user, availableShips, handleLogout, userLoading } =
+    useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const handleLoginLogout = async () => {
@@ -26,12 +27,19 @@ const Header = () => {
       <div className="container flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Ship className="w-6 h-6" />
-          <h1 className="text-2xl font-bold cursor-pointer" onClick={() => window.location.href = "/"}>ShipStation</h1>
+          <h1
+            className="text-2xl font-bold cursor-pointer"
+            onClick={() => (window.location.href = "/")}
+          >
+            ShipStation
+          </h1>
         </div>
         <div className="flex items-center space-x-4">
-          {user && <div className="hidden sm:flex items-center">
-            <User className="w-4 h-4 mr-2" /> {user?.email}
-          </div>}
+          {user && (
+            <div className="hidden sm:flex items-center">
+              <User className="w-4 h-4 mr-2" /> {user?.email}
+            </div>
+          )}
           {userLoading ? (
             <Button variant="link" className="animate-pulse">
               <div className="w-24 h-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded"></div>
@@ -43,7 +51,7 @@ const Header = () => {
               ) : (
                 <LogIn className="w-4 h-4 mr-2" />
               )}
-              {user ? "Log out" : "Login or Sign up"}
+              {user ? "Log out" : "Login"}
             </Button>
           )}
         </div>

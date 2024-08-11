@@ -28,7 +28,7 @@ const Home = () => {
       </h1>
       <CardContainer onCardClick={handleCardClick} />
       <RecentlyShipped />
-      <LoginDialog isOpen={isOpen} onClose={onClose} createAccount />
+      <LoginDialog isOpen={isOpen} onClose={onClose} />
     </AppLayout>
   );
 };
