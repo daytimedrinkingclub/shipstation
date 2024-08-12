@@ -3,11 +3,10 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import ShipForm from "@/components/ShipForm";
 import AppLayout from "@/components/layout/AppLayout";
 
-
 const Ship = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const typeFromQuery = searchParams.get('type');
+  const typeFromQuery = searchParams.get("type");
 
   const [selectedType, setSelectedType] = useState(null);
 
@@ -19,7 +18,7 @@ const Ship = () => {
 
   const handleReset = () => {
     setSelectedType(null);
-    navigate('/');
+    navigate("/");
   };
 
   return (
