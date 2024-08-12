@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 
 const LoginDialog = ({ isOpen, onClose }) => {
@@ -34,36 +34,37 @@ const LoginDialog = ({ isOpen, onClose }) => {
         <DialogHeader>
           <DialogTitle>Login to ShipStation</DialogTitle>
           <DialogDescription>
-            Enter your email address and we will send you a login link.
+            <span className="text-yellow-300 font-semibold">
+              New account registration is paused temporarily.
+            </span>{" "}
+            <br />
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              className="text-white bg-black"
-              placeholder="Enter your email"
-              value={email}
-              onChange={handleEmailChange}
-              required
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button type="submit" disabled={isSendingLoginLink}>
-              {isSendingLoginLink ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Checking...
-                </>
-              ) : (
-                <>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Send me login link
-                </>
-              )}
-            </Button>
+            <div className="flex space-x-2">
+              <Input
+                id="email"
+                type="email"
+                className="text-white bg-black flex-grow"
+                placeholder="Enter your email"
+                value={email}
+                onChange={handleEmailChange}
+                required
+              />
+              <Button
+                type="submit"
+                disabled={isSendingLoginLink}
+                className="px-3"
+              >
+                {isSendingLoginLink ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
