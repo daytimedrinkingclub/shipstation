@@ -4,7 +4,7 @@ ShipStation, https://shipstation.ai is an AI based website and agents generation
 
 To begin with, we are optimising simple landing page websites, next stop being generic connect-anything-to-anything services.
 
-Imagine working on some new platform which has solved a lot of good problems but just doesn't work effectively for you as the provioder of the service can't understand you and you can't understand the provider.
+Imagine working on some new platform which has solved a lot of good problems but just doesn't work effectively for you as the provider of the service can't understand you and you can't understand the provider.
 
 Our WIP tool is able to solve it with very high accuracies, say 95% of the time so that you, the saas provider and the required integration partner never need to be aware of each other and things get done for you.
 
