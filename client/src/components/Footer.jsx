@@ -76,16 +76,7 @@ const Footer = () => {
         >
           <Star height={16} width={16} /> us on GitHub
         </a>
-        <a
-          href="https://theresanaiforthat.com/ai/shipstation/?ref=featured&v=1467925"
-          target="_blank"
-          rel="nofollow"
-        >
-          <img
-            width="200"
-            src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600"
-          />
-        </a>
+        <a href="https://theresanaiforthat.com/ai/shipstation/?ref=featured&v=1864496" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" /></a> 
       </div>
     </footer>
   );
