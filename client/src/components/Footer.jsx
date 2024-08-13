@@ -16,7 +16,7 @@ const Footer = () => {
           asChild
         >
           <a
-            href="https://discord.gg/zKJ8WKwFzm"
+            href="mailto:anuj@daytimedrinkingclub.com"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -74,9 +74,30 @@ const Footer = () => {
           target="_blank"
           className="text-gray-300 inline-flex items-center gap-1 hover:text-white"
         >
-          <Star height={16} width={16} /> us on GitHub
+          <Star height={16} width={16} />Star us on GitHub
         </a>
-        {/* <a href="https://theresanaiforthat.com/ai/shipstation/?ref=featured&v=1864496" target="_blank" rel="nofollow"><img width="300" src="https://media.theresanaiforthat.com/featured-on-taaft.png?width=600" /></a>  */}
+        <a
+          href="https://discord.gg/zKJ8WKwFzm"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-300 inline-flex items-center gap-1 hover:text-white"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="lucide lucide-message-circle"
+          >
+            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z" />
+          </svg>
+          Join us on Discord
+        </a>
       </div>
     </footer>
   );
