@@ -41,6 +41,19 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
     }
   };
 
+  const handleLoginLink = async (e) => {
+    e.preventDefault();
+    const result = await sendLoginLink(email);
+    if (result.success) {
+      toast.success("Login link sent successfully, check your email.");
+    } else {
+      toast.error("Unable to proceed", {
+        description: result.message,
+      });
+    }
+  };
+  
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] text-white bg-black">
@@ -78,13 +91,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
               <Label htmlFor="password">Password</Label>
               <span
                 className="text-sm text-gray-400 hover:text-white cursor-pointer"
-                onClick={() => {
-                  sendLoginLink(email).then(() => {
-                    toast.success(
-                      "Login link sent successfully, check your email."
-                    );
-                  });
-                }}
+                onClick={handleLoginLink}
               >
                 {isSendingLoginLink ? "Sending..." : "Email me a login link!"}
               </span>
