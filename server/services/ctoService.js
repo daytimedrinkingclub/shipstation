@@ -10,7 +10,7 @@ require("dotenv").config();
 const systemPrompt = `
   These are the development guidelines to be always followed strictly.
   Always use vanilla JavaScript only! and avoid any module syntax or bundlers.
-  Use Tailwind CSS via CDN and Font Awesome for icons, google fonts.
+  Use Tailwind CSS via CDN and Font Awesome for icons, google fonts and use ONLY and only Tailwind components.
 
   *** Here are the exact steps and the order of development to be followed ***
 

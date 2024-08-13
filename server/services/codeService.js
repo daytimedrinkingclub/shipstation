@@ -201,7 +201,12 @@ async function codeAssitant({ query, filePath, client }) {
         <script src="components/testimonials-section.js"></script>
         <script src="components/booking-section.js"></script>
         <script src="components/footer-component.js"></script>
-      `,
+      
+      
+       IMPORTANT NOTES for HTML:
+      1. Always use only tailwind css components, do not use any other css frameworks.
+      2. Make sure the component colors are consistent with the design.
+        `,
       tools: [codeWriterTool],
       tool_choice: { type: "tool", name: "code_writer_tool" },
       messages: [{ role: "user", content: [{ type: "text", text: query }] }],
