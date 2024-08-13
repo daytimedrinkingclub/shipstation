@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Edit = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, userLoading } = useContext(AuthContext);
   const { shipId } = useParams();
 
   const {
@@ -50,13 +50,13 @@ const Edit = () => {
   const [currentDevice, setCurrentDevice] = useState(DEVICE_FRAMES[0]);
 
   useEffect(() => {
-    if (!user || !shipId) {
+    if (!userLoading && (!user || !shipId)) {
       navigate("/");
     } else {
       // Call handleFileSelect with '$shipId/index.html' when the component mounts
       handleFileSelect({ path: `${shipId}/index.html`, name: "index.html" });
     }
-  }, [user, shipId, navigate]);
+  }, [user, shipId, navigate, userLoading]);
 
   const handleFileSelect = async (file) => {
     setSelectedFile(file);
