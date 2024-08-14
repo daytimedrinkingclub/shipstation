@@ -7,13 +7,12 @@ const {
   startShippingPortfolioTool,
   startShippingLandingPageTool,
   TOOLS,
-  imageFinderTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
-const { getUserProfile, insertMessage } = require("../services/dbService");
+const { getUserProfile} = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
 async function processConversation({
@@ -52,7 +51,6 @@ async function processConversation({
         tools.push(searchTool);
         messages = [{ role: "user", content: message }];
       }
-
     }
 
     try {

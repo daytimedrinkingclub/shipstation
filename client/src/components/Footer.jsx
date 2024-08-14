@@ -74,7 +74,8 @@ const Footer = () => {
           target="_blank"
           className="text-gray-300 inline-flex items-center gap-1 hover:text-white"
         >
-          <Star height={16} width={16} />Star us on GitHub
+          <Star height={16} width={16} />
+          Star us on GitHub
         </a>
         <a
           href="https://discord.gg/zKJ8WKwFzm"

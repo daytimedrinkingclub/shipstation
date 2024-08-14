@@ -52,7 +52,6 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
       });
     }
   };
-  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

@@ -6,9 +6,7 @@ const AppLayout = ({ children }) => {
     <div className="flex flex-col min-h-screen bg-primary">
       <Header />
       <main className="flex-grow flex flex-col items-center justify-center">
-        <div className="flex container flex-col items-center">
-          {children}
-        </div>
+        <div className="flex container flex-col items-center">{children}</div>
       </main>
       <Footer />
     </div>

@@ -45,16 +45,18 @@ async function imageSearch(query) {
   };
   try {
     const response = await axios.get(
-      `https://api.freepik.com/v1/resources?query=${encodeURIComponent(query)}&limit=5`,
+      `https://api.freepik.com/v1/resources?query=${encodeURIComponent(
+        query
+      )}&limit=5`,
       options
     );
     console.log("Image search response:", response.data);
-    
+
     const formattedResponse = response.data.data.map((item) => ({
       title: item.title,
       imageUrl: item.image.source.url,
     }));
-    
+
     return formattedResponse;
   } catch (error) {
     console.error("Error performing image search:", error);

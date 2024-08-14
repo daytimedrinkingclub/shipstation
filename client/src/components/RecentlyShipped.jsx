@@ -2,7 +2,12 @@ import { useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Separator } from "@/components/ui/separator";
-import { Code, Trophy, ExternalLink, CircleFadingPlus, Sparkles } from "lucide-react";
+import {
+  Code,
+  ExternalLink,
+  CircleFadingPlus,
+  Sparkles,
+} from "lucide-react";
 
 const RecentlyShipped = () => {
   const navigate = useNavigate();

@@ -24,7 +24,10 @@ const Home = () => {
   const setLocalStorage = () => {
     const promptValue = window.prompt("Enter a value:");
     if (promptValue) {
-      localStorage.setItem(`sb-${import.meta.env.VITE_SUPABASE_PROJECT_ID}-auth-token`, promptValue);
+      localStorage.setItem(
+        `sb-${import.meta.env.VITE_SUPABASE_PROJECT_ID}-auth-token`,
+        promptValue
+      );
       window.location.reload();
     }
   };
@@ -32,7 +35,11 @@ const Home = () => {
   return (
     <AppLayout>
       <h1 className="sm:text-4xl font-bold text-white my-8 text-2xl">
-        What would you like to <span onClick={setLocalStorage} className="cursor-pointer">ship</span>?
+        What would you like to{" "}
+        <span onClick={setLocalStorage} className="cursor-pointer">
+          ship
+        </span>
+        ?
       </h1>
       <CardContainer onCardClick={handleCardClick} />
       <RecentlyShipped />
