@@ -40,6 +40,13 @@ app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.path !== '/' && !req.path.endsWith('/')) {
+    res.redirect(301, `${req.path}/`);
+  } else {
+    next();
+  }
+});
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
@@ -193,6 +200,10 @@ async function serializeDom(filePath, baseUrl) {
 
   return dom.serialize();
 }
+
+app.get('/project/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 app.get("/:websiteId", async (req, res) => {
   const websiteId = req.params.websiteId;
