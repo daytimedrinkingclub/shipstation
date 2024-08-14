@@ -40,6 +40,14 @@ app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.path.substr(-1) !== '/' && req.path.length > 1) {
+    const query = req.url.slice(req.path.length)
+    res.redirect(301, req.path + '/' + query)
+  } else {
+    next()
+  }
+})
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
