@@ -43,6 +43,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
 
   const handleLoginLink = async (e) => {
     e.preventDefault();
+    if (!email) return; // Prevent action if email is empty
     const result = await sendLoginLink(email);
     if (result.success) {
       toast.success("Login link sent successfully, check your email.");
@@ -52,7 +53,6 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
       });
     }
   };
-  
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -90,8 +90,12 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
             <div className="flex justify-between items-center">
               <Label htmlFor="password">Password</Label>
               <span
-                className="text-sm text-gray-400 hover:text-white cursor-pointer"
-                onClick={handleLoginLink}
+                className={`text-sm ${
+                  email
+                    ? "text-gray-400 hover:text-white cursor-pointer"
+                    : "text-gray-600 cursor-not-allowed"
+                }`}
+                onClick={email ? handleLoginLink : undefined}
               >
                 {isSendingLoginLink ? "Sending..." : "Email me a login link!"}
               </span>

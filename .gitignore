@@ -4,3 +4,6 @@ websites
 .env
 .env.local
 out.log
+
+/tmp/google-cloud-credentials.json
+C:/Windows/Temp/google-cloud-credentials.json

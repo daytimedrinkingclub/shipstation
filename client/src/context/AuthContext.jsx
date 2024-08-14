@@ -8,7 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
-  const [anthropicKey, setAnthropicKey] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState("anthropic"); // Default to Anthropic
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
@@ -125,8 +126,10 @@ export const AuthProvider = ({ children }) => {
         isSendingLoginLink,
         isLoading,
         myProjectsLoading,
-        anthropicKey,
-        setAnthropicKey,
+        apiKey,
+        setApiKey,
+        provider,
+        setProvider,
       }}
     >
       {children}

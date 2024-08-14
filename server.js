@@ -25,7 +25,12 @@ const {
 } = require("./server/services/onboadingService");
 const { postToDiscordWebhook } = require("./server/services/webhookService");
 
+const { setupGoogleCloudCredentials } = require('./server/config/googleCloudAuth');
+
 require("dotenv").config();
+
+// Set up Google Cloud credentials
+setupGoogleCloudCredentials();
 
 const app = express();
 const server = http.createServer(app);
