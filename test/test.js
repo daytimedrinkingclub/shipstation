@@ -38,13 +38,15 @@ async function testUpdateConversation() {
   };
 
   try {
-    const result = await updateConversation(conversationId, updatedConversation);
+    const result = await updateConversation(
+      conversationId,
+      updatedConversation
+    );
     console.log("Update successful, result:", result);
   } catch (error) {
     console.error("Error during update:", error);
   }
 }
-
 
 async function testInsertPayment() {
   const req = {

@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { insertConversation, updateConversation } = require("./dbService");
+const { insertConversation} = require("./dbService");
 require("dotenv").config();
 
 async function validateKey(key) {
@@ -64,7 +64,7 @@ class AnthropicService {
     console.log("Calling anthropic with payload:", clientParams);
     try {
       const response = await this.client.messages.create(clientParams, {
-        headers: { 'anthropic-beta': 'max-tokens-3-5-sonnet-2024-07-15' }
+        headers: { "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15" },
       });
       console.log("Anthropic response:", response);
       this.tokensUsed += response.usage.output_tokens;
