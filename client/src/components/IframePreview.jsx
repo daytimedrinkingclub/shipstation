@@ -38,10 +38,13 @@ const IframePreview = forwardRef(({ slug, isLoading, device = 'iPhone X' }, ref)
     </div>
   );
 
+  const deviceStyle = device === 'iPhone X' ? { marginTop: '20px' } : {};
+
+
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="scale-[0.7]">
-        <DeviceFrameset device={device}>
+        <DeviceFrameset device={device} style={deviceStyle}>
           {content}
         </DeviceFrameset>
       </div>
