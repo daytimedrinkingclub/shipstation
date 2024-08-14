@@ -13,6 +13,7 @@ const {
   handleOnboardingToolUse,
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
+const { AIService, Providers } = require("../services/AIService");
 const { getUserProfile, insertMessage } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
@@ -52,7 +53,6 @@ async function processConversation({
         tools.push(searchTool);
         messages = [{ role: "user", content: message }];
       }
-
     }
 
     try {
@@ -142,17 +142,18 @@ function handleOnboardingSocketEvents(io) {
       console.log(`User joined room: ${roomId}`);
     });
 
-    socket.on("anthropicKey", ({ anthropicKey: key }) => {
-      AnthropicService.validateKey(key).then((isValid) => {
+    socket.on("apiKey", ({ provider, key }) => {
+      AIService.validateKey(provider, key).then((isValid) => {
         if (isValid) {
-          console.log("Anthropic API key validated");
+          console.log(`${provider} API key validated`);
           socket.emit("apiKeyStatus", {
             success: true,
             message: "API key is valid, generating website!",
             key,
+            provider,
           });
         } else {
-          console.log("Invalid Anthropic API key provided");
+          console.log(`Invalid ${provider} API key provided`);
           socket.emit("apiKeyStatus", {
             success: false,
             message: "Invalid API key. Please try again.",
@@ -163,10 +164,9 @@ function handleOnboardingSocketEvents(io) {
 
     socket.on("startProject", async (data) => {
       console.log("startProject", data);
-      const { roomId, userId, apiKey, shipType, message } = data;
+      const { roomId, userId, apiKey, provider, shipType, message } = data;
       const clientParams = { userId };
       if (apiKey) {
-        // using own anthropic key
         clientParams.apiKey = apiKey;
       } else {
         const profile = await getUserProfile(userId);
@@ -180,13 +180,22 @@ function handleOnboardingSocketEvents(io) {
           return;
         }
       }
-
-      const client = new AnthropicService(clientParams);
-
+    
+      let client;
+      if (provider === Providers.OPEN_AI) {
+        client = new AIService({
+          provider: Providers.OPEN_AI,
+          ...clientParams,
+          model: "gpt-4",
+        });
+      } else {
+        client = new AnthropicService(clientParams);
+      }
+    
       const sendEvent = async (event, data) => {
         io.to(roomId).emit(event, data);
       };
-
+    
       abortController = new AbortController();
       try {
         await processConversation({

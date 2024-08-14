@@ -36,13 +36,13 @@ const ShipForm = ({ type, reset }) => {
     onOpen: onSuccessOpen,
     onClose: onSuccessClose,
   } = useDisclosure();
-  const { availableShips, anthropicKey, setAnthropicKey } =
+  const { availableShips, apiKey, setApiKey, provider, setProvider } =
     useContext(AuthContext);
 
   const startProject = () => {
     sendMessage("startProject", {
       shipType: "prompt",
-      apiKey: anthropicKey,
+      apiKey,
       message: requirements,
     });
     onClose();
@@ -62,8 +62,8 @@ const ShipForm = ({ type, reset }) => {
     }
   };
 
-  const handleSubmitAnthropicKey = (apiKey) => {
-    sendMessage("anthropicKey", { anthropicKey: apiKey });
+  const handleSubmitApiKey = (key, selectedProvider) => {
+    sendMessage("apiKey", { provider: selectedProvider, key });
     setIsKeyValidating(true);
   };
 
@@ -102,7 +102,7 @@ const ShipForm = ({ type, reset }) => {
         socket.off("needMoreInfo");
       };
     }
-  }, [socket, anthropicKey, requirements]);
+  }, [socket, apiKey, requirements]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -150,9 +150,11 @@ const ShipForm = ({ type, reset }) => {
       <ChoosePaymentOptionDialog
         isOpen={isOpen}
         onClose={onClose}
-        onSubmitKey={handleSubmitAnthropicKey}
-        anthropicKey={anthropicKey}
-        setAnthropicKey={setAnthropicKey}
+        onSubmitKey={handleSubmitApiKey}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+        provider={provider}
+        setProvider={setProvider}
         type={type}
         isKeyValidating={isKeyValidating}
       />
