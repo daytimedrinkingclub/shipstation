@@ -3,6 +3,12 @@ const { codeAssitant } = require("../services/codeService");
 const searchService = require("../services/searchService");
 const { TOOLS } = require("../config/tools");
 
+const { captureScreenshots } = require("../services/screenshotService");
+const { analyzeWebsite } = require("../services/imageAnalysisService");
+const { repairWebsite } = require("../services/repairService");
+const path = require("path");
+const { saveDirectoryToS3 } = require("../services/s3Service");
+
 async function handleCTOToolUse({
   tool,
   projectFolderName,
@@ -20,8 +26,7 @@ async function handleCTOToolUse({
         content: [{ type: "text", text: JSON.stringify(searchResults) }],
       },
     ];
-  } 
-  else if (tool.name === TOOLS.IMAGE_FINDER) {
+  } else if (tool.name === TOOLS.IMAGE_FINDER) {
     const searchQuery = tool.input.query;
     console.log("Performing image search with query:", searchQuery);
     const imageResults = await searchService.imageSearch(searchQuery);
@@ -33,13 +38,15 @@ async function handleCTOToolUse({
         content: [
           {
             type: "text",
-            text: imageResults.length === 0 ? "No relevant images found" : JSON.stringify(imageResults)
-          }
+            text:
+              imageResults.length === 0
+                ? "No relevant images found"
+                : JSON.stringify(imageResults),
+          },
         ],
       },
     ];
-  }
-  else if (tool.name === TOOLS.FILE_CREATOR) {
+  } else if (tool.name === TOOLS.FILE_CREATOR) {
     const { file_name, file_comments } = tool.input;
     console.log("projectFolderName:", projectFolderName);
     console.log("file_name:", file_name);
@@ -104,6 +111,53 @@ async function handleCTOToolUse({
       },
     ];
   } else if (tool.name === TOOLS.DEPLOY_PROJECT) {
+    const deployedUrl = `https://shipstation.ai/${projectFolderName}`;
+
+    // Capture screenshots after deployment
+    const screenshots = await captureScreenshots(
+      deployedUrl,
+      projectFolderName
+    );
+
+    // Analyze the screenshots
+    const analysis = await analyzeWebsite(screenshots);
+
+    // Repair the website if issues are detected
+    let repairResults = [];
+    let initialIssues = [...analysis.issues];
+    if (analysis.issues.length > 0) {
+      repairResults = await repairWebsite(projectFolderName, analysis, client);
+
+      // Re-deploy the website after repairs
+      const localDirectoryPath = path.join(
+        process.env.WEBSITES_PATH,
+        projectFolderName
+      );
+      await saveDirectoryToS3(localDirectoryPath, projectFolderName);
+
+      // Capture new screenshots after repairs
+      const updatedScreenshots = await captureScreenshots(
+        deployedUrl,
+        projectFolderName
+      );
+
+      // Re-analyze the website
+      const updatedAnalysis = await analyzeWebsite(updatedScreenshots);
+
+      analysis.issues = updatedAnalysis.issues;
+    }
+    // Prepare detailed report
+    const repairStatus = {
+      deployedUrl,
+      initialIssues,
+      repairsMade: repairResults.map((r) => r.description),
+      remainingIssues: analysis.issues,
+      isFullyRepaired: analysis.issues.length === 0,
+    };
+
+    // You might want to save this report to a database or send it to a logging service for creating dashbaord like vercel
+    // but we skip it here
+
     return [
       {
         type: "tool_result",
@@ -111,8 +165,22 @@ async function handleCTOToolUse({
         content: [
           {
             type: "text",
-            text: `Your project has been deployed on the link: https://shipstation.ai/${projectFolderName}`,
+            text: `Your project has been deployed on the link: ${deployedUrl}. 
+                 Initial issues detected: ${initialIssues.join(", ")}
+                 Repairs made: ${repairResults
+                   .map((r) => r.description)
+                   .join(", ")}
+                 Remaining issues after repair: ${analysis.issues.join(", ")}
+                 The website is ${
+                   repairStatus.isFullyRepaired
+                     ? "fully repaired"
+                     : "partially repaired"
+                 }.`,
           },
+          // {
+          //   type: "json",
+          //   text: JSON.stringify(repairStatus, null, 2),
+          // },
         ],
       },
     ];
