@@ -30,7 +30,7 @@ const IframePreview = forwardRef(({ slug, isLoading, device = 'iPhone X' }, ref)
     <iframe
       ref={iframeRef}
       src={`${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`}
-      className="w-full h-full border-0"
+      className={`w-full h-full border-0  ${device === "iPhone X" && "pt-8 bg-black"}`}
     ></iframe>
   ) : (
     <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -38,13 +38,12 @@ const IframePreview = forwardRef(({ slug, isLoading, device = 'iPhone X' }, ref)
     </div>
   );
 
-  const deviceStyle = device === 'iPhone X' ? { marginTop: '20px' } : {};
 
 
   return (
     <div className="w-full h-full flex items-center justify-center">
       <div className="scale-[0.7]">
-        <DeviceFrameset device={device} style={deviceStyle}>
+        <DeviceFrameset device={device}  >
           {content}
         </DeviceFrameset>
       </div>
