@@ -99,7 +99,7 @@ async function processConversation({
           role: currentMessage.role,
           content: currentMessage.content,
         });
-        console.log("Found tool use in response:", tool);
+
         const toolResult = await handleOnboardingToolUse({
           tool,
           sendEvent,
@@ -109,14 +109,13 @@ async function processConversation({
           client,
         });
         messages.push({ role: "user", content: toolResult });
-        console.log("Received tool result:", toolResult);
+
         if (tool.name === TOOLS.CTO) {
           console.log("Project creation completed");
           return;
         }
         console.log(
-          "Sending request to Anthropic API with updated conversation:",
-          JSON.stringify(messages)
+          "Sending request to Anthropic API with updated conversation"
         );
         currentMessage = await client.sendMessage({
           system:

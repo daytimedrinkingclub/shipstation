@@ -174,7 +174,7 @@ async function handleOnboardingToolUse({
       ship_id: id,
       tokens_used: client.tokensUsed,
     };
-    console.log("Updating conversation", convPayload);
+
     await updateConversation(client.conversationId, convPayload);
     return [
       {
@@ -185,7 +185,6 @@ async function handleOnboardingToolUse({
     ];
   } else if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
-    console.log("Performing search with query:", searchQuery);
     const searchResults = await searchService.performSearch(searchQuery);
     return [
       {

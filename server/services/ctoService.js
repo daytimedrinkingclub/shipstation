@@ -63,8 +63,6 @@ const systemPrompt = `
   `;
 
 async function ctoService({ query, projectFolderName, sendEvent, client }) {
-  console.log("aiAssistance called with query:", query);
-
   const messages = [{ role: "user", content: [{ type: "text", text: query }] }];
 
   try {
@@ -86,7 +84,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           role: msg.role,
           content: msg.content,
         });
-        console.log("Found cto tool use in response:", tool);
+        console.log("Found cto tool use in response");
         const toolResult = await handleCTOToolUse({
           tool,
           projectFolderName,
@@ -94,10 +92,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           client,
         });
         messages.push({ role: "user", content: toolResult });
-        console.log(
-          "Sending request to Anthropic API with updated messages:",
-          JSON.stringify(messages)
-        );
+        console.log("Sending request to Anthropic API with updated messages");
 
         msg = await client.sendMessage({
           system: systemPrompt,
@@ -110,7 +105,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           messages,
         });
 
-        console.log("Received response from Anthropic API:", msg);
+        console.log("Received response from Anthropic API");
       } else {
         console.log("No tool use found in response, breaking loop");
         break;

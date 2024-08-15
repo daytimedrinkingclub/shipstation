@@ -25,7 +25,6 @@ async function extractPlaceholderImages(projectFolderName) {
 }
 
 async function codeAssitant({ query, filePath, client }) {
-  console.log("filePath in codeAssitant:", filePath);
   try {
     const projectFolderName = filePath.split("/")[0];
     const placeholderImages = await extractPlaceholderImages(projectFolderName);
@@ -246,11 +245,10 @@ async function codeAssitant({ query, filePath, client }) {
       ],
     });
     const resp = msg.content.find((content) => content.type === "tool_use");
-    console.log("Received response from Anthropic API:", resp);
 
     const { code, description } = resp.input;
 
-    console.log("recieved code", code);
+    console.log("recieved code");
 
     // Check if code is not a string, convert it to a string
     const codeString = typeof code === "string" ? code : JSON.stringify(code);

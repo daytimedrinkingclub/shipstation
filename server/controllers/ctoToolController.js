@@ -15,15 +15,13 @@ async function handleCTOToolUse({
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
-    console.log("Performing search with query:", searchQuery);
+
     const searchResults = await searchService.performSearch(searchQuery);
 
     // Extract images from search results and remove trailing slashes
     const images = (searchResults.images || []).map((url) =>
       url.replace(/\/$/, "")
     );
-
-    console.log("Extracted images:", images);
 
     let messageContent = [
       {
@@ -76,9 +74,9 @@ async function handleCTOToolUse({
     ];
   } else if (tool.name === TOOLS.IMAGE_FINDER) {
     const searchQuery = tool.input.query;
-    console.log("Performing image search with query:", searchQuery);
+
     const imageResults = await searchService.imageSearch(searchQuery);
-    console.log("imageResults:", imageResults);
+
     return [
       {
         type: "tool_result",
@@ -95,10 +93,8 @@ async function handleCTOToolUse({
       },
     ];
   } else if (tool.name === TOOLS.IMAGE_ANALYSIS) {
-    console.log("image_analysis_tool is being used");
     const { image_url, analysis_prompt } = tool.input;
-    console.log("Performing image analysis on:", image_url);
-    console.log("analysis_prompt:", analysis_prompt);
+
     const analysisResults = await analyzeImage(image_url, analysis_prompt);
 
     // Process the analysis results
@@ -121,9 +117,7 @@ async function handleCTOToolUse({
     ];
   } else if (tool.name === TOOLS.FILE_CREATOR) {
     const { file_name, file_comments } = tool.input;
-    console.log("projectFolderName:", projectFolderName);
-    console.log("file_name:", file_name);
-    console.log("file_comments:", file_comments);
+
     await fileService.saveFile(
       `${projectFolderName}/${file_name}`,
       file_comments
@@ -145,9 +139,7 @@ async function handleCTOToolUse({
     ];
   } else if (tool.name === TOOLS.TASK_ASSIGNER) {
     const { file_name, task_guidelines } = tool.input;
-    console.log("projectFolderName: in task_assigner_tool", projectFolderName);
-    console.log("file_name: in task_assigner_tool", file_name);
-    console.log("task_guidelines: in task_assigner_tool", task_guidelines);
+
     const fileContent = await fileService.readFile(
       `${projectFolderName}/${file_name}`
     );
