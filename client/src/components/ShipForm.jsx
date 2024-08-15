@@ -106,12 +106,12 @@ const ShipForm = ({ type, reset }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <h1 className="sm:text-4xl font-bold text-white my-8 text-2xl">
+      <h1 className="sm:text-4xl font-bold text-foreground my-8 text-2xl">
         What would you like to create today?
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
-          className="w-full h-60 bg-black text-white border-gray-600 mb-8"
+          className="w-full h-60 bg-background text-foreground border-input mb-8"
           placeholder={PROMPT_PLACEHOLDERS[type]}
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
@@ -122,7 +122,7 @@ const ShipForm = ({ type, reset }) => {
               <TooltipTrigger>
                 <p
                   className={`text-sm ${
-                    availableShips < 1 ? "text-red-500" : "text-white"
+                    availableShips < 1 ? "text-destructive" : "text-foreground"
                   }`}
                   onClick={(e) => e.preventDefault()}
                 >
@@ -140,10 +140,11 @@ const ShipForm = ({ type, reset }) => {
           </TooltipProvider>
           <Button
             type="submit"
-            className="w-full sm:w-auto transition-all duration-300 hover:bg-purple-700 hover:shadow-[0_0_10px_#8b5cf6] hover:text-purple-100 group"
+            className="w-full sm:w-auto transition-all duration-300 bg-primary text-primary-foreground hover:bg-primary/90 group relative overflow-hidden"
           >
-            Start generating website
-            <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-180" />
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ease-in-out bg-shimmer-gradient bg-[length:200%_100%] animate-shimmer" />
+            <span className="relative">Start generating website</span>
+            <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform" />
           </Button>
         </div>
       </form>

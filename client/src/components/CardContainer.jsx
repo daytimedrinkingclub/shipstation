@@ -39,15 +39,16 @@ const CardContainer = ({ onCardClick }) => {
       {cards.map((card, index) => (
         <Card
           key={index}
-          className="dark relative cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:bg-surface"
+          className="relative cursor-pointer transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg overflow-hidden group"
           onClick={() => !card.isComingSoon && onCardClick(card.type)}
         >
-          <CardHeader>
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ease-in-out bg-shimmer-gradient bg-[length:200%_100%] animate-shimmer" />
+          <CardHeader className="relative z-10">
             <div>{card.icon}</div>
             <CardTitle className="pt-4">{card.title}</CardTitle>
             <CardDescription>{card.description}</CardDescription>
             {card.badge && (
-              <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded bg-gradient-to-r from-gray-800 to-gray-900 animate-shimmer">
+              <span className="absolute top-2 right-2 text-xs font-semibold px-2 py-1 rounded bg-primary/10 text-primary animate-shimmer">
                 {card.badge}
               </span>
             )}
