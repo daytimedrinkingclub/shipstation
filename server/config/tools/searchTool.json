@@ -7,6 +7,10 @@
       "query": {
         "type": "string",
         "description": "search query to get relevant data/information about users, always try to pass important keywords like person name, company name, designation, location, etc. Additionally, to research about design references, factual content, color pallete even information like recent news etc as per the current trends and best practices in 2024"
+      },
+      "image_query": {
+        "type": "string",
+        "description": "A specific query for images to be included in the site, limited to 400 characters"
       }
     },
     "required": ["query"]
