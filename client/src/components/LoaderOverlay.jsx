@@ -43,21 +43,17 @@ const LoaderOverlay = ({ isOpen, type }) => {
 
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 flex bg-black bg-opacity-90 backdrop-filter backdrop-blur-md">
-      <div className="sm:w-1/2 w-full flex flex-col items-center justify-center p-12">
-        <div className="relative">
-          <h2 className="text-4xl font-bold text-white text-center leading-tight mb-2">
-            {type === "portfolio"
-              ? "Generating your portfolio"
-              : "Generating your landing page"}
-          </h2>
-          <div className="absolute bottom-0 left-0 w-full h-1 overflow-hidden">
-            <div className="animate-progress-bar w-full h-full bg-blue-500 rounded-full"></div>
-          </div>
-        </div>
-        <p className="text-lg text-gray-300 text-center mt-4">{loaderText}</p>
+    <div className="fixed inset-0 flex bg-background backdrop-blur-sm overflow-hidden">
+      <div className="absolute inset-0 opacity-30 bg-shimmer-gradient bg-[length:200%_100%] animate-shimmer" />
+      <div className="sm:w-1/2 w-full flex flex-col items-center justify-center p-12 relative z-10">
+        <h2 className="text-4xl font-bold text-white text-center leading-tight mb-4">
+          {type === "portfolio"
+            ? "Generating your portfolio"
+            : "Generating your landing page"}
+        </h2>
+        <p className="text-lg text-white text-center mt-4">{loaderText}</p>
       </div>
-      <div className="w-1/2 sm:flex justify-center items-center hidden">
+      <div className="w-1/2 sm:flex justify-center items-center hidden relative z-10">
         <IframePreview
           device={currentDevice}
           ref={iframeRef}
@@ -65,7 +61,7 @@ const LoaderOverlay = ({ isOpen, type }) => {
           isLoading={isLoading}
         />
       </div>
-      <div className="absolute bottom-8 right-8 z-10">
+      <div className="absolute bottom-8 right-8 z-20">
         <Dice
           onRoll={() =>
             setCurrentDevice(
