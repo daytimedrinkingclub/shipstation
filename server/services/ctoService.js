@@ -6,9 +6,7 @@ const {
   imageAnalysisTool,
 } = require("../config/tools");
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
-const {
-  analyzeAndRepairWebsite,
-} = require("../services/analyzeAndRepairService");
+
 require("dotenv").config();
 
 const systemPrompt = `
@@ -29,11 +27,17 @@ const systemPrompt = `
       <script src="components/testimonials-section.js"></script>
       <script src="components/booking-section.js"></script>
       <script src="components/footer-component.js"></script>
-  5. When creating components that require images:
-      a. Use the search_tool to find relevant images based on the component's context.
-      b. If suitable images are found, use the image_analysis_tool to analyze them before incorporating them into the components.
-      c. Use the image_analysis_tool to analyze any images found before incorporating them into the components. This will help ensure the images are appropriate and of good quality.
-      d. Only use colored placeholders of relevant sizes as a fallback when no suitable images are found in the search results.
+   5. When creating components that require images:
+      a. Check the PRD file (readme.md) for placeholder images.
+      b. Always use the placeholder images provided in the PRD file when available, especially for key sections:
+         - Hero section: Use a high-quality, eye-catching image that represents the main offering (e.g., a cricket coaching session).
+         - Feature cards: Utilize relevant images for each feature to make them visually appealing and informative.
+         - Testimonials: Include profile pictures of testimonial givers when available.
+         - Facilities/Equipment: Showcase images of cricket facilities, training equipment, or practice areas.
+      c. For cards and grid layouts, ensure images are of consistent size and aspect ratio for a polished look.
+      d. When using images in the hero section or as full-width backgrounds, ensure they are high-resolution and optimized for web.
+      e. If specific placeholder images are not available for certain sections, use relevant stock photos or colored placeholders that match the website's color scheme.
+      f. Always add appropriate alt text to images for accessibility.
 
   *** Example format of file structure ***     
   < Start of file structure example, This is an example format only you are not restricted by component names or types >
@@ -59,8 +63,6 @@ const systemPrompt = `
   `;
 
 async function ctoService({ query, projectFolderName, sendEvent, client }) {
-  console.log("aiAssistance called with query:", query);
-
   const messages = [{ role: "user", content: [{ type: "text", text: query }] }];
 
   try {
@@ -82,7 +84,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           role: msg.role,
           content: msg.content,
         });
-        console.log("Found cto tool use in response:", tool);
+        console.log("Found cto tool use in response");
         const toolResult = await handleCTOToolUse({
           tool,
           projectFolderName,
@@ -90,10 +92,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           client,
         });
         messages.push({ role: "user", content: toolResult });
-        console.log(
-          "Sending request to Anthropic API with updated messages:",
-          JSON.stringify(messages)
-        );
+        console.log("Sending request to Anthropic API with updated messages");
 
         msg = await client.sendMessage({
           system: systemPrompt,
@@ -106,7 +105,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           messages,
         });
 
-        console.log("Received response from Anthropic API:", msg);
+        console.log("Received response from Anthropic API");
       } else {
         console.log("No tool use found in response, breaking loop");
         break;

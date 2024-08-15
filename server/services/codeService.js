@@ -7,9 +7,35 @@ const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
 require("dotenv").config();
 
+const { readFile } = require("./fileService");
+
+async function extractPlaceholderImages(projectFolderName) {
+  const prdContent = await readFile(`${projectFolderName}/readme.md`);
+  const placeholderSection = prdContent.split("Placeholder Images:")[1];
+  if (placeholderSection) {
+    return placeholderSection
+      .trim()
+      .split("\n")
+      .map((line) => {
+        const [title, url] = line.split(": ");
+        return { title, url };
+      });
+  }
+  return [];
+}
+
 async function codeAssitant({ query, filePath, client }) {
-  console.log("filePath in codeAssitant:", filePath);
   try {
+    const projectFolderName = filePath.split("/")[0];
+    const placeholderImages = await extractPlaceholderImages(projectFolderName);
+
+    // Add placeholderImages to the query
+    const updatedQuery = `${query}\n\nPlaceholder Images:\n${JSON.stringify(
+      placeholderImages,
+      null,
+      2
+    )}`;
+
     const msg = await client.sendMessage({
       system: `
       Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react, vue, alpine or any other frontend library. Follow the guildines provided by the CTO.
@@ -49,14 +75,12 @@ async function codeAssitant({ query, filePath, client }) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
       3- How to use fonts and images 
-        Use google fonts
+        Use google fonts.
         For images:
-          1. First, use the search_tool to find relevant images based on the context.
-          2. If suitable images are found, use the image_analysis_tool to analyze them before incorporating them into the components.
-          3. Only use colored placeholders of relevant sizes as a fallback if no suitable images are found. Don't create SVG for placeholders.
-        Use fontawesome icons
-        Try to use animate css if animations are needed
-        Follow latest best practices for tailwind css as per 2024 March
+          1. Always use the placeholder images provided when available, especially for key sections like hero, feature cards, testimonials, and facilities.
+          2. Ensure images are high-resolution, optimized for web, and have consistent sizes/aspect ratios where appropriate.
+          3. Add appropriate alt text to all images for accessibility.
+          4. If specific placeholders aren't available, use relevant stock photos or colored placeholders matching the website's color scheme as a fallback.
 
 
     ** VERY IMPORTANT NOTE **
@@ -214,16 +238,17 @@ async function codeAssitant({ query, filePath, client }) {
       1. Always use only tailwind css components, do not use any other css frameworks.
       2. Make sure the component colors are consistent with the design.
         `,
-      tools: [codeWriterTool, searchTool, imageAnalysisTool],
+      tools: [codeWriterTool],
       tool_choice: { type: "tool", name: "code_writer_tool" },
-      messages: [{ role: "user", content: [{ type: "text", text: query }] }],
+      messages: [
+        { role: "user", content: [{ type: "text", text: updatedQuery }] },
+      ],
     });
     const resp = msg.content.find((content) => content.type === "tool_use");
-    console.log("Received response from Anthropic API:", resp);
 
     const { code, description } = resp.input;
 
-    console.log("recieved code", code);
+    console.log("recieved code");
 
     // Check if code is not a string, convert it to a string
     const codeString = typeof code === "string" ? code : JSON.stringify(code);

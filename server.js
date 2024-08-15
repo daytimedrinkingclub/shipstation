@@ -5,14 +5,14 @@ const cors = require("cors");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
-// const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-// const {
-//   listFoldersInS3,
-//   createZipFromS3Directory,
-//   getProjectDirectoryStructure,
-//   saveFileToS3,
-// } = require("./server/services/s3Service");
-// const { s3Handler } = require("./server/config/awsConfig");
+const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  listFoldersInS3,
+  createZipFromS3Directory,
+  getProjectDirectoryStructure,
+  saveFileToS3,
+} = require("./server/services/s3Service");
+const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
@@ -53,7 +53,9 @@ app.get("/ship", (req, res) => {
 app.get("/taaft.txt", async (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Content-Disposition", "attachment; filename=taaft.txt");
-  res.send("taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4");
+  res.send(
+    "taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4"
+  );
 });
 
 app.post("/payment-webhook", express.json(), async (req, res) => {
@@ -220,8 +222,6 @@ app.get("/:websiteId", async (req, res) => {
     res.status(404).send("Website not found");
   }
 });
-
-
 
 app.get("/download/:slug", async (req, res) => {
   const slug = req.params.slug;

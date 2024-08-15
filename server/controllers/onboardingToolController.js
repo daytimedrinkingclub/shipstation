@@ -95,14 +95,33 @@ async function handleOnboardingToolUse({
       project_description,
       project_goal,
       project_branding_style,
+      image_description,
     } = tool.input;
     const generatedFolderName = generateProjectFolderName(project_name);
+
+    // Perform search using Tavily with image description as both query and imageQuery
+    const searchResults = await searchService.performSearch(image_description, {
+      imageQuery: image_description,
+    });
+
+    // Extract and format image results
+    const formattedImageResults = searchResults.image_results
+      ? searchResults.image_results.map(
+          (url, index) => `Image ${index + 1}: ${url.replace(/\/$/, "")}`
+        )
+      : [];
+
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
       Project description : ${project_description}
       Project goal : ${project_goal}
-      Project branding style : ${project_branding_style}`
+      Project branding style : ${project_branding_style}
+      Image description : ${image_description}
+      
+      Placeholder Images:
+    ${formattedImageResults.join("\n")}
+      `
     );
     sendEvent("project_started", {
       slug: generatedFolderName,
@@ -155,7 +174,7 @@ async function handleOnboardingToolUse({
       ship_id: id,
       tokens_used: client.tokensUsed,
     };
-    console.log("Updating conversation", convPayload);
+
     await updateConversation(client.conversationId, convPayload);
     return [
       {
@@ -166,7 +185,6 @@ async function handleOnboardingToolUse({
     ];
   } else if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
-    console.log("Performing search with query:", searchQuery);
     const searchResults = await searchService.performSearch(searchQuery);
     return [
       {
