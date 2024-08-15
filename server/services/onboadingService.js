@@ -8,6 +8,7 @@ const {
   startShippingLandingPageTool,
   TOOLS,
   imageFinderTool,
+  imageAnalysisTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -50,9 +51,9 @@ async function processConversation({
         tools.push(ctoTool);
         tools.push(productManagerTool);
         tools.push(searchTool);
+        tools.push(imageAnalysisTool);
         messages = [{ role: "user", content: message }];
       }
-
     }
 
     try {

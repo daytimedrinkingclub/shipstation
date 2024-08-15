@@ -10,7 +10,7 @@ const {
 } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
-const { nanoid } = require('nanoid');
+const { nanoid } = require("nanoid");
 
 const generateProjectFolderName = (projectName) => {
   return toKebabCase(projectName) + "-" + nanoid(8);
@@ -145,7 +145,7 @@ async function handleOnboardingToolUse({
     };
     const { id } = await insertShip(ship);
     console.log("Inserted ship", id);
-    if (mode === 'paid') {
+    if (mode === "paid") {
       const profile = await getUserProfile(userId);
       const { available_ships } = profile; // current
       const profilePayload = { available_ships: available_ships - 1 }; // updated

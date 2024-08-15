@@ -3,8 +3,12 @@ const {
   taskAssignerTool,
   deployProjectTool,
   searchTool,
+  imageAnalysisTool,
 } = require("../config/tools");
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
+const {
+  analyzeAndRepairWebsite,
+} = require("../services/analyzeAndRepairService");
 require("dotenv").config();
 
 const systemPrompt = `
@@ -25,6 +29,11 @@ const systemPrompt = `
       <script src="components/testimonials-section.js"></script>
       <script src="components/booking-section.js"></script>
       <script src="components/footer-component.js"></script>
+  5. When creating components that require images:
+      a. Use the search_tool to find relevant images based on the component's context.
+      b. If suitable images are found, use the image_analysis_tool to analyze them before incorporating them into the components.
+      c. Use the image_analysis_tool to analyze any images found before incorporating them into the components. This will help ensure the images are appropriate and of good quality.
+      d. Only use colored placeholders of relevant sizes as a fallback when no suitable images are found in the search results.
 
   *** Example format of file structure ***     
   < Start of file structure example, This is an example format only you are not restricted by component names or types >
@@ -58,7 +67,13 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
     let msg = await client.sendMessage({
       messages,
       system: systemPrompt,
-      tools: [fileCreatorTool, taskAssignerTool, deployProjectTool, searchTool],
+      tools: [
+        fileCreatorTool,
+        taskAssignerTool,
+        deployProjectTool,
+        searchTool,
+        imageAnalysisTool,
+      ],
     });
     while (msg.stop_reason === "tool_use") {
       const tool = msg.content.find((content) => content.type === "tool_use");
@@ -82,7 +97,12 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
 
         msg = await client.sendMessage({
           system: systemPrompt,
-          tools: [fileCreatorTool, taskAssignerTool, deployProjectTool],
+          tools: [
+            fileCreatorTool,
+            taskAssignerTool,
+            deployProjectTool,
+            imageAnalysisTool,
+          ],
           messages,
         });
 
@@ -92,13 +112,15 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
         break;
       }
     }
+
     const slug = projectFolderName;
     sendEvent("websiteDeployed", {
       slug,
     });
-    client.abortRequest();
+
+    // client.abortRequest();
     return {
-      message: `Website successfully built with  slug: ${slug}`,
+      message: `Website successfully built, deployed, analyzed, and repaired with slug: ${slug}`,
       slug,
     };
   } catch (error) {

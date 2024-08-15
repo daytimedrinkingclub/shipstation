@@ -5,14 +5,14 @@ const cors = require("cors");
 const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
-const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const {
-  listFoldersInS3,
-  createZipFromS3Directory,
-  getProjectDirectoryStructure,
-  saveFileToS3,
-} = require("./server/services/s3Service");
-const { s3Handler } = require("./server/config/awsConfig");
+// const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+// const {
+//   listFoldersInS3,
+//   createZipFromS3Directory,
+//   getProjectDirectoryStructure,
+//   saveFileToS3,
+// } = require("./server/services/s3Service");
+// const { s3Handler } = require("./server/config/awsConfig");
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {

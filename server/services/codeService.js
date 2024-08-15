@@ -1,4 +1,8 @@
-const { codeWriterTool } = require("../config/tools");
+const {
+  codeWriterTool,
+  searchTool,
+  imageAnalysisTool,
+} = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
 require("dotenv").config();
@@ -46,10 +50,13 @@ async function codeAssitant({ query, filePath, client }) {
 
       3- How to use fonts and images 
         Use google fonts
-        In place of images, use colored placeholders of relevant sizes, dont create SVG for placeholders. Do not assume image paths to exist. We do not have any local images.
+        For images:
+          1. First, use the search_tool to find relevant images based on the context.
+          2. If suitable images are found, use the image_analysis_tool to analyze them before incorporating them into the components.
+          3. Only use colored placeholders of relevant sizes as a fallback if no suitable images are found. Don't create SVG for placeholders.
         Use fontawesome icons
         Try to use animate css if animations are needed
-        follow latest best practces for tailwind css as per 2024 March
+        Follow latest best practices for tailwind css as per 2024 March
 
 
     ** VERY IMPORTANT NOTE **
@@ -207,7 +214,7 @@ async function codeAssitant({ query, filePath, client }) {
       1. Always use only tailwind css components, do not use any other css frameworks.
       2. Make sure the component colors are consistent with the design.
         `,
-      tools: [codeWriterTool],
+      tools: [codeWriterTool, searchTool, imageAnalysisTool],
       tool_choice: { type: "tool", name: "code_writer_tool" },
       messages: [{ role: "user", content: [{ type: "text", text: query }] }],
     });
@@ -221,12 +228,23 @@ async function codeAssitant({ query, filePath, client }) {
     // Check if code is not a string, convert it to a string
     const codeString = typeof code === "string" ? code : JSON.stringify(code);
 
-    await saveFile(filePath, codeString);
-    await saveFileToS3(filePath, codeString);
-    console.log(`Code successfully written to file: ${filePath}`);
+    const uploadToS3 = process.env.UPLOAD_TO_S3 === "true";
+
+    if (uploadToS3) {
+      // Save to S3 if UPLOAD_TO_S3 is true
+      await saveFileToS3(filePath, codeString);
+      console.log(`Code successfully written to S3: ${filePath}`);
+    } else {
+      // Save locally if UPLOAD_TO_S3 is false
+      await saveFile(filePath, codeString);
+      console.log(`Code successfully written to local file: ${filePath}`);
+    }
+
     return {
       description,
-      status: `Code written successfuly to ${filePath}, You can now proceed to next file`,
+      status: `Code written successfully to ${
+        uploadToS3 ? "S3" : "local file"
+      }: ${filePath}. You can now proceed to the next file`,
     };
   } catch (error) {
     console.error("Error in aiAssistance:", error);
