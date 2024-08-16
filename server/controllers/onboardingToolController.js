@@ -2,12 +2,7 @@ const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const searchService = require("../services/searchService");
 const { toKebabCase } = require("../utils/file");
-const {
-  insertShip,
-  // getUserProfile,
-  // updateUserProfile,
-  updateConversation,
-} = require("../services/dbService");
+const { insertShip, updateConversation } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
 const { nanoid } = require("nanoid");
