@@ -4,7 +4,6 @@ require("dotenv").config();
 
 async function validateKey(key) {
   const testClient = new Anthropic({ apiKey: key });
-  console.log("testing key", key);
   try {
     await testClient.messages.create({
       model: process.env.DEFAULT_MODEL,
@@ -61,12 +60,11 @@ class AnthropicService {
     if (system) {
       clientParams.system = system;
     }
-    console.log("Calling anthropic with payload:", clientParams);
+    console.log("Calling anthropic with payload:");
     try {
       const response = await this.client.messages.create(clientParams, {
-        headers: { 'anthropic-beta': 'max-tokens-3-5-sonnet-2024-07-15' }
+        headers: { "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15" },
       });
-      console.log("Anthropic response:", response);
       this.tokensUsed += response.usage.output_tokens;
 
       if (!this.conversationId) {
@@ -75,7 +73,6 @@ class AnthropicService {
           tokens_used: this.tokensUsed,
         });
         this.conversationId = conversation.id;
-        console.log("inserted conversation: ", this.conversationId);
       }
 
       return response;

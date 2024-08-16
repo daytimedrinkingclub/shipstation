@@ -8,6 +8,7 @@ const {
   startShippingLandingPageTool,
   TOOLS,
   imageFinderTool,
+  imageAnalysisTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -50,9 +51,9 @@ async function processConversation({
         tools.push(ctoTool);
         tools.push(productManagerTool);
         tools.push(searchTool);
+        tools.push(imageAnalysisTool);
         messages = [{ role: "user", content: message }];
       }
-
     }
 
     try {
@@ -98,7 +99,7 @@ async function processConversation({
           role: currentMessage.role,
           content: currentMessage.content,
         });
-        console.log("Found tool use in response:", tool);
+
         const toolResult = await handleOnboardingToolUse({
           tool,
           sendEvent,
@@ -108,15 +109,12 @@ async function processConversation({
           client,
         });
         messages.push({ role: "user", content: toolResult });
-        console.log("Received tool result:", toolResult);
+
         if (tool.name === TOOLS.CTO) {
           console.log("Project creation completed");
           return;
         }
-        console.log(
-          "Sending request to Anthropic API with updated conversation:",
-          JSON.stringify(messages)
-        );
+
         currentMessage = await client.sendMessage({
           system:
             "Your task is to deploy a website for the user and share them the deployed url",
