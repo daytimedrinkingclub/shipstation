@@ -3,8 +3,10 @@ const {
   taskAssignerTool,
   deployProjectTool,
   searchTool,
+  imageAnalysisTool,
 } = require("../config/tools");
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
+
 require("dotenv").config();
 
 const systemPrompt = `
@@ -25,6 +27,17 @@ const systemPrompt = `
       <script src="components/testimonials-section.js"></script>
       <script src="components/booking-section.js"></script>
       <script src="components/footer-component.js"></script>
+      5. When creating components that require images:
+      a. Check the placeholder_images.json file for available images.
+      b. Always use the placeholder images provided in the placeholder_images.json file when available, especially for key sections:
+         - Hero section: Use a high-quality, eye-catching image that represents the main offering.
+         - Feature cards: Utilize relevant images for each feature to make them visually appealing and informative.
+         - Testimonials: Include profile pictures of testimonial givers when available.
+         - Facilities/Equipment: Showcase images of relevant facilities, equipment, or areas.
+      c. For cards and grid layouts, ensure images are of consistent size and aspect ratio for a polished look.
+      d. When using images in the hero section or as full-width backgrounds, ensure they are high-resolution and optimized for web.
+      e. If specific placeholder images are not available for certain sections, use relevant stock photos or colored placeholders that match the website's color scheme.
+      f. Always add appropriate alt text to images for accessibility.
 
   *** Example format of file structure ***     
   < Start of file structure example, This is an example format only you are not restricted by component names or types >
@@ -50,15 +63,19 @@ const systemPrompt = `
   `;
 
 async function ctoService({ query, projectFolderName, sendEvent, client }) {
-  console.log("aiAssistance called with query:", query);
-
   const messages = [{ role: "user", content: [{ type: "text", text: query }] }];
 
   try {
     let msg = await client.sendMessage({
       messages,
       system: systemPrompt,
-      tools: [fileCreatorTool, taskAssignerTool, deployProjectTool, searchTool],
+      tools: [
+        fileCreatorTool,
+        taskAssignerTool,
+        deployProjectTool,
+        searchTool,
+        imageAnalysisTool,
+      ],
     });
     while (msg.stop_reason === "tool_use") {
       const tool = msg.content.find((content) => content.type === "tool_use");
@@ -67,7 +84,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           role: msg.role,
           content: msg.content,
         });
-        console.log("Found cto tool use in response:", tool);
+        console.log("Found cto tool use in response");
         const toolResult = await handleCTOToolUse({
           tool,
           projectFolderName,
@@ -75,30 +92,34 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           client,
         });
         messages.push({ role: "user", content: toolResult });
-        console.log(
-          "Sending request to Anthropic API with updated messages:",
-          JSON.stringify(messages)
-        );
+        console.log("Sending request to Anthropic API with updated messages");
 
         msg = await client.sendMessage({
           system: systemPrompt,
-          tools: [fileCreatorTool, taskAssignerTool, deployProjectTool],
+          tools: [
+            fileCreatorTool,
+            taskAssignerTool,
+            deployProjectTool,
+            imageAnalysisTool,
+          ],
           messages,
         });
 
-        console.log("Received response from Anthropic API:", msg);
+        console.log("Received response from Anthropic API");
       } else {
         console.log("No tool use found in response, breaking loop");
         break;
       }
     }
+
     const slug = projectFolderName;
     sendEvent("websiteDeployed", {
       slug,
     });
-    client.abortRequest();
+
+    // client.abortRequest();
     return {
-      message: `Website successfully built with  slug: ${slug}`,
+      message: `Website successfully built, deployed, analyzed, and repaired with slug: ${slug}`,
       slug,
     };
   } catch (error) {

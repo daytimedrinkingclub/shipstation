@@ -31,7 +31,7 @@ const Home = () => {
 
   return (
     <AppLayout>
-      <h1 className="sm:text-4xl font-bold text-white my-8 text-2xl">
+      <h1 className="sm:text-4xl font-bold text-foreground my-8 text-2xl">
         What would you like to <span onClick={setLocalStorage} className="cursor-pointer">ship</span>?
       </h1>
       <CardContainer onCardClick={handleCardClick} />

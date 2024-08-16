@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge";
 
 const Edit = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, userLoading } = useContext(AuthContext);
   const { shipId } = useParams();
 
   const {
@@ -50,13 +50,13 @@ const Edit = () => {
   const [currentDevice, setCurrentDevice] = useState(DEVICE_FRAMES[0]);
 
   useEffect(() => {
-    if (!user || !shipId) {
+    if (!userLoading && (!user || !shipId)) {
       navigate("/");
     } else {
       // Call handleFileSelect with '$shipId/index.html' when the component mounts
       handleFileSelect({ path: `${shipId}/index.html`, name: "index.html" });
     }
-  }, [user, shipId, navigate]);
+  }, [user, shipId, navigate, userLoading]);
 
   const handleFileSelect = async (file) => {
     setSelectedFile(file);
@@ -129,7 +129,7 @@ const Edit = () => {
           {item.type === "directory" ? (
             <div>
               <button
-                className="flex items-center text-gray-300 hover:bg-gray-700 w-full rounded px-2 py-1"
+                className="flex items-center text-foreground hover:bg-accent w-full rounded px-2 py-1"
                 onClick={() => toggleFolder(item.path)}
               >
                 {openFolders[item.path] ? (
@@ -147,9 +147,9 @@ const Edit = () => {
           ) : (
             <div className="flex items-center justify-between group">
               <button
-                className={`flex items-center text-left hover:bg-gray-700 w-full rounded px-2 py-1 ${
+                className={`flex items-center text-left hover:bg-accent w-full rounded px-2 py-1 ${
                   selectedFile && selectedFile.path === item.path
-                    ? "bg-gray-700"
+                    ? "bg-accent"
                     : ""
                 }`}
                 onClick={() => handleFileSelect(item)}
@@ -159,19 +159,13 @@ const Edit = () => {
                 ) : item.name.endsWith(".css") ? (
                   <span className="mr-2 text-blue-400 font-bold">CSS</span>
                 ) : (
-                  <Code className="w-4 h-4 mr-2 text-gray-400" />
+                  <Code className="w-4 h-4 mr-2 text-muted-foreground" />
                 )}
-                <span className="text-gray-300">{item.name}</span>
+                <span className="text-foreground">{item.name}</span>
                 {unsavedChanges[item.path] && (
-                  <span className="ml-2 w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span className="ml-2 w-2 h-2 bg-primary rounded-full"></span>
                 )}
               </button>
-              {/* <button
-                className="text-red-400 hover:text-red-300 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleFileDelete(item)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button> */}
             </div>
           )}
         </li>
@@ -184,140 +178,149 @@ const Edit = () => {
   }
 
   return (
-    <div className="mx-auto flex flex-row h-screen p-4 bg-black text-gray-100">
-      <ResizablePanelGroup
-        direction="horizontal"
-        className="flex-1 overflow-hidden rounded-lg border border-gray-700"
-      >
-        <ResizablePanel defaultSize={30} minSize={20} maxSize={40}>
-          <div className="h-full bg-gray-800 p-4 overflow-auto flex flex-col">
-            <div className="flex-grow">
-              {isLoading ? (
-                <div className="flex justify-center items-center h-full">
-                  <div className="relative w-16 h-16">
-                    <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full animate-pulse"></div>
-                    <div className="absolute top-0 left-0 w-full h-full border-t-4 border-blue-500 rounded-full animate-spin"></div>
-                  </div>
-                </div>
-              ) : (
-                renderDirectory(directoryStructure ?? [])
-              )}
-            </div>
-            <div className="mt-auto pt-4 border-t border-gray-700">
-              <div className="flex space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    handledownloadzip();
-                    toast("Project will be downloaded shortly!");
-                  }}
-                >
-                  <Download className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    window.open(
-                      `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
-                      "_blank"
-                    );
-                  }}
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  View
-                </Button>
-                <Button variant="outline" size="sm" disabled>
-                  <Link className="w-4 h-4 mr-2" />
-                  Link domain
-                </Button>
-              </div>
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
-        <ResizablePanel>
-          <div className="h-full flex flex-col bg-gray-900">
-            {selectedFile ? (
-              <>
-                <div className="bg-gray-800 p-2 flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-gray-100">
-                      {selectedFile.name}
-                    </span>
-                    {selectedFile.lastModified && (
-                      <span className="text-xs text-gray-400">
-                        Last modified:{" "}
-                        {format(new Date(selectedFile.lastModified), "PPpp")}
-                      </span>
-                    )}
-                    {unsavedChanges[selectedFile.path] && (
-                      <Badge variant="secondary">Unsaved changes</Badge>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={submitting}
-                    onClick={handleFileSave}
-                    className="text-gray-300 hover:text-white border-gray-600 hover:bg-gray-700"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
-                </div>
-                {isFileLoading ? (
+    <>
+      <div className="mx-auto flex flex-row h-screen p-4 bg-background text-foreground">
+        <ResizablePanelGroup
+          direction="horizontal"
+          className="flex-1 overflow-hidden rounded-lg border border-border"
+        >
+          <ResizablePanel defaultSize={30} minSize={20} maxSize={40}>
+            <div className="h-full bg-card p-4 overflow-hidden flex flex-col">
+              <div className="flex-grow overflow-auto">
+                {isLoading ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="relative w-16 h-16">
-                      <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-700 rounded-full animate-pulse"></div>
-                      <div className="absolute top-0 left-0 w-full h-full border-t-4 border-blue-500 rounded-full animate-spin"></div>
+                      <div className="absolute top-0 left-0 w-full h-full border-4 border-muted rounded-full animate-pulse"></div>
+                      <div className="absolute top-0 left-0 w-full h-full border-t-4 border-primary rounded-full animate-spin"></div>
                     </div>
                   </div>
                 ) : (
-                  <Editor
-                    language={
-                      selectedFile.name.endsWith(".html")
-                        ? "html"
-                        : "javascript"
-                    }
-                    theme="vs-dark"
-                    options={{
-                      minimap: { enabled: false },
-                      scrollbar: {
-                        vertical: "visible",
-                        horizontal: "visible",
-                      },
-                      fontSize: 14,
-                      lineNumbers: "on",
-                      glyphMargin: false,
-                      folding: true,
-                      lineDecorationsWidth: 0,
-                      lineNumbersMinChars: 3,
-                      renderLineHighlight: "all",
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                    }}
-                    value={fileContent}
-                    onChange={handleFileChange}
-                  />
+                  renderDirectory(directoryStructure ?? [])
                 )}
-              </>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500">
-                Select a file to edit
               </div>
-            )}
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      handledownloadzip();
+                      toast("Project will be downloaded shortly!");
+                    }}
+                    className="text-foreground bg-background hover:bg-accent"
+                  >
+                    <Download className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      window.open(
+                        `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
+                        "_blank"
+                      );
+                    }}
+                    className="text-foreground bg-background hover:bg-accent"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    View
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    disabled
+                    className="text-muted-foreground bg-background"
+                  >
+                    <Link className="w-4 h-4 mr-2" />
+                    Link domain
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel>
+            <div className="h-full flex flex-col bg-background">
+              {selectedFile ? (
+                <>
+                  <div className="bg-card p-2 flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-foreground">
+                        {selectedFile.name}
+                      </span>
+                      {selectedFile.lastModified && (
+                        <span className="text-xs text-muted-foreground">
+                          Last modified:{" "}
+                          {format(new Date(selectedFile.lastModified), "PPpp")}
+                        </span>
+                      )}
+                      {unsavedChanges[selectedFile.path] && (
+                        <Badge variant="secondary">Unsaved changes</Badge>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={submitting}
+                      onClick={handleFileSave}
+                      className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Save
+                    </Button>
+                  </div>
+                  {isFileLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                      <div className="relative w-16 h-16">
+                        <div className="absolute top-0 left-0 w-full h-full border-4 border-muted rounded-full animate-pulse"></div>
+                        <div className="absolute top-0 left-0 w-full h-full border-t-4 border-primary rounded-full animate-spin"></div>
+                      </div>
+                    </div>
+                  ) : (
+                    <Editor
+                      language={
+                        selectedFile.name.endsWith(".html")
+                          ? "html"
+                          : "javascript"
+                      }
+                      theme="vs-dark"
+                      options={{
+                        minimap: { enabled: false },
+                        scrollbar: {
+                          vertical: "visible",
+                          horizontal: "visible",
+                        },
+                        fontSize: 14,
+                        lineNumbers: "on",
+                        glyphMargin: false,
+                        folding: true,
+                        lineDecorationsWidth: 0,
+                        lineNumbersMinChars: 3,
+                        renderLineHighlight: "all",
+                        scrollBeyondLastLine: false,
+                        automaticLayout: true,
+                      }}
+                      value={fileContent}
+                      onChange={handleFileChange}
+                    />
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Select a file to edit
+                </div>
+              )}
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+        <div className="h-full p-4 flex flex-col items-center justify-center">
+          <IframePreview device={currentDevice} ref={iframeRef} slug={shipId} />
+          <div className="absolute bottom-8 right-8 z-10">
+            <Dice onRoll={shuffleDevice} />
           </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
-      <div className="h-full p-4 flex flex-col items-center justify-center">
-        <IframePreview device={currentDevice} ref={iframeRef} slug={shipId} />
-        <div className="absolute bottom-8 right-8 z-10">
-          <Dice onRoll={shuffleDevice} />
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

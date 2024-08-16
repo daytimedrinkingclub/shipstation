@@ -1,11 +1,11 @@
-import { useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useContext, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { Separator } from "@/components/ui/separator";
-import { Code, Trophy, ExternalLink, CircleFadingPlus, Sparkles } from "lucide-react";
+import { Code, ExternalLink, CircleFadingPlus, Sparkles } from "lucide-react";
+import { Button } from "./ui/button";
 
 const RecentlyShipped = () => {
-  const navigate = useNavigate();
   const { myProjectsLoading, recentlyShipped, user } = useContext(AuthContext);
 
   const featuredWebsites = [
@@ -43,8 +43,12 @@ const RecentlyShipped = () => {
     },
   ];
 
+  const handleWebsitesClick = () => {
+    window.open("https://shipstation.ai/all", "_blank");
+  };
+
   return (
-    <div className="text-white w-full  py-8">
+    <div className="w-full py-8">
       <section className="mx-auto px-4 md:px-8">
         <Separator className="mb-8" />
         <div className="flex flex-col md:flex-row gap-8">
@@ -60,7 +64,7 @@ const RecentlyShipped = () => {
                   .map((_, index) => (
                     <div
                       key={index}
-                      className="animate-pulse bg-gray-700 rounded-lg h-10 w-64"
+                      className="animate-pulse bg-muted rounded-lg h-10 w-64"
                     ></div>
                   ))
               ) : recentlyShipped.length > 0 ? (
@@ -87,10 +91,19 @@ const RecentlyShipped = () => {
             </div>
           </div>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-6">
-              <Sparkles className="inline-block w-5 h-5 mr-2" />
-              featured websites
-            </h2>
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <h2 className="text-2xl font-bold flex items-center">
+                <Sparkles className="inline-block w-5 h-5 mr-2" />
+                featured websites
+              </h2>
+              <Button
+                // className="font-medium bg-muted px-2 py-1 rounded-full"
+                variant="outline"
+                onClick={handleWebsitesClick}
+              >
+                check all websites shipped! <ExternalLink className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
             <div className="flex flex-wrap gap-4">
               {featuredWebsites.map((site, index) => (
                 <a

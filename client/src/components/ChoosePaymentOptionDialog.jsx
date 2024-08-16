@@ -70,7 +70,7 @@ const ChoosePaymentOptionDialog = ({
                   onClick={handleBack}
                 >
                   <ArrowLeft height={24} width={24} className="mr-2" />
-                  Provide Anthropic Key
+                  Provide Your Key
                 </div>
                 <p className="text-sm text-muted-foreground mt-2">
                   <ShieldCheck className="inline-block mr-1 h-4 w-4" />

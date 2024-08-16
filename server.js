@@ -40,6 +40,13 @@ app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
 app.use(cors());
+app.use((req, res, next) => {
+  if (req.path !== '/' && !req.path.endsWith('/')) {
+    res.redirect(301, `${req.path}/`);
+  } else {
+    next();
+  }
+});
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
@@ -53,7 +60,9 @@ app.get("/ship", (req, res) => {
 app.get("/taaft.txt", async (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Content-Disposition", "attachment; filename=taaft.txt");
-  res.send("taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4");
+  res.send(
+    "taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4"
+  );
 });
 
 app.post("/payment-webhook", express.json(), async (req, res) => {
@@ -194,6 +203,10 @@ async function serializeDom(filePath, baseUrl) {
   return dom.serialize();
 }
 
+app.get('/project/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.get("/:websiteId", async (req, res) => {
   const websiteId = req.params.websiteId;
   const websitePath = path.join(__dirname, "websites", websiteId);
@@ -220,8 +233,6 @@ app.get("/:websiteId", async (req, res) => {
     res.status(404).send("Website not found");
   }
 });
-
-
 
 app.get("/download/:slug", async (req, res) => {
   const slug = req.params.slug;
@@ -286,6 +297,11 @@ app.use("/site/:siteId", async (req, res, next) => {
     }
     res.status(500).send("An error occurred");
   }
+});
+
+// Catch-all route after server routes and give to react router
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 handleOnboardingSocketEvents(io);

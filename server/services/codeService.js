@@ -1,11 +1,37 @@
-const { codeWriterTool } = require("../config/tools");
+const {
+  codeWriterTool,
+  searchTool,
+  imageAnalysisTool,
+} = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
 require("dotenv").config();
 
-async function codeAssitant({ query, filePath, client }) {
-  console.log("filePath in codeAssitant:", filePath);
+const { readFile } = require("./fileService");
+
+async function getPlaceholderImages(projectFolderName) {
   try {
+    const imagePath = `${projectFolderName}/placeholder_images.json`;
+    const imageData = await readFile(imagePath);
+    return JSON.parse(imageData);
+  } catch (error) {
+    console.error(`Error reading placeholder images: ${error}`);
+    return [];
+  }
+}
+
+async function codeAssitant({ query, filePath, client }) {
+  try {
+    const projectFolderName = filePath.split("/")[0];
+    const placeholderImages = await getPlaceholderImages(projectFolderName);
+
+    // Add placeholderImages to the query
+    const updatedQuery = `${query}\n\nPlaceholder Images:\n${JSON.stringify(
+      placeholderImages,
+      null,
+      2
+    )}`;
+
     const msg = await client.sendMessage({
       system: `
       Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react, vue, alpine or any other frontend library. Follow the guildines provided by the CTO.
@@ -45,11 +71,12 @@ async function codeAssitant({ query, filePath, client }) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
       3- How to use fonts and images 
-        Use google fonts
-        In place of images, use colored placeholders of relevant sizes, dont create SVG for placeholders. Do not assume image paths to exist. We do not have any local images.
-        Use fontawesome icons
-        Try to use animate css if animations are needed
-        follow latest best practces for tailwind css as per 2024 March
+        Use google fonts.
+        For images:
+          1. Always use the placeholder images provided when available, especially for key sections like hero, feature cards, testimonials, and facilities.
+          2. Ensure images are high-resolution, optimized for web, and have consistent sizes/aspect ratios where appropriate.
+          3. Add appropriate alt text to all images for accessibility.
+          4. If specific placeholders aren't available, use relevant stock photos or colored placeholders matching the website's color scheme as a fallback.
 
 
     ** VERY IMPORTANT NOTE **
@@ -209,24 +236,34 @@ async function codeAssitant({ query, filePath, client }) {
         `,
       tools: [codeWriterTool],
       tool_choice: { type: "tool", name: "code_writer_tool" },
-      messages: [{ role: "user", content: [{ type: "text", text: query }] }],
+      messages: [
+        { role: "user", content: [{ type: "text", text: updatedQuery }] },
+      ],
     });
     const resp = msg.content.find((content) => content.type === "tool_use");
-    console.log("Received response from Anthropic API:", resp);
 
     const { code, description } = resp.input;
-
-    console.log("recieved code", code);
 
     // Check if code is not a string, convert it to a string
     const codeString = typeof code === "string" ? code : JSON.stringify(code);
 
-    await saveFile(filePath, codeString);
-    await saveFileToS3(filePath, codeString);
-    console.log(`Code successfully written to file: ${filePath}`);
+    const uploadToS3 = process.env.UPLOAD_TO_S3 === "true";
+
+    if (uploadToS3) {
+      // Save to S3 if UPLOAD_TO_S3 is true
+      await saveFileToS3(filePath, codeString);
+      console.log(`Code successfully written to S3: ${filePath}`);
+    } else {
+      // Save locally if UPLOAD_TO_S3 is false
+      await saveFile(filePath, codeString);
+      console.log(`Code successfully written to local file: ${filePath}`);
+    }
+
     return {
       description,
-      status: `Code written successfuly to ${filePath}, You can now proceed to next file`,
+      status: `Code written successfully to ${
+        uploadToS3 ? "S3" : "local file"
+      }: ${filePath}. You can now proceed to the next file`,
     };
   } catch (error) {
     console.error("Error in aiAssistance:", error);

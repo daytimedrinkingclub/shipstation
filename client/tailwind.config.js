@@ -9,7 +9,6 @@ export default {
         "2xl": "1400px",
       },
     },
-    darkMode: ["class"],
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -45,6 +44,7 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        'india-blue': '#000080', // Navy Blue color of the Indian flag
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -54,7 +54,31 @@ export default {
       fontFamily: {
         archivo: ["Archivo", "sans-serif"],
       },
+      animation: {
+        'spin-slow': 'spin 20s linear infinite',
+        'wave': 'wave 10s linear infinite',
+        'shimmer': 'shimmer 3s linear infinite',
+        'wave': 'wave 3s ease-in-out infinite',
+      },
+      keyframes: {
+        'wave': {
+          '0%': { backgroundPosition: '0% 0%' },
+          '100%': { backgroundPosition: '100% 100%' },
+        },
+        'shimmer': {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+        'wave': {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+      },
+      backgroundImage: {
+        'shimmer-gradient': 'linear-gradient(135deg, #4f46e5 0%, #9333ea 25%, #ec4899 50%, #9333ea 75%, #4f46e5 100%)',
+      },
     },
   },
   plugins: [],
-};
+  darkMode: "class",
+}

@@ -1,6 +1,10 @@
+const axios = require("axios");
+
 const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
+
 const searchService = require("../services/searchService");
+const { analyzeImages } = require("../services/analyzeImageService");
 const { TOOLS } = require("../config/tools");
 
 async function handleCTOToolUse({
@@ -11,21 +15,74 @@ async function handleCTOToolUse({
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
-    console.log("Performing search with query:", searchQuery);
+
     const searchResults = await searchService.performSearch(searchQuery);
+
+    // Extract images from search results and remove trailing slashes
+    const images = (searchResults.images || []).map((url) =>
+      url.replace(/\/$/, "")
+    );
+
+    let messageContent = [
+      {
+        type: "text",
+        text: `Here are relevant images found for the query "${searchQuery}". These images may be useful for designing and creating components for the website:`,
+      },
+    ];
+
+    if (images.length > 0) {
+      // Add images to the message content
+      for (const imageUrl of images) {
+        try {
+          // Fetch the image
+          const response = await axios.get(imageUrl, {
+            responseType: "arraybuffer",
+          });
+
+          // Get the Content-Type from the response headers
+          const contentType = response.headers["content-type"];
+
+          // Only process if it's an image
+          // Only process if it's an accepted image type
+          if (
+            contentType &&
+            ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
+              contentType
+            )
+          ) {
+            const imageData = Buffer.from(response.data).toString("base64");
+
+            messageContent.push({
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: contentType,
+                data: imageData,
+              },
+            });
+          } else {
+            console.error(
+              `Unsupported media type ${contentType} for image ${imageUrl}`
+            );
+          }
+        } catch (error) {
+          console.error(`Error processing image ${imageUrl}:`, error);
+        }
+      }
+    }
+
     return [
       {
         type: "tool_result",
         tool_use_id: tool.id,
-        content: [{ type: "text", text: JSON.stringify(searchResults) }],
+        content: messageContent,
       },
     ];
-  } 
-  else if (tool.name === TOOLS.IMAGE_FINDER) {
+  } else if (tool.name === TOOLS.IMAGE_FINDER) {
     const searchQuery = tool.input.query;
-    console.log("Performing image search with query:", searchQuery);
+
     const imageResults = await searchService.imageSearch(searchQuery);
-    console.log("imageResults:", imageResults);
+
     return [
       {
         type: "tool_result",
@@ -33,17 +90,29 @@ async function handleCTOToolUse({
         content: [
           {
             type: "text",
-            text: imageResults.length === 0 ? "No relevant images found" : JSON.stringify(imageResults)
-          }
+            text:
+              imageResults.length === 0
+                ? "No relevant images found"
+                : JSON.stringify(imageResults),
+          },
         ],
       },
     ];
-  }
-  else if (tool.name === TOOLS.FILE_CREATOR) {
+  } else if (tool.name === TOOLS.IMAGE_ANALYSIS) {
+    const { image_urls, analysis_prompt } = tool.input;
+
+    const analysisResults = await analyzeImages(image_urls, analysis_prompt);
+
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [{ type: "text", text: analysisResults }],
+      },
+    ];
+  } else if (tool.name === TOOLS.FILE_CREATOR) {
     const { file_name, file_comments } = tool.input;
-    console.log("projectFolderName:", projectFolderName);
-    console.log("file_name:", file_name);
-    console.log("file_comments:", file_comments);
+
     await fileService.saveFile(
       `${projectFolderName}/${file_name}`,
       file_comments
@@ -65,9 +134,7 @@ async function handleCTOToolUse({
     ];
   } else if (tool.name === TOOLS.TASK_ASSIGNER) {
     const { file_name, task_guidelines } = tool.input;
-    console.log("projectFolderName: in task_assigner_tool", projectFolderName);
-    console.log("file_name: in task_assigner_tool", file_name);
-    console.log("task_guidelines: in task_assigner_tool", task_guidelines);
+
     const fileContent = await fileService.readFile(
       `${projectFolderName}/${file_name}`
     );
@@ -124,3 +191,5 @@ async function handleCTOToolUse({
 module.exports = {
   handleCTOToolUse,
 };
+
+// I need to add a functionality where we can find relevant images using TOOLS.IMAGE_FINDER to add them as placeholder images, this should be included in the prd file generation step, the image urls should be added to the prd file and then used in the code generation time for placeholders

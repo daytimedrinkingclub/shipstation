@@ -56,12 +56,12 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] text-white bg-black">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-foreground">
             {isSigningUp ? "Sign up for free" : "Identify yourself"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-muted-foreground">
             {isSigningUp ? (
               "Enter your email and password to create account."
             ) : (
@@ -75,15 +75,15 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-foreground">Email</Label>
             <Input
               id="email"
               type="email"
-              className="text-white bg-black"
               placeholder="Enter your email"
               value={email}
               onChange={handleEmailChange}
               required
+              className="bg-background text-foreground"
             />
           </div>
           <div className="space-y-2">
@@ -104,18 +104,17 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
               id="password"
               type="password"
               placeholder="Please enter your password"
-              className="text-white bg-black"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               disabled={!email}
+              className="bg-background text-foreground"
             />
           </div>
           <div className="flex justify-between items-center">
             <Button
               variant="link"
               type="button"
-              className="underline"
               size="sm"
               onClick={() => setIsSigningUp(!isSigningUp)}
             >

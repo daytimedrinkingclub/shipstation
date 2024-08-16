@@ -19,13 +19,18 @@
       "project_branding_style": {
         "type": "string",
         "description": "The branding of the project that we want to create, such as any specific brand colors."
+      },
+      "image_description": {
+        "type": "string",
+        "description": "A detailed description of the images needed for the site, which will be used to search for relevant placeholder images."
       }
     },
     "required": [
       "project_name",
       "project_description",
       "project_goal",
-      "project_branding_style"
+      "project_branding_style",
+      "image_description"
     ]
   }
 }
