@@ -146,13 +146,6 @@ async function handleOnboardingToolUse({
     const { id } = await insertShip(ship);
     console.log("Inserted ship", id);
 
-    // removing deduct available ships from here.
-    // if (mode === 'paid') {
-    //   const profile = await getUserProfile(userId);
-    //   const { available_ships } = profile; // current
-    //   const profilePayload = { available_ships: available_ships - 1 }; // updated
-    //   await updateUserProfile(userId, profilePayload);
-    // }
     const convPayload = {
       ship_id: id,
       tokens_used: client.tokensUsed,
