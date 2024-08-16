@@ -60,7 +60,7 @@ const ChoosePaymentOptionDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="dark bg-background text-foreground border border-border sm:max-w-[625px]">
+      <DialogContent className="bg-background text-foreground border border-border sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold mb-4">
             {showKeyInput ? (
@@ -110,13 +110,20 @@ const ChoosePaymentOptionDialog = ({
                   Continue
                 </Button>
               </div>
-              <div className="bg-card p-6 rounded-lg text-center relative transition-colors duration-200">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-center relative transition-colors duration-200">
                 <CreditCard className="w-12 h-12 mx-auto mb-3 text-primary" />
                 <h3 className="font-bold mb-2 text-lg">Pay to create</h3>
                 <p className="text-sm mb-4 text-muted-foreground">
                   Secure payment for website generation service.
                 </p>
-                <RazorpayButton productId={productId} />
+                <Button
+                  variant="secondary"
+                  className="w-full cursor-not-allowed"
+                  disabled
+                >
+                    Coming Soon
+                </Button>
+                {/* <RazorpayButton productId={productId} /> */}
                 {/* <PaypalButton productId={paypalProductId} /> */}
               </div>
             </motion.div>
