@@ -8,8 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
-  const [anthropicKey, setAnthropicKey] = useState("");
-  const [websitesCount, setWebsitesCount] = useState(0);
+  const [apiKey, setApiKey] = useState("");
+  const [provider, setProvider] = useState("anthropic"); // Default to Anthropic
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
@@ -57,10 +57,6 @@ export const AuthProvider = ({ children }) => {
       setRecentlyShipped(ships);
     }
     setMyProjectsLoading(false);
-  };
-
-  const getWebsitesCount = async () => {
-    // implement
   };
 
   const handleLogout = async () => {
@@ -114,7 +110,6 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkUser();
-    getWebsitesCount();
   }, []);
 
   return (
@@ -131,10 +126,10 @@ export const AuthProvider = ({ children }) => {
         isSendingLoginLink,
         isLoading,
         myProjectsLoading,
-        anthropicKey,
-        setAnthropicKey,
-        websitesCount,
-        getWebsitesCount,
+        apiKey,
+        setApiKey,
+        provider,
+        setProvider,
       }}
     >
       {children}
