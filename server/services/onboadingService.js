@@ -114,9 +114,7 @@ async function processConversation({
           console.log("Project creation completed");
           return;
         }
-        console.log(
-          "Sending request to Anthropic API with updated conversation"
-        );
+
         currentMessage = await client.sendMessage({
           system:
             "Your task is to deploy a website for the user and share them the deployed url",

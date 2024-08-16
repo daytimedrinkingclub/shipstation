@@ -9,25 +9,21 @@ require("dotenv").config();
 
 const { readFile } = require("./fileService");
 
-async function extractPlaceholderImages(projectFolderName) {
-  const prdContent = await readFile(`${projectFolderName}/readme.md`);
-  const placeholderSection = prdContent.split("Placeholder Images:")[1];
-  if (placeholderSection) {
-    return placeholderSection
-      .trim()
-      .split("\n")
-      .map((line) => {
-        const [title, url] = line.split(": ");
-        return { title, url };
-      });
+async function getPlaceholderImages(projectFolderName) {
+  try {
+    const imagePath = `${projectFolderName}/placeholder_images.json`;
+    const imageData = await readFile(imagePath);
+    return JSON.parse(imageData);
+  } catch (error) {
+    console.error(`Error reading placeholder images: ${error}`);
+    return [];
   }
-  return [];
 }
 
 async function codeAssitant({ query, filePath, client }) {
   try {
     const projectFolderName = filePath.split("/")[0];
-    const placeholderImages = await extractPlaceholderImages(projectFolderName);
+    const placeholderImages = await getPlaceholderImages(projectFolderName);
 
     // Add placeholderImages to the query
     const updatedQuery = `${query}\n\nPlaceholder Images:\n${JSON.stringify(
@@ -247,8 +243,6 @@ async function codeAssitant({ query, filePath, client }) {
     const resp = msg.content.find((content) => content.type === "tool_use");
 
     const { code, description } = resp.input;
-
-    console.log("recieved code");
 
     // Check if code is not a string, convert it to a string
     const codeString = typeof code === "string" ? code : JSON.stringify(code);

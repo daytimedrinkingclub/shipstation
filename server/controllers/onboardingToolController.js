@@ -106,10 +106,17 @@ async function handleOnboardingToolUse({
 
     // Extract and format image results
     const formattedImageResults = searchResults.image_results
-      ? searchResults.image_results.map(
-          (url, index) => `Image ${index + 1}: ${url.replace(/\/$/, "")}`
-        )
+      ? searchResults.image_results.map((url, index) => ({
+          title: `Image ${index + 1}`,
+          url: url.replace(/\/$/, ""),
+        }))
       : [];
+
+    // Save placeholder images to a separate JSON file
+    await fileService.saveFile(
+      `${generatedFolderName}/placeholder_images.json`,
+      JSON.stringify(formattedImageResults, null, 2)
+    );
 
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
@@ -118,9 +125,6 @@ async function handleOnboardingToolUse({
       Project goal : ${project_goal}
       Project branding style : ${project_branding_style}
       Image description : ${image_description}
-      
-      Placeholder Images:
-    ${formattedImageResults.join("\n")}
       `
     );
     sendEvent("project_started", {
@@ -133,7 +137,7 @@ async function handleOnboardingToolUse({
         content: [
           {
             type: "text",
-            text: `PRD file created successfully at ${generatedFolderName}/readme.md`,
+            text: `PRD file and placeholder images JSON created successfully in ${generatedFolderName}/`,
           },
         ],
       },
@@ -141,7 +145,9 @@ async function handleOnboardingToolUse({
   } else if (tool.name === TOOLS.CTO) {
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
-    const fileContent = await fileService.readFile(prd_file_path);
+    const fileContent = await fileService.readFile(
+      `${generatedFolderName}/readme.md`
+    );
     const { message, slug } = await ctoService.ctoService({
       query: fileContent,
       projectFolderName: generatedFolderName,

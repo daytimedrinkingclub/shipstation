@@ -27,13 +27,13 @@ const systemPrompt = `
       <script src="components/testimonials-section.js"></script>
       <script src="components/booking-section.js"></script>
       <script src="components/footer-component.js"></script>
-   5. When creating components that require images:
-      a. Check the PRD file (readme.md) for placeholder images.
-      b. Always use the placeholder images provided in the PRD file when available, especially for key sections:
-         - Hero section: Use a high-quality, eye-catching image that represents the main offering (e.g., a cricket coaching session).
+      5. When creating components that require images:
+      a. Check the placeholder_images.json file for available images.
+      b. Always use the placeholder images provided in the placeholder_images.json file when available, especially for key sections:
+         - Hero section: Use a high-quality, eye-catching image that represents the main offering.
          - Feature cards: Utilize relevant images for each feature to make them visually appealing and informative.
          - Testimonials: Include profile pictures of testimonial givers when available.
-         - Facilities/Equipment: Showcase images of cricket facilities, training equipment, or practice areas.
+         - Facilities/Equipment: Showcase images of relevant facilities, equipment, or areas.
       c. For cards and grid layouts, ensure images are of consistent size and aspect ratio for a polished look.
       d. When using images in the hero section or as full-width backgrounds, ensure they are high-resolution and optimized for web.
       e. If specific placeholder images are not available for certain sections, use relevant stock photos or colored placeholders that match the website's color scheme.

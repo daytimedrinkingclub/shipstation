@@ -41,9 +41,10 @@ async function performSearch(query, options = {}) {
 
     // If there's a separate imageQuery, perform another search for images
     if (imageQuery && imageQuery !== query) {
+      const truncatedImageQuery = imageQuery.slice(0, 400);
       const imageRequestData = {
         ...requestData,
-        query: imageQuery.slice(0, 400),
+        query: truncatedImageQuery,
         include_images: true,
         include_answer: false,
         max_results: 5,

@@ -4,7 +4,7 @@ const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
 
 const searchService = require("../services/searchService");
-const { analyzeImage } = require("../services/analyzeImageService");
+const { analyzeImages } = require("../services/analyzeImageService");
 const { TOOLS } = require("../config/tools");
 
 async function handleCTOToolUse({
@@ -26,7 +26,7 @@ async function handleCTOToolUse({
     let messageContent = [
       {
         type: "text",
-        text: `Here are relevant images found for the query "${searchQuery}". Use these images as inspiration or placeholders when designing and creating components for the website:`,
+        text: `Here are relevant images found for the query "${searchQuery}". These images may be useful for designing and creating components for the website:`,
       },
     ];
 
@@ -43,7 +43,13 @@ async function handleCTOToolUse({
           const contentType = response.headers["content-type"];
 
           // Only process if it's an image
-          if (contentType && contentType.startsWith("image/")) {
+          // Only process if it's an accepted image type
+          if (
+            contentType &&
+            ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(
+              contentType
+            )
+          ) {
             const imageData = Buffer.from(response.data).toString("base64");
 
             messageContent.push({
@@ -56,7 +62,7 @@ async function handleCTOToolUse({
             });
           } else {
             console.error(
-              `Unable to determine media type for image ${imageUrl}`
+              `Unsupported media type ${contentType} for image ${imageUrl}`
             );
           }
         } catch (error) {
@@ -93,26 +99,15 @@ async function handleCTOToolUse({
       },
     ];
   } else if (tool.name === TOOLS.IMAGE_ANALYSIS) {
-    const { image_url, analysis_prompt } = tool.input;
+    const { image_urls, analysis_prompt } = tool.input;
 
-    const analysisResults = await analyzeImage(image_url, analysis_prompt);
-
-    // Process the analysis results
-    const processedResults = {
-      isAppropriate:
-        analysisResults.analysis.includes("appropriate") &&
-        !analysisResults.analysis.includes("inappropriate"),
-      quality: analysisResults.analysis.includes("high quality")
-        ? "high"
-        : "low",
-      description: analysisResults.analysis,
-    };
+    const analysisResults = await analyzeImages(image_urls, analysis_prompt);
 
     return [
       {
         type: "tool_result",
         tool_use_id: tool.id,
-        content: [{ type: "text", text: JSON.stringify(processedResults) }],
+        content: [{ type: "text", text: analysisResults }],
       },
     ];
   } else if (tool.name === TOOLS.FILE_CREATOR) {
