@@ -77,6 +77,7 @@ class AnthropicService {
 
       return response;
     } catch (error) {
+      console.log("Error in anthropicService.sendMessage", error);
       if (error.name === "AbortError") {
         console.log("Request aborted");
         throw new DOMException("Aborted", "AbortError");
