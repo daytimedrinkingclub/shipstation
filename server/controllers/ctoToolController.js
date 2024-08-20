@@ -42,7 +42,6 @@ async function handleCTOToolUse({
           // Get the Content-Type from the response headers
           const contentType = response.headers["content-type"];
 
-          // Only process if it's an image
           // Only process if it's an accepted image type
           if (
             contentType &&
@@ -81,7 +80,14 @@ async function handleCTOToolUse({
   } else if (tool.name === TOOLS.IMAGE_FINDER) {
     const searchQuery = tool.input.query;
 
-    const imageResults = await searchService.imageSearch(searchQuery);
+    const imageResults = await searchService.performSearch(searchQuery);
+
+    const formattedImageResults = imageResults.images
+      ? imageResults.images.map((image) => ({
+          url: image.url.replace(/\/$/, ""),
+          description: image.description || "No description available",
+        }))
+      : [];
 
     return [
       {
@@ -91,9 +97,37 @@ async function handleCTOToolUse({
           {
             type: "text",
             text:
-              imageResults.length === 0
+              formattedImageResults.length === 0
                 ? "No relevant images found"
-                : JSON.stringify(imageResults),
+                : JSON.stringify(formattedImageResults, null, 2),
+          },
+        ],
+      },
+    ];
+  } else if (tool.name === TOOLS.PLACEHOLDER_IMAGE) {
+    console.log("using placeholder image tool");
+    const searchQuery = tool.input.placeholder_image_requirements;
+
+    const imageResults = await searchService.performSearch(searchQuery);
+
+    const formattedImageResults = imageResults.images
+      ? imageResults.images.map((image) => ({
+          url: image.url.replace(/\/$/, ""),
+          description: image.description || "No description available",
+        }))
+      : [];
+
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text:
+              formattedImageResults.length === 0
+                ? "No relevant placeholder images found"
+                : JSON.stringify(formattedImageResults, null, 2),
           },
         ],
       },
@@ -191,5 +225,3 @@ async function handleCTOToolUse({
 module.exports = {
   handleCTOToolUse,
 };
-
-// I need to add a functionality where we can find relevant images using TOOLS.IMAGE_FINDER to add them as placeholder images, this should be included in the prd file generation step, the image urls should be added to the prd file and then used in the code generation time for placeholders

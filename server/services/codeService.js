@@ -1,37 +1,14 @@
 const {
   codeWriterTool,
-  searchTool,
-  imageAnalysisTool,
+
+  placeholderImageTool,
 } = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
 require("dotenv").config();
 
-const { readFile } = require("./fileService");
-
-async function getPlaceholderImages(projectFolderName) {
-  try {
-    const imagePath = `${projectFolderName}/placeholder_images.json`;
-    const imageData = await readFile(imagePath);
-    return JSON.parse(imageData);
-  } catch (error) {
-    console.error(`Error reading placeholder images: ${error}`);
-    return [];
-  }
-}
-
 async function codeAssitant({ query, filePath, client }) {
   try {
-    const projectFolderName = filePath.split("/")[0];
-    const placeholderImages = await getPlaceholderImages(projectFolderName);
-
-    // Add placeholderImages to the query
-    const updatedQuery = `${query}\n\nPlaceholder Images:\n${JSON.stringify(
-      placeholderImages,
-      null,
-      2
-    )}`;
-
     const msg = await client.sendMessage({
       system: `
       Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react, vue, alpine or any other frontend library. Follow the guildines provided by the CTO.
@@ -71,12 +48,19 @@ async function codeAssitant({ query, filePath, client }) {
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
       3- How to use fonts and images 
-        Use google fonts.
-        For images:
-          1. Always use the placeholder images provided when available, especially for key sections like hero, feature cards, testimonials, and facilities.
-          2. Ensure images are high-resolution, optimized for web, and have consistent sizes/aspect ratios where appropriate.
-          3. Add appropriate alt text to all images for accessibility.
-          4. If specific placeholders aren't available, use relevant stock photos or colored placeholders matching the website's color scheme as a fallback.
+          Use google fonts.
+        When creating components that require images:
+          a. Consider using the placeholderImageTool to find suitable images for each section.
+          b. Pay special attention to key sections where high-quality images can significantly enhance the user experience:
+            - Hero section: Aim for a high-quality, eye-catching image that represents the main offering.
+            - Feature cards: Consider using relevant images for each feature to make them visually appealing and informative.
+            - Testimonials: Where appropriate, include profile pictures of testimonial givers.
+            - Facilities/Equipment: If relevant, showcase images of facilities, equipment, or areas.
+          c. For cards and grid layouts, strive for consistency in image size and aspect ratio to maintain a polished look.
+          d. When using images in the hero section or as full-width backgrounds, prioritize high-resolution images that are optimized for web performance.
+          e. If specific images are not readily available, you can use the placeholderImageTool to find relevant stock photos or create colored placeholders that match the website's color scheme.
+          f. Remember to add appropriate alt text to all images for accessibility.
+          g. Use your judgment to determine when and where images are necessary, always keeping in mind the overall design and performance of the website.
 
 
     ** VERY IMPORTANT NOTE **
@@ -234,11 +218,9 @@ async function codeAssitant({ query, filePath, client }) {
       1. Always use only tailwind css components, do not use any other css frameworks.
       2. Make sure the component colors are consistent with the design.
         `,
-      tools: [codeWriterTool],
-      tool_choice: { type: "tool", name: "code_writer_tool" },
-      messages: [
-        { role: "user", content: [{ type: "text", text: updatedQuery }] },
-      ],
+      tools: [codeWriterTool, placeholderImageTool],
+      tool_choice: { type: "any" },
+      messages: [{ role: "user", content: [{ type: "text", text: query }] }],
     });
     const resp = msg.content.find((content) => content.type === "tool_use");
 

@@ -15,12 +15,11 @@ async function performSearch(query, options = {}) {
     imageQuery = "",
   } = options;
 
-  // Tavily API has a max query length of 400 characters
-  // Error: "Query is too long. Max query length is 400 characters."
-
   // Use imageQuery as the main query if the primary query is empty
   const effectiveQuery = query || imageQuery;
 
+  // Tavily API has a max query length of 400 characters
+  // Error: "Query is too long. Max query length is 400 characters."
   // Truncate the query to 400 characters
   const truncatedQuery = effectiveQuery.slice(0, 400);
 
@@ -46,6 +45,7 @@ async function performSearch(query, options = {}) {
         ...requestData,
         query: truncatedImageQuery,
         include_images: true,
+        include_image_descriptions: true,
         include_answer: false,
         max_results: 5,
       };
@@ -70,35 +70,6 @@ async function performSearch(query, options = {}) {
   }
 }
 
-async function imageSearch(query) {
-  const options = {
-    method: "GET",
-    headers: {
-      "x-freepik-api-key": process.env.FREEPIK_API_KEY,
-    },
-  };
-  try {
-    const response = await axios.get(
-      `https://api.freepik.com/v1/resources?query=${encodeURIComponent(
-        query
-      )}&limit=5`,
-      options
-    );
-    console.log("Image search response:", response.data);
-
-    const formattedResponse = response.data.data.map((item) => ({
-      title: item.title,
-      imageUrl: item.image.source.url,
-    }));
-
-    return formattedResponse;
-  } catch (error) {
-    console.error("Error performing image search:", error);
-    return [];
-  }
-}
-
 module.exports = {
   performSearch,
-  imageSearch,
 };
