@@ -19,9 +19,12 @@ async function handleCTOToolUse({
     const searchResults = await searchService.performSearch(searchQuery);
 
     // Extract images from search results and remove trailing slashes
-    const images = (searchResults.images || []).map((url) =>
-      url.replace(/\/$/, "")
-    );
+    const images = (searchResults.images || [])
+      .filter((image) => image && image.url && typeof image.url === "string")
+      .map((image) => ({
+        url: image.url.replace(/\/$/, ""),
+        description: image.description || "No description available",
+      }));
 
     let messageContent = [
       {
@@ -32,10 +35,10 @@ async function handleCTOToolUse({
 
     if (images.length > 0) {
       // Add images to the message content
-      for (const imageUrl of images) {
+      for (const image of images) {
         try {
           // Fetch the image
-          const response = await axios.get(imageUrl, {
+          const response = await axios.get(image.url, {
             responseType: "arraybuffer",
           });
 
@@ -61,11 +64,11 @@ async function handleCTOToolUse({
             });
           } else {
             console.error(
-              `Unsupported media type ${contentType} for image ${imageUrl}`
+              `Unsupported media type ${contentType} for image ${image.url}`
             );
           }
         } catch (error) {
-          console.error(`Error processing image ${imageUrl}:`, error);
+          console.error(`Error processing image ${image.url}:`, error);
         }
       }
     }

@@ -1,16 +1,16 @@
-const {
-  codeWriterTool,
-
-  placeholderImageTool,
-} = require("../config/tools");
+const { codeWriterTool, placeholderImageTool } = require("../config/tools");
 const { saveFile } = require("./fileService");
 const { saveFileToS3 } = require("../services/s3Service");
+const { handleCodeToolUse } = require("../controllers/codeToolController");
 require("dotenv").config();
 
 async function codeAssitant({ query, filePath, client }) {
   try {
-    const msg = await client.sendMessage({
-      system: `
+    let messages = [{ role: "user", content: query }];
+
+    while (true) {
+      const msg = await client.sendMessage({
+        system: `
       Write code as per the guidelines provided, use web-components architecture with the provided guidelines. Never use react, vue, alpine or any other frontend library. Follow the guildines provided by the CTO.
 
       ** design guideline **
@@ -23,6 +23,26 @@ async function codeAssitant({ query, filePath, client }) {
       6. Since desing is always subjective, the final decision to make the perfect output is your call.
       You can make changes to the design as per the requirements, but the final output should be the best possible output.
       ** End of design guideline **
+
+      ** VERY IMPORTANT NOTE **
+      When choosing images for components:
+      1. Use the placeholder_image_tool to find suitable, high-quality images for ALL image requirements throughout the website. This includes, but is not limited to:
+         - Hero section images
+         - Blog post thumbnails or featured images
+         - Product images
+         - Team member photos
+         - Background images for any section
+         - Icons or small illustrative images
+         - Gallery images
+         - Testimonial profile pictures
+      2. Always use the placeholder_image_tool before writing any HTML that includes an image. Do not use placeholder URLs or leave src attributes empty.
+      3. When using the placeholder_image_tool, be specific about the image requirements (e.g., "professional headshot for CEO testimonial" or "minimalist icon for feature card").
+      4. If no suitable image is found, suggest using a colored placeholder or icon instead, but still use the placeholder_image_tool to attempt to find an appropriate image first.
+      5. Always provide descriptive alt text for accessibility.
+      6. Use your judgment to determine where images are necessary and where they might distract from the content, but always use the placeholder_image_tool when an image is needed.
+
+      Remember, every image on the website should be sourced using the placeholder_image_tool. This ensures consistency and quality across all visual elements.
+      ** END OF VERY IMPORTANT NOTE **
 
       ** Important Notes! **
 
@@ -50,7 +70,7 @@ async function codeAssitant({ query, filePath, client }) {
       3- How to use fonts and images 
           Use google fonts.
         When creating components that require images:
-          a. Consider using the placeholderImageTool to find suitable images for each section.
+          a. Consider using the placeholder_image_tool to find suitable images for each section.
           b. Pay special attention to key sections where high-quality images can significantly enhance the user experience:
             - Hero section: Aim for a high-quality, eye-catching image that represents the main offering.
             - Feature cards: Consider using relevant images for each feature to make them visually appealing and informative.
@@ -58,7 +78,6 @@ async function codeAssitant({ query, filePath, client }) {
             - Facilities/Equipment: If relevant, showcase images of facilities, equipment, or areas.
           c. For cards and grid layouts, strive for consistency in image size and aspect ratio to maintain a polished look.
           d. When using images in the hero section or as full-width backgrounds, prioritize high-resolution images that are optimized for web performance.
-          e. If specific images are not readily available, you can use the placeholderImageTool to find relevant stock photos or create colored placeholders that match the website's color scheme.
           f. Remember to add appropriate alt text to all images for accessibility.
           g. Use your judgment to determine when and where images are necessary, always keeping in mind the overall design and performance of the website.
 
@@ -218,40 +237,50 @@ async function codeAssitant({ query, filePath, client }) {
       1. Always use only tailwind css components, do not use any other css frameworks.
       2. Make sure the component colors are consistent with the design.
         `,
-      tools: [codeWriterTool, placeholderImageTool],
-      tool_choice: { type: "any" },
-      messages: [{ role: "user", content: [{ type: "text", text: query }] }],
-    });
-    const resp = msg.content.find((content) => content.type === "tool_use");
+        tools: [codeWriterTool, placeholderImageTool],
+        tool_choice: { type: "any" },
+        messages,
+      });
+      if (msg.stop_reason !== "tool_use") {
+        throw new Error("No code generated after tool use");
+      }
 
-    const { code, description } = resp.input;
+      const tool = msg.content.find((content) => content.type === "tool_use");
+      if (!tool) {
+        throw new Error("No tool use found in response");
+      }
 
-    // Check if code is not a string, convert it to a string
-    const codeString = typeof code === "string" ? code : JSON.stringify(code);
+      messages.push({
+        role: msg.role,
+        content: msg.content,
+      });
 
-    const uploadToS3 = process.env.UPLOAD_TO_S3 === "true";
-
-    if (uploadToS3) {
-      // Save to S3 if UPLOAD_TO_S3 is true
-      await saveFileToS3(filePath, codeString);
-      console.log(`Code successfully written to S3: ${filePath}`);
-    } else {
-      // Save locally if UPLOAD_TO_S3 is false
-      await saveFile(filePath, codeString);
-      console.log(`Code successfully written to local file: ${filePath}`);
+      if (tool.name === "code_writer_tool") {
+        const { code, description } = tool.input;
+        await saveCode(filePath, code);
+        return {
+          description,
+          status: `Code written successfully to ${filePath}`,
+        };
+      } else {
+        const toolResult = await handleCodeToolUse({ tool, client });
+        messages.push({ role: "user", content: toolResult });
+      }
     }
-
-    return {
-      description,
-      status: `Code written successfully to ${
-        uploadToS3 ? "S3" : "local file"
-      }: ${filePath}. You can now proceed to the next file`,
-    };
   } catch (error) {
-    console.error("Error in aiAssistance:", error);
-    console.error("Error details:", error.message);
-    console.error("Stack trace:", error.stack);
+    console.error("Error in codeAssitant:", error);
     throw error;
+  }
+}
+
+async function saveCode(filePath, code) {
+  const uploadToS3 = process.env.UPLOAD_TO_S3 === "true";
+  if (uploadToS3) {
+    await saveFileToS3(filePath, code);
+    console.log(`Code successfully written to S3: ${filePath}`);
+  } else {
+    await saveFile(filePath, code);
+    console.log(`Code successfully written to local file: ${filePath}`);
   }
 }
 
