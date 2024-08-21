@@ -10,8 +10,6 @@ async function handleCodeToolUse({ tool, client }) {
       (imageQuery = searchQuery)
     );
 
-    console.log(imageResults);
-
     return [
       {
         type: "tool_result",
@@ -20,7 +18,7 @@ async function handleCodeToolUse({ tool, client }) {
           {
             type: "text",
             text:
-            imageResults.length === 0
+              imageResults.length === 0
                 ? "No relevant placeholder images found"
                 : JSON.stringify(imageResults, null, 2),
           },
