@@ -89,34 +89,13 @@ async function handleOnboardingToolUse({
     //   },
     // ];
   } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
-    console.log("inside product manager tool", tool.input);
     const {
       project_name,
       project_description,
       project_goal,
       project_branding_style,
-      image_description,
     } = tool.input;
     const generatedFolderName = generateProjectFolderName(project_name);
-
-    // Perform search using Tavily with image description as both query and imageQuery
-    const searchResults = await searchService.performSearch(image_description, {
-      imageQuery: image_description,
-    });
-
-    // Extract and format image results
-    const formattedImageResults = searchResults.image_results
-      ? searchResults.image_results.map((url, index) => ({
-          title: `Image ${index + 1}`,
-          url: url.replace(/\/$/, ""),
-        }))
-      : [];
-
-    // Save placeholder images to a separate JSON file
-    await fileService.saveFile(
-      `${generatedFolderName}/placeholder_images.json`,
-      JSON.stringify(formattedImageResults, null, 2)
-    );
 
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
@@ -124,7 +103,6 @@ async function handleOnboardingToolUse({
       Project description : ${project_description}
       Project goal : ${project_goal}
       Project branding style : ${project_branding_style}
-      Image description : ${image_description}
       `
     );
     sendEvent("project_started", {
@@ -137,7 +115,7 @@ async function handleOnboardingToolUse({
         content: [
           {
             type: "text",
-            text: `PRD file and placeholder images JSON created successfully in ${generatedFolderName}/`,
+            text: `PRD file (readme.md) created successfully in ${generatedFolderName}/`,
           },
         ],
       },
