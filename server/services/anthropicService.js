@@ -60,11 +60,10 @@ class AnthropicService {
     if (system) {
       clientParams.system = system;
     }
-    console.log("Calling anthropic with payload:");
     try {
       const response = await this.client.messages.create(clientParams, {
         headers: {
-          "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
+          // "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
           "anthropic-beta": "prompt-caching-2024-07-31",
         },
       });
