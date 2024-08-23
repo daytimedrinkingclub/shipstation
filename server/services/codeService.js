@@ -60,6 +60,12 @@ async function codeAssitant({ query, filePath, client }) {
 
           7. Use your judgment to determine where images are necessary and where they might distract from the content, but always use the placeholder_image_tool when an image is needed.
 
+          8. When the placeholder_image_tool returns an array of image URLs:
+            - Use different images from the array for each instance where an image is needed.
+            - Do not always use the first image in the array.
+            - Distribute the usage of images across the array to ensure variety.
+            - If multiple images are needed in a single component, use different indices from the array for each image.
+
           Remember, every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements.
           ** END OF VERY IMPORTANT NOTE FOR ALL IMAGES **
 
@@ -257,6 +263,7 @@ async function codeAssitant({ query, filePath, client }) {
         tools: [codeWriterTool, placeholderImageTool],
         tool_choice: { type: "any" },
       });
+
       if (msg.stop_reason !== "tool_use") {
         throw new Error("No code generated after tool use: ", msg.stop_reason);
       }

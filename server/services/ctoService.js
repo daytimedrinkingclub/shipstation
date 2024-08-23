@@ -6,12 +6,11 @@ const {
   placeholderImageTool,
 } = require("../config/tools");
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
+const { TOOLS } = require("../config/tools");
 
 require("dotenv").config();
 
-
 async function ctoService({ query, projectFolderName, sendEvent, client }) {
-
   const systemPrompt = [
     {
       type: "text",
@@ -101,6 +100,15 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           client,
         });
         messages.push({ role: "user", content: toolResult });
+
+        // Check if the deploy project tool was used, indicating website completion
+        if (tool.name === TOOLS.DEPLOY_PROJECT) {
+          console.log(
+            "Website deployment tool used. Completing website creation."
+          );
+          break;
+        }
+
         console.log("Sending request to Anthropic API with updated messages");
 
         msg = await client.sendMessage({
@@ -126,7 +134,6 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
       slug,
     });
 
-    client.abortRequest();
     return {
       message: `Website successfully built, deployed, slug: ${slug}`,
       slug,
