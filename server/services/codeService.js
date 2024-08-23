@@ -66,6 +66,11 @@ async function codeAssitant({ query, filePath, client }) {
             - Distribute the usage of images across the array to ensure variety.
             - If multiple images are needed in a single component, use different indices from the array for each image.
 
+          9. For logo images:
+            - Use placeholder_image_tool with "logo" in the description when a logo is required.
+            - Set appropriate height and width based on the logo's intended size and placement.
+            - Use classes like 'object-contain' to preserve aspect ratio.
+
           Remember, every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements.
           ** END OF VERY IMPORTANT NOTE FOR ALL IMAGES **
 
@@ -263,10 +268,6 @@ async function codeAssitant({ query, filePath, client }) {
         tools: [codeWriterTool, placeholderImageTool],
         tool_choice: { type: "any" },
       });
-
-      if (msg.stop_reason !== "tool_use") {
-        throw new Error("No code generated after tool use: ", msg.stop_reason);
-      }
 
       const tool = msg.content.find((content) => content.type === "tool_use");
       if (!tool) {
