@@ -1,4 +1,8 @@
 # .husky/pre-commit
+
+# lint staged for eslint and prettier
 npx lint-staged
+
+# prettier config as last step
 prettier $(git diff --cached --name-only --diff-filter=ACMR | sed 's| |\\ |g') --write --ignore-unknown
 git update-index --again
