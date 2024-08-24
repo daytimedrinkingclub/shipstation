@@ -1,5 +1,9 @@
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const axios = require("axios");
+
+const paypalClientId = process.env.PAYPAL_CLIENT_ID;
+const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET;
 
 class PaymentService {
   constructor() {
@@ -40,7 +44,7 @@ class PaymentService {
       throw error;
     }
   }
-
+ 
   static validateWebhook(body, signature, secret) {
     const shasum = crypto.createHmac("sha256", secret);
     shasum.update(JSON.stringify(body));
@@ -48,9 +52,62 @@ class PaymentService {
 
     return digest === signature;
   }
+
+  static async getAccessToken() {
+    const auth = Buffer.from(`${paypalClientId}:${paypalClientSecret}`).toString("base64");
+    try {
+      const response = await axios.post(
+        "https://api-m.paypal.com/v1/oauth2/token",
+        "grant_type=client_credentials",
+        {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: `Basic ${auth}`,
+          },
+        }
+      );
+        
+      return response.data.access_token;
+    } catch (error) {
+      console.error("Error getting access token:", error);
+      throw error;
+    }
+  }
+  
+  static async validatePaypalWebhook(headers, webhookEvent) {
+    const verifyWebhookSignature = {
+      transmission_id: headers["paypal-transmission-id"],
+      transmission_time: headers["paypal-transmission-time"],
+      cert_url: headers["paypal-cert-url"],
+      auth_algo: headers["paypal-auth-algo"],
+      transmission_sig: headers["paypal-transmission-sig"],
+      webhook_id: process.env.PAYPAL_WEBHOOK_ID,
+      webhook_event: webhookEvent,
+    };
+  
+    try {
+      const accessToken = await PaymentService.getAccessToken();
+      const response = await axios.post(
+        "https://api-m.paypal.com/v1/notifications/verify-webhook-signature",
+        verifyWebhookSignature,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+  
+      return response.data.verification_status === "SUCCESS";
+    } catch (error) {
+      console.error("Error verifying PayPal webhook:", error);
+      return false;
+    }
+  }
 }
 
 module.exports = {
   PaymentService,
   validateRazorpayWebhook: PaymentService.validateWebhook,
+  validatePaypalWebhook: PaymentService.validatePaypalWebhook,
 };

@@ -14,10 +14,10 @@ const {
 } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
 
-const { validateRazorpayWebhook } = require("./server/services/paymentService");
+const { validateRazorpayWebhook, validatePaypalWebhook } = require("./server/services/paymentService");
+const { PRODUCT_TYPES } = require('./server/config/paymentconfig');
 
-const paypal = require("@paypal/checkout-server-sdk");
-const axios = require("axios");
+
 
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
@@ -119,62 +119,6 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
   }
 });
 
-const clientId = process.env.PAYPAL_CLIENT_ID;
-const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
-
-async function getAccessToken() {
-  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-  try {
-    const response = await axios.post(
-      "https://api-m.paypal.com/v1/oauth2/token",
-      "grant_type=client_credentials",
-      {
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${auth}`,
-        },
-      }
-    );
-      
-    console.log("accessToken :", response.data.access_token);
-    return response.data.access_token;
-  } catch (error) {
-    console.error("Error getting access token:", error);
-    throw error;
-  }
-}
-
-async function validatePaypalWebhook(headers, webhookEvent) {
-  const verifyWebhookSignature = {
-    transmission_id: headers["paypal-transmission-id"],
-    transmission_time: headers["paypal-transmission-time"],
-    cert_url: headers["paypal-cert-url"],
-    auth_algo: headers["paypal-auth-algo"],
-    transmission_sig: headers["paypal-transmission-sig"],
-    webhook_id: process.env.PAYPAL_WEBHOOK_ID,
-    webhook_event: webhookEvent,
-  };
-
-  try {
-    const accessToken = await getAccessToken();
-    const response = await axios.post(
-      "https://api-m.paypal.com/v1/notifications/verify-webhook-signature",
-      verifyWebhookSignature,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
-    );
-
-    return response.data.verification_status === "SUCCESS";
-  } catch (error) {
-    console.error("Error verifying PayPal webhook:", error);
-    return false;
-  }
-}
-
 app.post("/paypal-webhook", async (req, res) => {
   try {
     const webhookEvent = req.body;
@@ -196,7 +140,7 @@ app.post("/paypal-webhook", async (req, res) => {
 
         // Determine which product the payment is for based on the webhookEvent.resource.purchase_units
         const productId = webhookEvent.resource.purchase_units[0]?.reference_id;
-        const productType = productId === "3ZRLN4LJVSRVY" ? "Landing Page" : "Portfolio Page" 
+        const productType = PRODUCT_TYPES[productId] || "unknown product"
                             
         // Define the payment payload, ensuring ships_count is set
         const paymentPayload = {

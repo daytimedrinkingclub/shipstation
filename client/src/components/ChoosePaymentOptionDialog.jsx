@@ -113,7 +113,7 @@ const ChoosePaymentOptionDialog = ({
                   Coming Soon
                 </Button>
                 {/* <RazorpayButton productId={productId} /> */}
-                <PaypalButton productId={paypalProductId} />
+                {/* <PaypalButton productId={paypalProductId} /> */}
               </div>
             </motion.div>
           ) : (
