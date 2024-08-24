@@ -2,17 +2,9 @@ const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
-const fs = require("fs").promises;
 const path = require("path");
 const { JSDOM } = require("jsdom");
-const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const {
-  listFoldersInS3,
-  createZipFromS3Directory,
-  getProjectDirectoryStructure,
-  saveFileToS3,
-} = require("./server/services/s3Service");
-const { s3Handler } = require("./server/config/awsConfig");
+
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
@@ -25,6 +17,9 @@ const {
 } = require("./server/services/onboadingService");
 const { postToDiscordWebhook } = require("./server/services/webhookService");
 
+const FileService = require("./server/services/fileService");
+const fileService = new FileService();
+
 require("dotenv").config();
 
 const app = express();
@@ -35,6 +30,8 @@ const io = socketIo(server, {
     methods: ["GET", "POST"],
   },
 });
+
+const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
 app.use(express.static("websites"));
@@ -115,28 +112,22 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
 });
 
 app.get("/all-websites", async (req, res) => {
-  const s3Websites = await listFoldersInS3("websites/");
-  let localWebsites = [];
   try {
-    localWebsites = await fs.readdir("websites");
+    const websites = await fileService.listFolders("");
+    res.json({
+      websites: websites.filter((website) => !website.startsWith(".")),
+    });
   } catch (err) {
-    if (err.code === "ENOENT") {
-      localWebsites = [];
-    } else {
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
+    console.error("Error listing websites:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
-  res.json({
-    s3: JSON.parse(s3Websites).filter((website) => !website.startsWith(".")),
-    local: localWebsites,
-  });
 });
 
 app.get("/project-structure/:slug", async (req, res) => {
   const slug = req.params.slug;
   console.log(slug);
   try {
-    const structure = await getProjectDirectoryStructure(slug);
+    const structure = await fileService.getProjectDirectoryStructure(slug);
     res.json(structure);
   } catch (error) {
     console.error(`Error fetching project structure for ${slug}:`, error);
@@ -147,7 +138,7 @@ app.get("/project-structure/:slug", async (req, res) => {
 app.post("/update-file", async (req, res) => {
   const { filePath, content } = req.body;
   try {
-    await saveFileToS3(filePath, content);
+    await fileService.saveFile(filePath, content);
     res.status(200).json({ message: "File updated successfully" });
   } catch (error) {
     console.error(`Error updating file ${filePath}:`, error);
@@ -155,9 +146,8 @@ app.post("/update-file", async (req, res) => {
   }
 });
 
-async function serializeDom(filePath, baseUrl) {
-  const indexHtml = await fs.readFile(filePath, "utf-8");
-  const dom = new JSDOM(indexHtml, {
+async function serializeDom(htmlContent, baseUrl) {
+  const dom = new JSDOM(htmlContent, {
     url: baseUrl,
     runScripts: "dangerously",
     resources: "usable",
@@ -169,11 +159,19 @@ async function serializeDom(filePath, baseUrl) {
   const scripts = document.getElementsByTagName("script");
   for (let script of scripts) {
     if (script.src) {
-      const scriptContent = await fs.readFile(
-        path.join(path.dirname(filePath), new URL(script.src).pathname),
-        "utf-8"
-      );
-      dom.window.eval(scriptContent);
+      const scriptUrl = new URL(script.src, baseUrl);
+      if (scriptUrl.origin === baseUrl) {
+        const scriptPath = scriptUrl.pathname;
+        try {
+          const scriptContent = await fileService.getFile(scriptPath);
+          dom.window.eval(scriptContent);
+        } catch (error) {
+          console.error(`Error loading script ${scriptPath}:`, error);
+        }
+      } else {
+        // This is an external script, we can't load it directly
+        console.log(`Skipping external script: ${script.src}`);
+      }
     } else {
       dom.window.eval(script.textContent);
     }
@@ -198,21 +196,17 @@ async function serializeDom(filePath, baseUrl) {
 
 app.get("/:websiteId", async (req, res) => {
   const websiteId = req.params.websiteId;
-  const websitePath = path.join(__dirname, "websites", websiteId);
 
   try {
-    // Check if the directory exists
-    const websiteExists = await fs
-      .access(websitePath, fs.constants.F_OK)
-      .then(() => true)
-      .catch(() => false);
-
-    if (!websiteExists) {
+    const indexHtmlContent = await fileService.getFile(
+      `${websiteId}/index.html`
+    );
+    if (!indexHtmlContent) {
       return res.status(404).send("Website not found");
     }
 
     const serializedHtml = await serializeDom(
-      path.join(websitePath, "index.html"),
+      indexHtmlContent,
       `http://localhost:${PORT}/${websiteId}`
     );
 
@@ -225,10 +219,9 @@ app.get("/:websiteId", async (req, res) => {
 
 app.get("/download/:slug", async (req, res) => {
   const slug = req.params.slug;
-  const folderPath = `websites/${slug}`;
 
   try {
-    const zipStream = await createZipFromS3Directory(slug);
+    const zipStream = await fileService.createZipFromDirectory(slug);
 
     if (!zipStream) {
       return res.status(404).send("Folder not found");
@@ -239,7 +232,7 @@ app.get("/download/:slug", async (req, res) => {
 
     zipStream.pipe(res);
   } catch (error) {
-    console.error(`Error downloading folder ${folderPath}:`, error);
+    console.error(`Error downloading folder ${slug}:`, error);
     res.status(500).send("An error occurred");
   }
 });
@@ -256,42 +249,27 @@ app.use("/site/:siteId", async (req, res, next) => {
     filePath += "index.html";
   }
 
-  const key = `websites/${siteName}/${filePath}`;
+  const key = `${siteName}/${filePath}`;
 
   try {
-    const params = {
-      Bucket: process.env.BUCKETEER_BUCKET_NAME,
-      Key: key,
-    };
-
-    const headCommand = new HeadObjectCommand(params);
-    const headObjectResponse = await s3Handler.send(headCommand);
+    const { stream, contentType } = await fileService.getFileStream(key);
 
     // Set the Content-Type based on the file extension
-    const fileExtension = path.extname(filePath).toLowerCase();
-    if (fileExtension === ".html") {
-      res.set("Content-Type", "text/html");
-    } else {
-      res.set("Content-Type", headObjectResponse.ContentType);
-    }
+    res.set("Content-Type", contentType);
 
-    const getCommand = new GetObjectCommand(params);
-    const { Body } = await s3Handler.send(getCommand);
-    Body.pipe(res);
+    // Pipe the file stream to the response
+    stream.pipe(res);
   } catch (error) {
-    console.error(`Error fetching ${key}: ${error}`);
-    if (error.name === "NoSuchKey") {
+    if (error.name === "NoSuchKey" || error.code === "ENOENT") {
       console.log(`File not found: ${key}`);
       return next();
     }
+    console.error(`Error fetching ${key}: ${error}`);
     res.status(500).send("An error occurred");
   }
 });
 
-
 handleOnboardingSocketEvents(io);
-
-const PORT = process.env.PORT || 5001;
 
 server.listen(PORT, () => {
   console.log(`Server running at ${PORT}`);

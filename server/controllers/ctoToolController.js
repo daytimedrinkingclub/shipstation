@@ -1,11 +1,13 @@
 const axios = require("axios");
 
-const fileService = require("../services/fileService");
 const { codeAssitant } = require("../services/codeService");
 
 const searchService = require("../services/searchService");
 const { analyzeImages } = require("../services/analyzeImageService");
 const { TOOLS } = require("../config/tools");
+
+const FileService = require("../services/fileService");
+const fileService = new FileService();
 
 async function handleCTOToolUse({
   tool,
@@ -172,7 +174,7 @@ async function handleCTOToolUse({
   } else if (tool.name === TOOLS.TASK_ASSIGNER) {
     const { file_name, task_guidelines } = tool.input;
 
-    const fileContent = await fileService.readFile(
+    const fileContent = await fileService.getFile(
       `${projectFolderName}/${file_name}`
     );
     console.log("reading file: ", `${projectFolderName}/${file_name}`);
