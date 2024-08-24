@@ -255,7 +255,7 @@ async function codeAssitant({ query, filePath, client }) {
           1. Always use only tailwind css components, do not use any other css frameworks.
           2. Make sure the component colors are consistent with the design.
             `,
-        cache_control: { type: "ephemeral" },
+        // cache_control: { type: "ephemeral" },
       },
     ];
 

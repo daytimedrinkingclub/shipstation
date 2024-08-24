@@ -62,10 +62,10 @@ class AnthropicService {
     }
     try {
       const response = await this.client.messages.create(clientParams, {
-        headers: {
-          "anthropic-beta":
-            "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
-        },
+        // headers: {
+        //   "anthropic-beta":
+        //     "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
+        // },
       });
       this.tokensUsed += response.usage.output_tokens;
 

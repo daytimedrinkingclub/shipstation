@@ -67,7 +67,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
         4. Never deviate from the format, rest judgements depend on you as the CTO.
         < End of limitations >
         `,
-      cache_control: { type: "ephemeral" },
+      // cache_control: { type: "ephemeral" },
     },
   ];
 
