@@ -1,12 +1,12 @@
 {
   "name": "deploy_project_tool",
-  "description": "This tool can be used only when all the reqiured files have been written.",
+  "description": "This tool deploys the generated website files to a specified directory. It should be called automatically when all required files have been generated.",
   "input_schema": {
     "type": "object",
     "properties": {
       "directory": {
         "type": "string",
-        "description": "The name of the directory can be passed"
+        "description": "The name of the directory where the generated files will be deployed"
       }
     },
     "required": ["directory"]
