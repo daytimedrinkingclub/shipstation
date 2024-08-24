@@ -154,7 +154,7 @@ async function getProjectDirectoryStructure(s3Path) {
   const params = {
     Bucket: bucketName,
     Prefix: `websites/${s3Path}`,
-    Delimiter: '/'
+    Delimiter: "/",
   };
 
   try {
@@ -163,32 +163,36 @@ async function getProjectDirectoryStructure(s3Path) {
 
     // Process directories
     for (const prefix of data.CommonPrefixes || []) {
-      const dirName = prefix.Prefix.split('/').slice(-2)[0];
-      const dirPath = prefix.Prefix.replace('websites/', '');
+      const dirName = prefix.Prefix.split("/").slice(-2)[0];
+      const dirPath = prefix.Prefix.replace("websites/", "");
       structure.push({
         name: dirName,
-        type: 'directory',
+        type: "directory",
         path: dirPath,
-        children: await getProjectDirectoryStructure(dirPath)
+        children: await getProjectDirectoryStructure(dirPath),
       });
     }
 
     // Process files
     for (const content of data.Contents || []) {
-      const fileName = content.Key.split('/').pop();
+      const fileName = content.Key.split("/").pop();
       if (fileName && content.Key !== `websites/${s3Path}`) {
-        const filePath = content.Key.replace('websites/', '');
+        const filePath = content.Key.replace("websites/", "");
         structure.push({
           name: fileName,
-          type: 'file',
+          type: "file",
           path: filePath,
-          lastModified: content.LastModified
+          lastModified: content.LastModified,
         });
       }
     }
 
     // If this is the top-level call, return the children of the first directory
-    if (s3Path.split('/').length === 1 && structure.length === 1 && structure[0].type === 'directory') {
+    if (
+      s3Path.split("/").length === 1 &&
+      structure.length === 1 &&
+      structure[0].type === "directory"
+    ) {
       return structure[0].children;
     }
 

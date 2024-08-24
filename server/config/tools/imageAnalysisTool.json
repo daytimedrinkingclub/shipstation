@@ -1,0 +1,21 @@
+{
+  "name": "image_analysis_tool",
+  "description": "This tool analyzes images based on the specified analysis prompt and provides detailed descriptions.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "image_urls": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "An array of URLs or local paths of the images to be analyzed"
+      },
+      "analysis_prompt": {
+        "type": "string",
+        "description": "The specific analysis instructions or questions about the images"
+      }
+    },
+    "required": ["image_urls", "analysis_prompt"]
+  }
+}

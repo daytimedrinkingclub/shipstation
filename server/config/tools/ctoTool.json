@@ -1,6 +1,6 @@
 {
   "name": "cto_tool",
-  "description": "This tool will take in the PRD file, and get the project developed and share the deployed project url for preview",
+  "description": "This tool will take in the readme.md file, and get the project developed and share the deployed project url for preview",
   "input_schema": {
     "type": "object",
     "properties": {

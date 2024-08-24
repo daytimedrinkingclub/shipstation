@@ -1,0 +1,14 @@
+{
+  "name": "analyze_and_repair_tool",
+  "description": "This tool analyzes the generated website, detects issues, and repairs broken components.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "project_folder": {
+        "type": "string",
+        "description": "The folder name of the generated website project"
+      }
+    },
+    "required": ["project_folder"]
+  }
+}
