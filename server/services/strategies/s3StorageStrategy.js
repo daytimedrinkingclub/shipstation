@@ -114,23 +114,6 @@ class S3StorageStrategy {
     }
   }
 
-  async getFileStream(filePath) {
-    const params = {
-      Bucket: bucketName,
-      Key: `${WEBSITES_PATH}/${filePath}`,
-    };
-
-    try {
-      const { Body, ContentType } = await s3Handler.send(
-        new GetObjectCommand(params)
-      );
-      return { stream: Body, contentType: ContentType };
-    } catch (error) {
-      console.error(`Error fetching ${filePath}: ${error}`);
-      throw error;
-    }
-  }
-
   async createZipFromDirectory(directoryPath) {
     const params = {
       Bucket: bucketName,

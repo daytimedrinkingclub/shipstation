@@ -252,19 +252,20 @@ app.use("/site/:siteId", async (req, res, next) => {
   const key = `${siteName}/${filePath}`;
 
   try {
-    const { stream, contentType } = await fileService.getFileStream(key);
+    const fileInfo = await fileService.getFileStream(key);
 
-    // Set the Content-Type based on the file extension
-    res.set("Content-Type", contentType);
+    if (fileInfo.exists) {
+      // Set the Content-Type based on the file extension
+      res.set("Content-Type", fileInfo.contentType);
 
-    // Pipe the file stream to the response
-    stream.pipe(res);
-  } catch (error) {
-    if (error.name === "NoSuchKey" || error.code === "ENOENT") {
-      console.log(`File not found: ${key}`);
-      return next();
+      // Pipe the file stream to the response
+      fileInfo.stream.pipe(res);
+    } else {
+      // File doesn't exist yet, send a 404 response
+      res.status(404).send("File not found");
     }
-    console.error(`Error fetching ${key}: ${error}`);
+  } catch (error) {
+    console.error(`Error fetching ${key}:`, error);
     res.status(500).send("An error occurred");
   }
 });

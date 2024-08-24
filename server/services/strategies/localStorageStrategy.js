@@ -1,8 +1,9 @@
 const fs = require("fs").promises;
+const fsSync = require("fs");
 const path = require("path");
 const archiver = require("archiver");
 const { Readable } = require("stream");
-
+const mime = require("mime-types");
 require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
@@ -17,18 +18,6 @@ class LocalStorageStrategy {
     } catch (err) {
       console.error(`Error writing file ${filePath}:`, err);
       throw err;
-    }
-  }
-
-  async getFileStream(filePath) {
-    const fullPath = path.join(WEBSITES_PATH, filePath);
-    try {
-      const stream = fs.createReadStream(fullPath);
-      const contentType = mime.lookup(fullPath) || "application/octet-stream";
-      return { stream, contentType };
-    } catch (error) {
-      console.error(`Error fetching ${filePath}: ${error}`);
-      throw error;
     }
   }
 
@@ -157,12 +146,21 @@ class LocalStorageStrategy {
   async getFileStream(filePath) {
     const fullPath = path.join(WEBSITES_PATH, filePath);
     try {
-      const stream = fs.createReadStream(fullPath);
+      await fs.access(fullPath, fs.constants.F_OK);
+      const stream = fsSync.createReadStream(fullPath);
       const contentType = mime.lookup(fullPath) || "application/octet-stream";
-      return { stream, contentType };
+      return { stream, contentType, exists: true };
     } catch (error) {
-      console.error(`Error fetching ${filePath}: ${error}`);
-      throw error;
+      if (error.code === "ENOENT") {
+        return { exists: false, message: `File not created yet: ${filePath}` };
+      } else {
+        console.error(`Error accessing ${filePath}:`, error);
+        return {
+          exists: false,
+          message: `Error accessing file: ${filePath}`,
+          error,
+        };
+      }
     }
   }
 }
