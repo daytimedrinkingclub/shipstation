@@ -4,7 +4,6 @@ require("dotenv").config();
 
 async function validateKey(key) {
   const testClient = new Anthropic({ apiKey: key });
-  console.log("testing key", key);
   try {
     await testClient.messages.create({
       model: process.env.DEFAULT_MODEL,
@@ -61,12 +60,13 @@ class AnthropicService {
     if (system) {
       clientParams.system = system;
     }
-    console.log("Calling anthropic with payload:", clientParams);
     try {
       const response = await this.client.messages.create(clientParams, {
-        headers: { 'anthropic-beta': 'max-tokens-3-5-sonnet-2024-07-15' }
+        // headers: {
+        //   "anthropic-beta":
+        //     "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
+        // },
       });
-      console.log("Anthropic response:", response);
       this.tokensUsed += response.usage.output_tokens;
 
       if (!this.conversationId) {
@@ -75,11 +75,11 @@ class AnthropicService {
           tokens_used: this.tokensUsed,
         });
         this.conversationId = conversation.id;
-        console.log("inserted conversation: ", this.conversationId);
       }
 
       return response;
     } catch (error) {
+      console.log("Error in anthropicService.sendMessage", error);
       if (error.name === "AbortError") {
         console.log("Request aborted");
         throw new DOMException("Aborted", "AbortError");

@@ -1,6 +1,6 @@
 {
   "name": "code_writer_tool",
-  "description": "This tool generates for the file as per the provided description and context.",
+  "description": "This tool generates the file as per the provided description and context.",
   "input_schema": {
     "type": "object",
     "properties": {

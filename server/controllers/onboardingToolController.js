@@ -2,7 +2,12 @@ const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const searchService = require("../services/searchService");
 const { toKebabCase } = require("../utils/file");
-const { insertShip, updateConversation } = require("../services/dbService");
+const {
+  insertShip,
+  updateConversation,
+  getUserProfile,
+  updateUserProfile,
+} = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
 const { nanoid } = require("nanoid");
@@ -84,7 +89,6 @@ async function handleOnboardingToolUse({
     //   },
     // ];
   } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
-    console.log("inside product manager tool", tool.input);
     const {
       project_name,
       project_description,
@@ -92,12 +96,14 @@ async function handleOnboardingToolUse({
       project_branding_style,
     } = tool.input;
     const generatedFolderName = generateProjectFolderName(project_name);
+
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
       `Project name : ${project_name}
       Project description : ${project_description}
       Project goal : ${project_goal}
-      Project branding style : ${project_branding_style}`
+      Project branding style : ${project_branding_style}
+      `
     );
     sendEvent("project_started", {
       slug: generatedFolderName,
@@ -109,7 +115,7 @@ async function handleOnboardingToolUse({
         content: [
           {
             type: "text",
-            text: `PRD file created successfully at ${generatedFolderName}/readme.md`,
+            text: `PRD file (readme.md) created successfully in ${generatedFolderName}/`,
           },
         ],
       },
@@ -117,7 +123,9 @@ async function handleOnboardingToolUse({
   } else if (tool.name === TOOLS.CTO) {
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
-    const fileContent = await fileService.readFile(prd_file_path);
+    const fileContent = await fileService.readFile(
+      `${generatedFolderName}/readme.md`
+    );
     const { message, slug } = await ctoService.ctoService({
       query: fileContent,
       projectFolderName: generatedFolderName,
@@ -141,11 +149,17 @@ async function handleOnboardingToolUse({
     const { id } = await insertShip(ship);
     console.log("Inserted ship", id);
 
+    if (mode === "paid") {
+      const profile = await getUserProfile(userId);
+      const { available_ships } = profile; // current
+      const profilePayload = { available_ships: available_ships - 1 }; // updated
+      await updateUserProfile(userId, profilePayload);
+    }
     const convPayload = {
       ship_id: id,
       tokens_used: client.tokensUsed,
     };
-    console.log("Updating conversation", convPayload);
+
     await updateConversation(client.conversationId, convPayload);
     return [
       {
@@ -156,7 +170,6 @@ async function handleOnboardingToolUse({
     ];
   } else if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
-    console.log("Performing search with query:", searchQuery);
     const searchResults = await searchService.performSearch(searchQuery);
     return [
       {

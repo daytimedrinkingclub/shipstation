@@ -1,15 +1,14 @@
 {
-    "name": "image_finder_tool",
-    "description": "This tool retuns images as per the query",
-    "input_schema": {
-      "type": "object",
-      "properties": {
-        "query": {
-          "type": "string",
-          "description": "The query to find the image"
-        }
-      },
-      "required": ["query"]
-    }
+  "name": "image_finder_tool",
+  "description": "This tool finds and returns relevant images based on a given query. It searches a large database of high-quality images, considering relevance, popularity, and visual appeal. The tool handles a wide range of queries, from simple objects to complex scenes.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The query to find the images"
+      }
+    },
+    "required": ["query"]
   }
-  
+}

@@ -49,9 +49,9 @@ const ChoosePaymentOptionDialog = ({
   
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="dark bg-background text-foreground border border-border sm:max-w-[625px]">
+      <DialogContent className="bg-background text-foreground border border-border sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold mb-4">
+          <DialogTitle className="text-2xl font-bold mb-4 text-foreground">
             {showKeyInput ? (
               <>
                 <div className="flex items-center cursor-pointer" onClick={handleBack}>
@@ -85,7 +85,7 @@ const ChoosePaymentOptionDialog = ({
               transition={{ duration: 0.2 }}
               className="grid grid-cols-2 gap-4 mt-4"
             >
-              <div className="bg-card p-6 rounded-lg text-center relative hover:bg-accent transition-colors duration-200" onClick={() => setShowKeyInput(true)}>
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-center relative hover:bg-accent hover:text-accent-foreground transition-colors duration-200" onClick={() => setShowKeyInput(true)}>
                 <span className="absolute top-2 right-2 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded">
                   Free
                 </span>
@@ -94,19 +94,24 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4 text-muted-foreground">
                   Use your personal Anthropic API key for website generation.
                 </p>
-                <Button
-                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-                >
+                <Button className="w-full">
                   Continue
                 </Button>
               </div>
-              <div className="bg-card p-6 rounded-lg text-center relative transition-colors duration-200">
+              <div className="bg-card text-card-foreground p-6 rounded-lg text-center relative transition-colors duration-200">
                 <CreditCard className="w-12 h-12 mx-auto mb-3 text-primary" />
                 <h3 className="font-bold mb-2 text-lg">Pay to create</h3>
                 <p className="text-sm mb-4 text-muted-foreground">
                   Secure payment for website generation service.
                 </p>
-                <RazorpayButton productId={productId} />
+                <Button
+                  variant="secondary"
+                  className="w-full cursor-not-allowed"
+                  disabled
+                >
+                  Coming Soon
+                </Button>
+                {/* <RazorpayButton productId={productId} /> */}
                 {/* <PaypalButton productId={paypalProductId} /> */}
               </div>
             </motion.div>
@@ -124,9 +129,9 @@ const ChoosePaymentOptionDialog = ({
                   placeholder="Enter your Anthropic API key"
                   value={anthropicKey}
                   onChange={(e) => setAnthropicKey(e.target.value)}
-                  className="flex-grow bg-input text-foreground border-input focus:border-ring"
+                  className="flex-grow bg-background text-foreground border-input focus:border-ring"
                 />
-                <Button onClick={handleKeySubmit} className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button onClick={handleKeySubmit}>
                   {isKeyValidating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />

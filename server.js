@@ -53,7 +53,9 @@ app.get("/ship", (req, res) => {
 app.get("/taaft.txt", async (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Content-Disposition", "attachment; filename=taaft.txt");
-  res.send("taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4");
+  res.send(
+    "taaft-verification-code-8e81f753e37549d83c99e93fc5339c3093359943ba88ba5db9c5822e373366f4"
+  );
 });
 
 app.post("/payment-webhook", express.json(), async (req, res) => {
@@ -221,8 +223,6 @@ app.get("/:websiteId", async (req, res) => {
   }
 });
 
-
-
 app.get("/download/:slug", async (req, res) => {
   const slug = req.params.slug;
   const folderPath = `websites/${slug}`;
@@ -287,6 +287,7 @@ app.use("/site/:siteId", async (req, res, next) => {
     res.status(500).send("An error occurred");
   }
 });
+
 
 handleOnboardingSocketEvents(io);
 
