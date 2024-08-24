@@ -13,7 +13,12 @@ const {
   saveFileToS3,
 } = require("./server/services/s3Service");
 const { s3Handler } = require("./server/config/awsConfig");
+
 const { validateRazorpayWebhook } = require("./server/services/paymentService");
+
+const paypal = require("@paypal/checkout-server-sdk");
+const axios = require("axios");
+
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
   insertPayment,
@@ -84,8 +89,8 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
       await insertPayment(paymentPayload);
 
       const profile = await getUserProfile(user_id);
-      const { available_ships } = profile; // current
-      const profilePayload = { available_ships: available_ships + 1 }; // updated
+      const { available_ships } = profile; //
+      const profilePayload = { available_ships: available_ships + 1 };
 
       await updateUserProfile(user_id, profilePayload);
 
@@ -111,6 +116,135 @@ app.post("/payment-webhook", express.json(), async (req, res) => {
     }
   } else {
     res.status(400).json({ error: "Invalid signature" });
+  }
+});
+
+const clientId = process.env.PAYPAL_CLIENT_ID;
+const clientSecret = process.env.PAYPAL_CLIENT_SECRET;
+
+async function getAccessToken() {
+  const auth = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+  try {
+    const response = await axios.post(
+      "https://api-m.paypal.com/v1/oauth2/token",
+      "grant_type=client_credentials",
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${auth}`,
+        },
+      }
+    );
+      
+    console.log("accessToken :", response.data.access_token);
+    return response.data.access_token;
+  } catch (error) {
+    console.error("Error getting access token:", error);
+    throw error;
+  }
+}
+
+async function validatePaypalWebhook(headers, webhookEvent) {
+  const verifyWebhookSignature = {
+    transmission_id: headers["paypal-transmission-id"],
+    transmission_time: headers["paypal-transmission-time"],
+    cert_url: headers["paypal-cert-url"],
+    auth_algo: headers["paypal-auth-algo"],
+    transmission_sig: headers["paypal-transmission-sig"],
+    webhook_id: process.env.PAYPAL_WEBHOOK_ID,
+    webhook_event: webhookEvent,
+  };
+
+  try {
+    const accessToken = await getAccessToken();
+    const response = await axios.post(
+      "https://api-m.paypal.com/v1/notifications/verify-webhook-signature",
+      verifyWebhookSignature,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    return response.data.verification_status === "SUCCESS";
+  } catch (error) {
+    console.error("Error verifying PayPal webhook:", error);
+    return false;
+  }
+}
+
+app.post("/paypal-webhook", async (req, res) => {
+  try {
+    const webhookEvent = req.body;
+    const { headers } = req;
+
+    const isValid = await validatePaypalWebhook(headers, webhookEvent);
+
+    if (!isValid) {
+      return res.status(400).json({ error: "Invalid signature" });
+    }
+      
+      if (webhookEvent.event_type === "CHECKOUT.ORDER.COMPLETED") {
+        const email = webhookEvent.resource.payer?.email_address;
+        const user_id = await getUserIdFromEmail(email);
+        if (!user_id) {
+          console.error(`User not found for email: ${email}`);
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        // Determine which product the payment is for based on the webhookEvent.resource.purchase_units
+        const productId = webhookEvent.resource.purchase_units[0]?.reference_id;
+        const productType = productId === "3ZRLN4LJVSRVY" ? "Landing Page" : "Portfolio Page" 
+                            
+        // Define the payment payload, ensuring ships_count is set
+        const paymentPayload = {
+          payload: webhookEvent,
+          user_id,
+          transaction_id: webhookEvent.resource.id,
+          status: "successful",
+          provider: "paypal",
+          ships_count: 1,
+        };
+
+        console.log("payment payload", paymentPayload);
+
+        await insertPayment(paymentPayload);
+
+        // Retrieve the user's profile to determine the current ships count
+        const profile = await getUserProfile(user_id);
+        console.log(profile);
+
+        // Update the user's profile to reflect the new ships count
+        const profilePayload = { available_ships: profile.available_ships + 1 };
+        await updateUserProfile(user_id, profilePayload);
+
+        // Post a notification to the Discord webhook
+        const webhookPayload = {
+          content: `New PayPal payment received for ${productType}!`,
+          embeds: [
+            {
+              title: "Payment Details",
+              fields: [
+                { name: "Email", value: email },
+                { name: "Payment ID", value: webhookEvent.resource.id },
+                { name: "Product", value: productType },
+              ],
+            },
+          ],
+        };
+
+        console.log("webhook payload", webhookPayload);
+
+        await postToDiscordWebhook(webhookPayload);
+        res.status(200).json({ status: "Ships added!" });
+      } else {
+        res.status(200).json({ error: "Event not handled" });
+    }
+  } catch (error) {
+    console.error("Error processing PayPal webhook:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -287,7 +421,6 @@ app.use("/site/:siteId", async (req, res, next) => {
     res.status(500).send("An error occurred");
   }
 });
-
 
 handleOnboardingSocketEvents(io);
 
