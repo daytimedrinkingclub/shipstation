@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { pluralize } from "@/lib/utils";
 import { PROMPT_PLACEHOLDERS } from "@/constants";
+import ImageUpload from "./ImageUpload";
 
 const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useLocalStorage("requirements", "");
@@ -39,11 +40,18 @@ const ShipForm = ({ type, reset }) => {
   const { availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
 
+  const [uploadedImages, setUploadedImages] = useState([]);
+
+  const handleImageUpload = (imageData) => {
+    setUploadedImages(imageData);
+  };
+
   const startProject = () => {
     sendMessage("startProject", {
       shipType: "prompt",
       apiKey: anthropicKey,
       message: requirements,
+      images: uploadedImages,
     });
     onClose();
     onLoaderOpen();
@@ -111,12 +119,13 @@ const ShipForm = ({ type, reset }) => {
       </h1>
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
         <Textarea
-          className="w-full h-60 bg-background text-foreground border-input mb-8"
+          className="w-full h-60 bg-background text-foreground border-input mb-4"
           placeholder={PROMPT_PLACEHOLDERS[type]}
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
         />
-        <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 sm:space-y-0">
+        <ImageUpload onImageUpload={handleImageUpload} />
+        <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 mt-7 sm:space-y-0">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
