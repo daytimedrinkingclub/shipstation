@@ -14,7 +14,11 @@ const {
   handleOnboardingToolUse,
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
-const { getUserProfile, insertMessage } = require("../services/dbService");
+const {
+  getUserProfile,
+  insertMessage,
+  updateUserProfile,
+} = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
 async function processConversation({
@@ -186,7 +190,14 @@ function handleOnboardingSocketEvents(io) {
       };
 
       abortController = new AbortController();
+      const mode = client.isCustomKey ? "self-key" : "paid";
       try {
+        if (mode === "paid") {
+          const profile = await getUserProfile(userId);
+          const { available_ships } = profile; // current
+          const profilePayload = { available_ships: available_ships - 1 }; // updated
+          await updateUserProfile(userId, profilePayload);
+        }
         await processConversation({
           client,
           sendEvent,
@@ -204,6 +215,14 @@ function handleOnboardingSocketEvents(io) {
           sendEvent("creationAborted", {
             message: "Website creation was aborted",
           });
+
+          // revert available ships in case of paid mode
+          if (mode === "paid") {
+            const profile = await getUserProfile(userId);
+            const { available_ships } = profile;
+            const profilePayload = { available_ships: available_ships + 1 }; // updated
+            await updateUserProfile(userId, profilePayload);
+          }
         } else {
           console.error("Error in processConversation:", error);
         }

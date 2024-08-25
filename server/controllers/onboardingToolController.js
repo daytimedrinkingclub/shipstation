@@ -3,9 +3,9 @@ const searchService = require("../services/searchService");
 const { toKebabCase } = require("../utils/file");
 const {
   insertShip,
+  updateConversation,
   getUserProfile,
   updateUserProfile,
-  updateConversation,
 } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
 
@@ -150,6 +150,7 @@ async function handleOnboardingToolUse({
     };
     const { id } = await insertShip(ship);
     console.log("Inserted ship", id);
+
     if (mode === "paid") {
       const profile = await getUserProfile(userId);
       const { available_ships } = profile; // current
