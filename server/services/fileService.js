@@ -1,33 +1,41 @@
-const fs = require("fs").promises;
-const path = require("path");
+const S3StorageStrategy = require("./strategies/s3StorageStrategy");
+const LocalStorageStrategy = require("./strategies/localStorageStrategy");
 
-async function saveFile(filePath, content) {
-  const websitesPath = process.env.WEBSITES_PATH;
-  const generatedPath = `${websitesPath}/${filePath}`;
-  try {
-    await fs.mkdir(path.dirname(generatedPath), { recursive: true });
-    await fs.writeFile(generatedPath, content, "utf8");
-    console.log(`File saved: ${generatedPath}`);
-  } catch (error) {
-    console.error(`Error saving file ${generatedPath}:`, error);
-    throw error;
+class FileService {
+  constructor() {
+    this.strategy =
+      process.env.USE_S3_STORAGE === "true"
+        ? new S3StorageStrategy()
+        : new LocalStorageStrategy();
+  }
+
+  async saveFile(filePath, content) {
+    return this.strategy.saveFile(filePath, content);
+  }
+
+  async saveDirectory(directoryPath, remotePath) {
+    return this.strategy.saveDirectory(directoryPath, remotePath);
+  }
+
+  async listFolders(prefix, sortBy = "modifiedAt", sortOrder = "desc") {
+    return this.strategy.listFolders(prefix, sortBy, sortOrder);
+  }
+
+  async getFile(filePath) {
+    return this.strategy.getFile(filePath);
+  }
+
+  async getFileStream(filePath) {
+    return this.strategy.getFileStream(filePath);
+  }
+
+  async createZipFromDirectory(directoryPath) {
+    return this.strategy.createZipFromDirectory(directoryPath);
+  }
+
+  async getProjectDirectoryStructure(projectPath) {
+    return this.strategy.getProjectDirectoryStructure(projectPath);
   }
 }
 
-async function readFile(filePath) {
-  const websitesPath = process.env.WEBSITES_PATH;
-  const generatedPath = `${websitesPath}/${filePath}`;
-  try {
-    const data = await fs.readFile(generatedPath, "utf8");
-    console.log(`File read successfully: ${generatedPath}`);
-    return data;
-  } catch (error) {
-    console.error(`Error reading file ${filePath}:`, error);
-    throw error;
-  }
-}
-
-module.exports = {
-  readFile,
-  saveFile,
-};
+module.exports = FileService;

@@ -1,8 +1,11 @@
 const { codeWriterTool, placeholderImageTool } = require("../config/tools");
-const { saveFile } = require("./fileService");
+
 const { saveFileToS3 } = require("../services/s3Service");
 const { handleCodeToolUse } = require("../controllers/codeToolController");
 require("dotenv").config();
+
+const FileService = require("../services/fileService");
+const fileService = new FileService();
 
 async function codeAssitant({ query, filePath, client }) {
   try {
@@ -298,13 +301,12 @@ async function codeAssitant({ query, filePath, client }) {
 }
 
 async function saveCode(filePath, code) {
-  const uploadToS3 = process.env.UPLOAD_TO_S3 === "true";
-  if (uploadToS3) {
-    await saveFileToS3(filePath, code);
-    console.log(`Code successfully written to S3: ${filePath}`);
-  } else {
-    await saveFile(filePath, code);
-    console.log(`Code successfully written to local file: ${filePath}`);
+  try {
+    await fileService.saveFile(filePath, code);
+    console.log(`Code successfully written: ${filePath}`);
+  } catch (error) {
+    console.error(`Error saving code to ${filePath}:`, error);
+    throw error;
   }
 }
 

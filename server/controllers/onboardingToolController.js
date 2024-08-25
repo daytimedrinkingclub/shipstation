@@ -1,4 +1,3 @@
-const fileService = require("../services/fileService");
 const ctoService = require("../services/ctoService");
 const searchService = require("../services/searchService");
 const { toKebabCase } = require("../utils/file");
@@ -11,6 +10,9 @@ const {
 const { TOOLS } = require("../config/tools");
 
 const { nanoid } = require("nanoid");
+
+const FileService = require("../services/fileService");
+const fileService = new FileService();
 
 const generateProjectFolderName = (projectName) => {
   return toKebabCase(projectName) + "-" + nanoid(8);
@@ -123,7 +125,7 @@ async function handleOnboardingToolUse({
   } else if (tool.name === TOOLS.CTO) {
     const { prd_file_path } = tool.input;
     const generatedFolderName = prd_file_path.split("/")[0];
-    const fileContent = await fileService.readFile(
+    const fileContent = await fileService.getFile(
       `${generatedFolderName}/readme.md`
     );
     const { message, slug } = await ctoService.ctoService({
