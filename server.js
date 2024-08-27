@@ -136,6 +136,10 @@ app.post("/paypal-webhook", async (req, res) => {
 
       // Determine which product the payment is for based on the webhookEvent.resource.purchase_units
       const productId = webhookEvent.resource.purchase_units[0]?.reference_id;
+      const PRODUCT_TYPES = {
+        "3ZRLN4LJVSRVY": "Landing Page",
+        M3CSSZ43CE75J: "Portfolio Page",
+      };
       const productType = PRODUCT_TYPES[productId] || "unknown product";
 
       // Define the payment payload, ensuring ships_count is set
