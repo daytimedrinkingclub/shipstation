@@ -4,14 +4,6 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const path = require("path");
 const { JSDOM } = require("jsdom");
-const { GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
-const {
-  listFoldersInS3,
-  createZipFromS3Directory,
-  getProjectDirectoryStructure,
-  saveFileToS3,
-} = require("./server/services/s3Service");
-const { s3Handler } = require("./server/config/awsConfig");
 
 const {
   validateRazorpayWebhook,
