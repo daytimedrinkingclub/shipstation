@@ -45,6 +45,7 @@ const ChoosePaymentOptionDialog = ({
   };
 
   const productId = productIds[type];
+  
   const paypalProductId = paypalProductIds[type];
   
   return (

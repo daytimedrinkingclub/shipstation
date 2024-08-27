@@ -186,7 +186,16 @@ function handleOnboardingSocketEvents(io) {
       };
 
       abortController = new AbortController();
+      const mode = client.isCustomKey ? "self-key" : "paid";
       try {
+
+        if (mode === "paid") {
+          const profile = await getUserProfile(userId);
+          const { available_ships } = profile; // current
+          const profilePayload = { available_ships: available_ships - 1 }; // updated
+          await updateUserProfile(userId, profilePayload);
+        }
+
         await processConversation({
           client,
           sendEvent,
@@ -204,6 +213,12 @@ function handleOnboardingSocketEvents(io) {
           sendEvent("creationAborted", {
             message: "Website creation was aborted",
           });
+          if (mode === "paid") {
+            const profile = await getUserProfile(userId);
+            const { available_ships } = profile;
+            const profilePayload = { available_ships: available_ships + 1 }; // updated
+            await updateUserProfile(userId, profilePayload);
+          }
         } else {
           console.error("Error in processConversation:", error);
         }
