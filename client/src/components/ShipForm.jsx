@@ -1,4 +1,5 @@
 import { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Fuel, Sparkles } from "lucide-react";
@@ -26,6 +27,10 @@ const ShipForm = ({ type, reset }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isKeyValidating, setIsKeyValidating] = useState(false);
 
+  const navigate = useNavigate();
+  const { user, userLoading, availableShips, anthropicKey, setAnthropicKey } =
+    useContext(AuthContext);
+
   const {
     isOpen: isLoaderOpen,
     onOpen: onLoaderOpen,
@@ -36,8 +41,6 @@ const ShipForm = ({ type, reset }) => {
     onOpen: onSuccessOpen,
     onClose: onSuccessClose,
   } = useDisclosure();
-  const { availableShips, anthropicKey, setAnthropicKey } =
-    useContext(AuthContext);
 
   const startProject = () => {
     sendMessage("startProject", {
@@ -103,6 +106,12 @@ const ShipForm = ({ type, reset }) => {
       };
     }
   }, [socket, anthropicKey, requirements]);
+
+  useEffect(() => {
+    if (!userLoading && !user) {
+      navigate("/");
+    }
+  }, [user, userLoading, navigate]);
 
   return (
     <div className="w-full max-w-2xl mx-auto">
