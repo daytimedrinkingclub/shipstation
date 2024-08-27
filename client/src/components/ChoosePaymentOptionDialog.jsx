@@ -105,15 +105,15 @@ const ChoosePaymentOptionDialog = ({
                 <p className="text-sm mb-4 text-muted-foreground">
                   Secure payment for website generation service.
                 </p>
-                <Button
+                {/* <Button
                   variant="secondary"
                   className="w-full cursor-not-allowed"
                   disabled
                 >
                   Coming Soon
-                </Button>
+                </Button> */}
                 {/* <RazorpayButton productId={productId} /> */}
-                {/* <PaypalButton productId={paypalProductId} /> */}
+                <PaypalButton productId={paypalProductId} />
               </div>
             </motion.div>
           ) : (
