@@ -9,7 +9,6 @@ const {
   validateRazorpayWebhook,
   validatePaypalWebhook,
 } = require("./server/services/paymentService");
-const { PRODUCT_TYPES } = require("./server/config/paymentConfig");
 const { getUserIdFromEmail } = require("./server/services/supabaseService");
 const {
   insertPayment,
