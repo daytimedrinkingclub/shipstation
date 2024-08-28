@@ -1,5 +1,5 @@
 const Anthropic = require("@anthropic-ai/sdk");
-const { insertConversation, updateConversation } = require("./dbService");
+const { insertConversation } = require("./dbService");
 require("dotenv").config();
 
 async function validateKey(key) {
@@ -60,31 +60,45 @@ class AnthropicService {
     if (system) {
       clientParams.system = system;
     }
-    try {
-      const response = await this.client.messages.create(clientParams, {
-        // headers: {
-        //   "anthropic-beta":
-        //     "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
-        // },
-      });
-      this.tokensUsed += response.usage.output_tokens;
+    const maxRetries = 3;
+    let retries = 0;
 
-      if (!this.conversationId) {
-        const conversation = await insertConversation({
-          user_id: this.userId,
-          tokens_used: this.tokensUsed,
+    while (retries < maxRetries) {
+      try {
+        const response = await this.client.messages.create(clientParams, {
+          // headers: {
+          //   "anthropic-beta":
+          //     "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
+          // },
         });
-        this.conversationId = conversation.id;
-      }
+        this.tokensUsed += response.usage.output_tokens;
 
-      return response;
-    } catch (error) {
-      console.log("Error in anthropicService.sendMessage", error);
-      if (error.name === "AbortError") {
-        console.log("Request aborted");
-        throw new DOMException("Aborted", "AbortError");
+        if (!this.conversationId) {
+          const conversation = await insertConversation({
+            user_id: this.userId,
+            tokens_used: this.tokensUsed,
+          });
+          this.conversationId = conversation.id;
+        }
+
+        return response;
+      } catch (error) {
+        console.log(
+          `Error in anthropicService.sendMessage (attempt ${retries + 1}):`,
+          error
+        );
+        if (error.name === "AbortError") {
+          console.log("Request aborted");
+          throw new DOMException("Aborted", "AbortError");
+        }
+        if (error.status === 500 && retries < maxRetries - 1) {
+          retries++;
+          console.log(`Retrying request (attempt ${retries + 1})...`);
+          await new Promise((resolve) => setTimeout(resolve, 1000 * retries)); // Exponential backoff
+        } else {
+          throw error;
+        }
       }
-      throw error;
     }
   }
 
