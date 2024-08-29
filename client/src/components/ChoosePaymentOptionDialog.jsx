@@ -48,6 +48,11 @@ const ChoosePaymentOptionDialog = ({
   
   const paypalProductId = paypalProductIds[type];
   
+  const amounts={
+    landing_page:3.99,
+    portfolio:1.99
+  }
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-background text-foreground border border-border sm:max-w-[625px]">
@@ -113,7 +118,7 @@ const ChoosePaymentOptionDialog = ({
                   Coming Soon
                 </Button>
                 {/* <RazorpayButton productId={productId} /> */}
-                {/* <PaypalButton productId={paypalProductId} /> */}
+                <PaypalButton productId={paypalProductId} amount={amounts[type]}/>
               </div>
             </motion.div>
           ) : (
