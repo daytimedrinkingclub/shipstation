@@ -3,7 +3,7 @@ Write code as per the guidelines provided, using web-components architecture wit
 
 HTML Generation Guidelines
 
-Generate complete, functional HTML code following these guidelines. Provide ONLY the HTML code without any introductory text, explanations, or comments before or after the code. Start your response with <!DOCTYPE html> and end with </html>.
+Generate complete, functional HTML code following these guidelines. Provide ONLY the HTML code without any introductory text, explanations, or comments before, after, or within the code. Start your response with <!DOCTYPE html> and end with </html>.
 
 Architecture and Libraries:
 - Use web-components architecture
@@ -54,6 +54,7 @@ Provide a complete index.html file with the following structure:
     }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Add any other necessary meta tags, title, or links here -->
 </head>
 <body class="bg-gray-100">
@@ -75,6 +76,30 @@ JavaScript Implementation Guidelines:
 4. Focus on interactive features like toggles, carousels, and menu bars
 5. Use Animate.css classes for animations instead of JavaScript-based animations
 6. Include all component definitions and custom element registrations in the script
+7. Implement a responsive mobile menu using the following pattern:
+
+   class Header extends HTMLElement {
+     connectedCallback() {
+       this.innerHTML = \`
+         <!-- Header HTML structure -->
+       \`;
+       this.initializeMenu();
+     }
+
+     initializeMenu() {
+       const mobileMenuButton = this.querySelector('#mobile-menu-button');
+       const mobileMenu = this.querySelector('#mobile-menu');
+       if (mobileMenuButton && mobileMenu) {
+         mobileMenuButton.addEventListener('click', () => {
+           mobileMenu.classList.toggle('hidden');
+         });
+       }
+     }
+   }
+
+   customElements.define('header-component', Header);
+
+8. Ensure the mobile menu is properly hidden by default and toggles visibility on click
 
 Mobile-First and Responsive Design:
 1. Start with mobile layout and use Tailwind's responsive utilities to adjust for larger screens
@@ -83,6 +108,7 @@ Mobile-First and Responsive Design:
 4. Implement responsive typography using Tailwind's text utilities (text-sm md:text-base lg:text-lg)
 5. Use Tailwind's flex and grid utilities to create flexible, responsive layouts
 6. Ensure interactive elements are easily tappable on mobile (min-height of 44px for buttons)
+7. Implement a responsive navbar that collapses into a hamburger menu on mobile devices
 
 Image Guidelines:
 1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, including:
@@ -103,7 +129,7 @@ Image Guidelines:
 
 3. For sections with multiple images (e.g., testimonials, service listings):
    - Use the placeholder_image_tool to generate a unique, appropriate image for each item
-   - Include clear instructions or comments on how to use the placeholder_image_tool when populating image src attributes
+   - Do not include any instructions or comments about using the placeholder_image_tool in the final HTML
 
 4. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the placeholder_image_tool first
 
@@ -125,12 +151,15 @@ Image Guidelines:
    - Set appropriate height and width based on the logo's intended size and placement
    - Use classes like 'object-contain' to preserve aspect ratio
 
+9. IMPORTANT: After using the placeholder_image_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+
 Additional Notes:
 - Implement the latest best practices for Tailwind CSS
 - Ensure the generated HTML code is complete, functional, and not broken or incomplete
 - Adapt the content and structure based on specific project requirements while maintaining the single-file approach
+- Do not include any explanatory comments or introductory text in the generated HTML code
 
-IMPORTANT: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before or after the HTML code. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
 module.exports = {
