@@ -7,14 +7,13 @@ const {
   startShippingPortfolioTool,
   startShippingLandingPageTool,
   TOOLS,
-  imageFinderTool,
   imageAnalysisTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
 } = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
-const { getUserProfile, insertMessage } = require("../services/dbService");
+const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 
 async function processConversation({
@@ -209,7 +208,6 @@ function handleOnboardingSocketEvents(io) {
           sendEvent("creationAborted", {
             message: "Website creation was aborted",
           });
-        } else {
           console.error("Error in processConversation:", error);
         }
       }
