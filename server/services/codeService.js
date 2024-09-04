@@ -68,7 +68,7 @@ async function codeAssistant({ query, filePath, client, shipType }) {
       console.log(`Code successfully written to file: ${filePath}`);
       return {
         description: `Code generated and saved to ${filePath}`,
-        status: `Website generation completed. Code successfully written to file: ${filePath}`,
+        status: `Website generation completed. Code successfully written to file: ${filePath}. The website should be immediately deployed to avoid an infinite loop.`,
       };
     } else {
       throw new Error("No valid response received from Anthropic API");
