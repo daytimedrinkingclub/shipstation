@@ -26,7 +26,7 @@ class AnthropicService {
     tokensUsed = 0,
     model = process.env.DEFAULT_MODEL,
     temperature = 0,
-    maxTokens = 4000,
+    maxTokens = 8192,
   }) {
     this.isCustomKey = !!apiKey;
     this.client = new Anthropic({
@@ -66,10 +66,9 @@ class AnthropicService {
     while (retries < maxRetries) {
       try {
         const response = await this.client.messages.create(clientParams, {
-          // headers: {
-          //   "anthropic-beta":
-          //     "max-tokens-3-5-sonnet-2024-07-15,prompt-caching-2024-07-31",
-          // },
+          headers: {
+            "anthropic-beta": "max-tokens-3-5-sonnet-2024-07-15",
+          },
         });
         this.tokensUsed += response.usage.output_tokens;
 

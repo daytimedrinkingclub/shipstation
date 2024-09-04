@@ -3,7 +3,7 @@ const searchService = require("../services/searchService");
 
 async function handleCodeToolUse({ tool, client }) {
   if (tool.name === TOOLS.PLACEHOLDER_IMAGE) {
-    console.log("Using placeholder image tool");
+    console.log("using placeholder_image_tool");
     const searchQuery = tool.input.placeholder_image_requirements;
 
     const imageResults = await searchService.performSearch(

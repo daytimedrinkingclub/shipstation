@@ -44,7 +44,7 @@ const ShipForm = ({ type, reset }) => {
 
   const startProject = () => {
     sendMessage("startProject", {
-      shipType: "prompt",
+      shipType: type,
       apiKey: anthropicKey,
       message: requirements,
     });

@@ -24,6 +24,7 @@ async function handleOnboardingToolUse({
   messages,
   userId,
   client,
+  shipType,
 }) {
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
@@ -46,30 +47,34 @@ async function handleOnboardingToolUse({
   } else if (tool.name === TOOLS.START_SHIPPING_PORTFOLIO) {
     const { person_name, portfolio_description, sections, design_style } =
       tool.input;
-    console.log("starting portfolio shipping tool", tool.input);
+    console.log("starting portfolio shipping tool");
     const generatedFolderName = generateProjectFolderName(person_name);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
-      `Portfolio description : ${portfolio_description}
+      `Person Name: ${person_name}
+      Portfolio description : ${portfolio_description}
       Sections : ${sections}
       Design style : ${design_style}`
     );
-    // return [
-    //   {
-    //     type: "tool_result",
-    //     tool_use_id: tool.id,
-    //     content: [
-    //       {
-    //         type: "text",
-    //         text: `Portfolio requirements created successfully at ${generatedFolderName}/readme.md`,
-    //       },
-    //     ],
-    //   },
-    // ];
+    sendEvent("project_started", {
+      slug: generatedFolderName,
+    });
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: `Portfolio requirements created successfully at ${generatedFolderName}/readme.md`,
+          },
+        ],
+      },
+    ];
   } else if (tool.name === TOOLS.START_SHIPPING_LANDING_PAGE) {
     const { project_name, project_description, sections, design_style } =
       tool.input;
-    console.log("starting landing page shipping tool", tool.input);
+    console.log("starting landing page shipping tool");
     const generatedFolderName = generateProjectFolderName(project_name);
     await fileService.saveFile(
       `${generatedFolderName}/readme.md`,
@@ -78,18 +83,21 @@ async function handleOnboardingToolUse({
       Sections : ${sections}
       Design style : ${design_style}`
     );
-    // return [
-    //   {
-    //     type: "tool_result",
-    //     tool_use_id: tool.id,
-    //     content: [
-    //       {
-    //         type: "text",
-    //         text: `Landing page requirements created successfully at ${generatedFolderName}/readme.md`,
-    //       },
-    //     ],
-    //   },
-    // ];
+    sendEvent("project_started", {
+      slug: generatedFolderName,
+    });
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: `Landing page requirements created successfully at ${generatedFolderName}/readme.md`,
+          },
+        ],
+      },
+    ];
   } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
     const {
       project_name,
@@ -133,6 +141,7 @@ async function handleOnboardingToolUse({
       projectFolderName: generatedFolderName,
       sendEvent,
       client,
+      shipType,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";
