@@ -167,7 +167,7 @@ const ShipForm = ({ type, reset }) => {
         type={type}
         isKeyValidating={isKeyValidating}
       />
-      <LoadingGameOverlay isOpen={isLoaderOpen} type={type} />
+      {isLoaderOpen && <LoadingGameOverlay isOpen={isLoaderOpen} type={type} />}
       <SuccessOverlay
         isOpen={isSuccessOpen}
         onClose={reset}
