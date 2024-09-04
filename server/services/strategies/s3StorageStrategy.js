@@ -10,6 +10,7 @@ require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
 const bucketName = process.env.BUCKET_NAME;
+const wasabiEndpoint = process.env.WASABI_ENDPOINT;
 
 class S3StorageStrategy {
   async saveFile(filePath, content) {
@@ -223,6 +224,16 @@ class S3StorageStrategy {
     } catch (error) {
       console.error(`Error fetching ${filePath}: ${error}`);
       throw error;
+    }
+  }
+
+  getPublicUrl(filePath) {
+    if (wasabiEndpoint) {
+      // Wasabi case
+      return `${wasabiEndpoint}/${bucketName}/${WEBSITES_PATH}/${filePath}`;
+    } else {
+      // Standard S3 case
+      return `https://${bucketName}.s3.amazonaws.com/${WEBSITES_PATH}/${filePath}`;
     }
   }
 }
