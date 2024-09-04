@@ -9,7 +9,7 @@ const { s3Handler } = require("../../config/awsConfig");
 require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
-const bucketName = process.env.BUCKETEER_BUCKET_NAME;
+const bucketName = process.env.BUCKET_NAME;
 
 class S3StorageStrategy {
   async saveFile(filePath, content) {

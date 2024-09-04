@@ -8,7 +8,7 @@ const archiver = require("archiver");
 const { s3Handler } = require("../config/awsConfig");
 require("dotenv").config();
 
-const bucketName = process.env.BUCKETEER_BUCKET_NAME;
+const bucketName = process.env.BUCKET_NAME;
 
 async function saveFileToS3(bucketPath, content) {
   const finalPath = `websites/${bucketPath}`;
