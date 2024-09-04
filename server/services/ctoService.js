@@ -3,7 +3,6 @@ const {
   taskAssignerTool,
   deployProjectTool,
   searchTool,
-  placeholderImageTool,
 } = require("../config/tools");
 const { handleCTOToolUse } = require("../controllers/ctoToolController");
 const { TOOLS } = require("../config/tools");
@@ -11,7 +10,13 @@ const ctoPrompt = require("./prompts/ctoPrompt");
 
 require("dotenv").config();
 
-async function ctoService({ query, projectFolderName, sendEvent, client }) {
+async function ctoService({
+  query,
+  projectFolderName,
+  sendEvent,
+  client,
+  shipType,
+}) {
   const systemPrompt = [
     {
       type: "text",
@@ -42,6 +47,7 @@ async function ctoService({ query, projectFolderName, sendEvent, client }) {
           projectFolderName,
           sendEvent,
           client,
+          shipType,
         });
 
         messages.push({ role: "user", content: toolResult });

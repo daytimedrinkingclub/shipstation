@@ -14,6 +14,7 @@ async function handleCTOToolUse({
   projectFolderName,
   sendEvent,
   client,
+  shipType,
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
@@ -202,6 +203,7 @@ async function handleCTOToolUse({
       query: updatedFileContent,
       filePath: `${projectFolderName}/${file_name}`,
       client,
+      shipType,
     });
 
     console.log("ctoToolController: ", resp);

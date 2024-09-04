@@ -1,20 +1,28 @@
 const { codeWriterTool, placeholderImageTool } = require("../config/tools");
 const { handleCodeToolUse } = require("../controllers/codeToolController");
 const codePrompt = require("./prompts/codePrompt");
+const { SHIP_TYPES } = require("./constants");
 require("dotenv").config();
 
 const FileService = require("../services/fileService");
 const fileService = new FileService();
 
-async function codeAssistant({ query, filePath, client }) {
+async function codeAssistant({ query, filePath, client, shipType }) {
   try {
     let messages = [{ role: "user", content: [{ type: "text", text: query }] }];
     let finalResponse = null;
 
+    console.log("codeService:", shipType);
+
+    const systemPrompt =
+      shipType === SHIP_TYPES.LANDING_PAGE
+        ? codePrompt.landingPagePrompt
+        : codePrompt.portfolioPrompt;
+
     while (true) {
       console.log("Sending message to Anthropic API");
       const msg = await client.sendMessage({
-        system: codePrompt.prompt,
+        system: systemPrompt,
         messages: messages,
         tools: [placeholderImageTool],
         tool_choice: { type: "auto" },
