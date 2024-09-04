@@ -180,8 +180,6 @@ async function handleCTOToolUse({
   } else if (tool.name === TOOLS.TASK_ASSIGNER) {
     const { file_name, task_guidelines } = tool.input;
 
-    console.log("TASK_ASSIGNER:", file_name);
-
     const fileContent = await fileService.getFile(
       `${projectFolderName}/${file_name}`
     );
@@ -205,8 +203,6 @@ async function handleCTOToolUse({
       client,
       shipType,
     });
-
-    console.log("ctoToolController: ", resp);
 
     sendEvent("progress", {
       message: `Code generated for ${file_name} ✅`,
