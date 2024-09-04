@@ -61,10 +61,9 @@ async function codeAssistant({ query, filePath, client, shipType }) {
 
     if (finalResponse) {
       // Remove comments before <!DOCTYPE html>
-      finalResponse = finalResponse.replace(
-        /^[\s\S]*?(?=<!DOCTYPE html>)/i,
-        ""
-      );
+      finalResponse = finalResponse
+        .replace(/^[\s\S]*?(?=<!DOCTYPE html>)/i, "")
+        .replace(/<\/html>\s*[\s\S]*$/i, "</html>");
 
       await fileService.saveFile(filePath, finalResponse);
       console.log(`Code successfully written to file: ${filePath}`);
