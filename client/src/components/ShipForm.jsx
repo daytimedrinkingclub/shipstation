@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import { pluralize } from "@/lib/utils";
 import { PROMPT_PLACEHOLDERS } from "@/constants";
+import LoadingGameOverlay from "./LoadingGameOverlay";
 
 const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useLocalStorage("requirements", "");
@@ -166,7 +167,7 @@ const ShipForm = ({ type, reset }) => {
         type={type}
         isKeyValidating={isKeyValidating}
       />
-      <LoaderOverlay isOpen={isLoaderOpen} type={type} />
+      <LoadingGameOverlay isOpen={isLoaderOpen} type={type} />
       <SuccessOverlay
         isOpen={isSuccessOpen}
         onClose={reset}

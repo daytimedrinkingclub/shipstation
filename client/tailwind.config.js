@@ -59,6 +59,7 @@ export default {
         'wave': 'wave 10s linear infinite',
         'shimmer': 'shimmer 3s linear infinite',
         'wave': 'wave 3s ease-in-out infinite',
+        gradient: 'gradient 3s ease infinite',
       },
       keyframes: {
         'wave': {
@@ -72,6 +73,16 @@ export default {
         'wave': {
           '0%, 100%': { backgroundPosition: '0% 50%' },
           '50%': { backgroundPosition: '100% 50%' },
+        },
+        gradient: {
+          '0%, 100%': {
+            'background-size': '200% 200%',
+            'background-position': 'left center'
+          },
+          '50%': {
+            'background-size': '200% 200%',
+            'background-position': 'right center'
+          }
         },
       },
       backgroundImage: {
