@@ -4,8 +4,13 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { SHIP_AI_AGENT, SHIP_LANDING_PAGE, SHIP_PORTFOLIO } from "@/constants";
-import { Layout, Cpu, Wallpaper } from "lucide-react";
+import {
+  SHIP_AI_AGENT,
+  SHIP_EMAIL_TEMPLATE,
+  SHIP_LANDING_PAGE,
+  SHIP_PORTFOLIO,
+} from "@/constants";
+import { Layout, Cpu, Wallpaper, Mail } from "lucide-react";
 
 const CardContainer = ({ onCardClick }) => {
   const cards = [
@@ -24,13 +29,11 @@ const CardContainer = ({ onCardClick }) => {
       type: SHIP_PORTFOLIO,
     },
     {
-      icon: <Cpu className="w-6 h-6" />,
-      title: "Ship AI agent",
+      icon: <Mail className="w-6 h-6" />,
+      title: "Ship email template",
       description:
-        "Transform your concepts into reality with an AI-powered idea board. Visualize, organize, and bring your creative visions to life.",
-      badge: "Launching Soon",
-      type: SHIP_AI_AGENT,
-      isComingSoon: true,
+        "Create stunning, AI-assisted email templates to boost your marketing efforts.",
+      type: SHIP_EMAIL_TEMPLATE,
     },
   ];
 

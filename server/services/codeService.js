@@ -12,10 +12,20 @@ async function codeAssistant({ query, filePath, client, shipType }) {
     let messages = [{ role: "user", content: [{ type: "text", text: query }] }];
     let finalResponse = null;
 
-    const systemPrompt =
-      shipType === SHIP_TYPES.LANDING_PAGE
-        ? codePrompt.landingPagePrompt
-        : codePrompt.portfolioPrompt;
+    let systemPrompt;
+    switch (shipType) {
+      case SHIP_TYPES.LANDING_PAGE:
+        systemPrompt = codePrompt.landingPagePrompt;
+        break;
+      case SHIP_TYPES.PORTFOLIO:
+        systemPrompt = codePrompt.portfolioPrompt;
+        break;
+      case SHIP_TYPES.EMAIL_TEMPLATE:
+        systemPrompt = codePrompt.emailTemplatePrompt;
+        break;
+      default:
+        throw new Error(`Unsupported ship type: ${shipType}`);
+    }
 
     while (true) {
       console.log("Sending request to Anthropic API...");

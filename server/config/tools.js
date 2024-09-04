@@ -19,6 +19,7 @@ const productManagerTool = require("./tools/productManagerTool.json");
 const imageFinderTool = require("./tools/imageFinderTool.json");
 const imageAnalysisTool = require("./tools/imageAnalysisTool.json");
 const placeholderImageTool = require("./tools/placeholderImageTool.json");
+const startShippingEmailTemplateTool = require("./tools/startShippingEmailTemplateTool.json");
 
 const TOOLS = {
   SEARCH: "search_tool",
@@ -35,6 +36,7 @@ const TOOLS = {
   IMAGE_FINDER: "image_finder_tool",
   IMAGE_ANALYSIS: "image_analysis_tool",
   PLACEHOLDER_IMAGE: "placeholder_image_tool",
+  START_SHIPPING_EMAIL_TEMPLATE: "start_shipping_email_template_tool",
 };
 
 module.exports = {
@@ -52,5 +54,6 @@ module.exports = {
   imageFinderTool,
   imageAnalysisTool,
   placeholderImageTool,
+  startShippingEmailTemplateTool,
   TOOLS,
 };

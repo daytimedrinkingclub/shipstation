@@ -98,6 +98,39 @@ async function handleOnboardingToolUse({
         ],
       },
     ];
+  } else if (tool.name === TOOLS.START_SHIPPING_EMAIL_TEMPLATE) {
+    const {
+      template_name,
+      template_purpose,
+      template_description,
+      content_sections,
+      design_style,
+    } = tool.input;
+    console.log("starting email template shipping tool");
+    const generatedFolderName = generateProjectFolderName(template_name);
+    await fileService.saveFile(
+      `${generatedFolderName}/readme.md`,
+      `Template Name: ${template_name}
+      Template Purpose: ${template_purpose}
+      Template Description: ${template_description}
+      Content Sections: ${content_sections}
+      Design Style: ${design_style}`
+    );
+    sendEvent("project_started", {
+      slug: generatedFolderName,
+    });
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: `Email template requirements created successfully at ${generatedFolderName}/readme.md`,
+          },
+        ],
+      },
+    ];
   } else if (tool.name === TOOLS.PRODUCT_MANAGER) {
     const {
       project_name,

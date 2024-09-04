@@ -8,6 +8,7 @@ const {
   startShippingLandingPageTool,
   TOOLS,
   imageAnalysisTool,
+  startShippingEmailTemplateTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -44,6 +45,11 @@ async function processConversation({
       if (shipType === SHIP_TYPES.LANDING_PAGE) {
         tools.push(ctoTool);
         tools.push(startShippingLandingPageTool);
+        messages = [{ role: "user", content: message }];
+      }
+      if (shipType === SHIP_TYPES.EMAIL_TEMPLATE) {
+        tools.push(ctoTool);
+        tools.push(startShippingEmailTemplateTool);
         messages = [{ role: "user", content: message }];
       }
       if (shipType === SHIP_TYPES.PROMPT) {

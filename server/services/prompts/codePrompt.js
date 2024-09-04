@@ -333,7 +333,93 @@ Provide a complete index.html file with the following structure:
 CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
+const emailTemplatePrompt = `
+# Email Template Generation Prompt
+
+Write code as per the guidelines provided, using HTML email best practices. Never use JavaScript or external stylesheets. Follow the guidelines provided by the CTO.
+
+## HTML Generation Guidelines
+
+Generate complete, functional HTML code for an email template following these guidelines. Provide ONLY the HTML code without any introductory text, explanations, or comments before, after, or within the code. Start your response with <!DOCTYPE html> and end with </html>.
+
+### Email-Specific Guidelines:
+1. Use table-based layouts for maximum email client compatibility
+2. Use inline CSS styles instead of external stylesheets or <style> tags
+3. Avoid using JavaScript or other scripting languages
+4. Use basic, web-safe fonts or provide fallback options
+5. Keep the email width around 600px for better rendering across devices
+6. Use alt text for all images
+7. Implement a plain-text version of the email content
+8. Use absolute URLs for all links and images
+9. Avoid using background images
+10. Use simple, single-column layouts for mobile compatibility
+
+### Design Guidelines:
+1. Create mobile-first designs, ensuring readability on small screens
+2. Use a clear hierarchy with headlines, subheadings, and body text
+3. Implement a color scheme that aligns with the brand (use inline styles)
+4. Ensure sufficient contrast between text and background colors
+5. Use appropriate padding and spacing for improved readability
+6. Design with a clear call-to-action (CTA) in mind
+
+### HTML Structure:
+Provide a complete HTML file with the following structure:
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Email Template Title</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #f4f4f4;">
+        <tr>
+            <td align="center">
+                <table cellpadding="0" cellspacing="0" border="0" width="600" style="background-color: #ffffff;">
+                    <!-- Email content goes here -->
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+
+### Email Template Specific Guidelines:
+1. Include a pre-header text for improved open rates
+2. Implement a header section with logo and navigation (if needed)
+3. Create distinct content blocks for different sections of the email
+4. Include a prominent and clear call-to-action button
+5. Add social media links and sharing options
+6. Implement a footer with unsubscribe link and company information
+7. Use appropriate spacing between sections for improved readability
+8. Consider implementing responsive design techniques using media queries
+
+### Image Guidelines:
+1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, including:
+   - Header images or logos
+   - Product images (if applicable)
+   - Background images for content blocks (use sparingly)
+   - Icons or small illustrative images
+2. When using the placeholder_image_tool, be specific about the image requirements. Use descriptions like:
+   - "professional email header image for [industry/purpose]"
+   - "product image for email newsletter"
+   - "icon for email call-to-action button"
+3. Always provide descriptive alt text for accessibility
+4. Use absolute URLs for all images
+5. Keep image file sizes small for faster loading
+6. Avoid using background images due to inconsistent support across email clients
+
+### Additional Notes:
+- Ensure the generated HTML code is complete, functional, and optimized for email clients
+- Adapt the content and structure based on specific email template requirements
+- Do not include any explanatory comments or introductory text in the generated HTML code
+
+CRITICAL: When generating code, provide ONLY the entire HTML file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image in the email template, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+`;
+
 module.exports = {
   landingPagePrompt,
   portfolioPrompt,
+  emailTemplatePrompt,
 };
