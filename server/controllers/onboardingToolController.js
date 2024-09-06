@@ -25,7 +25,9 @@ async function handleOnboardingToolUse({
   userId,
   client,
   shipType,
+  images,
 }) {
+  console.log("onboradingToolController recieved images:", images);
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
@@ -175,6 +177,7 @@ async function handleOnboardingToolUse({
       sendEvent,
       client,
       shipType,
+      images,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";

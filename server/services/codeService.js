@@ -4,27 +4,73 @@ const codePrompt = require("./prompts/codePrompt");
 const { SHIP_TYPES } = require("./constants");
 require("dotenv").config();
 
+const { WebDesignAnalysisService } = require("./webDesignAnalysisService");
+
 const FileService = require("../services/fileService");
+const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisPrompt");
 const fileService = new FileService();
 
-async function codeAssistant({ query, filePath, client, shipType }) {
+async function codeAssistant({ query, filePath, client, shipType, images }) {
+  console.log("codeAssistant received images:", images);
   try {
-    let messages = [{ role: "user", content: [{ type: "text", text: query }] }];
     let finalResponse = null;
+    let analysisResult = null;
+    console.log(
+      `Received code write request for ${shipType} with ${
+        images ? images.length : 0
+      } images`
+    );
+
+    const webDesignAnalysisService = new WebDesignAnalysisService(client);
+
+    // Check if images are available and not null
+    if (images && images.length > 0) {
+      try {
+        analysisResult = await webDesignAnalysisService.analyzeWebDesign(
+          images,
+          shipType
+        );
+      } catch (error) {
+        console.error("Error analyzing web design:", error);
+        // Continue without the analysis if there's an error
+      }
+    }
 
     let systemPrompt;
+    let buildPrompt;
+
     switch (shipType) {
       case SHIP_TYPES.LANDING_PAGE:
         systemPrompt = codePrompt.landingPagePrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.landingPagePrompt(
+          analysisResult?.analysis || ""
+        );
         break;
       case SHIP_TYPES.PORTFOLIO:
         systemPrompt = codePrompt.portfolioPrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.portfolioPrompt(
+          analysisResult?.analysis || ""
+        );
         break;
       case SHIP_TYPES.EMAIL_TEMPLATE:
         systemPrompt = codePrompt.emailTemplatePrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.mailTemplatePrompt(
+          analysisResult?.analysis || ""
+        );
         break;
       default:
         throw new Error(`Unsupported ship type: ${shipType}`);
+    }
+
+    let messages = [
+      {
+        role: "user",
+        content: [{ type: "text", text: query }],
+      },
+    ];
+
+    if (images && images.length > 0) {
+      messages[0].content.push({ type: "text", text: buildPrompt });
     }
 
     while (true) {

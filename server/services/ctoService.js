@@ -16,7 +16,9 @@ async function ctoService({
   sendEvent,
   client,
   shipType,
+  images,
 }) {
+  console.log("ctoService received images:", images);
   const systemPrompt = [
     {
       type: "text",
@@ -48,6 +50,7 @@ async function ctoService({
           sendEvent,
           client,
           shipType,
+          images,
         });
 
         messages.push({ role: "user", content: toolResult });

@@ -25,7 +25,9 @@ async function processConversation({
   userId,
   shipType,
   message,
+  images,
 }) {
+  console.log("processConversation received images:", images);
   while (true) {
     if (abortSignal.aborted) {
       throw new DOMException("Aborted", "AbortError");
@@ -117,6 +119,7 @@ async function processConversation({
           userId,
           client,
           shipType,
+          images,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -170,8 +173,15 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      console.log("startProject", data);
-      const { roomId, userId, apiKey, shipType, message } = data;
+      const { roomId, userId, apiKey, shipType, message, images } = data;
+      console.log("startProject", roomId, userId, apiKey, shipType, message);
+      images.forEach((img, index) => {
+        console.log(`Image ${index + 1}:`);
+        console.log("Image file data available:", !!img.file);
+        console.log(`File type: ${img.mediaType || "Unknown"}`);
+        console.log(`Caption: ${img.caption}`);
+      });
+
       const clientParams = { userId };
       if (apiKey) {
         // using own anthropic key
@@ -206,6 +216,7 @@ function handleOnboardingSocketEvents(io) {
           shipType,
           socket,
           message,
+          images,
         });
         return;
       } catch (error) {

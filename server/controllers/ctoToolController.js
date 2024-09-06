@@ -15,6 +15,7 @@ async function handleCTOToolUse({
   sendEvent,
   client,
   shipType,
+  images,
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
@@ -202,6 +203,7 @@ async function handleCTOToolUse({
       filePath: `${projectFolderName}/${file_name}`,
       client,
       shipType,
+      images,
     });
 
     sendEvent("progress", {
