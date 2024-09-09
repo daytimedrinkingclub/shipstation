@@ -173,7 +173,7 @@ const LoaderOverlay = ({ isOpen, type }) => {
         </h2>
         {/* <p className="text-xl text-center mt-6 max-w-2xl">{loaderText}</p> */}
         {!gameStarted && (
-          <p className="text-2xl font-semibold text-center mt-4 animate-pulse">
+          <p className="text-2xl hidden sm:block font-semibold text-center mt-4 animate-pulse">
             Press Space if bored already
           </p>
         )}
