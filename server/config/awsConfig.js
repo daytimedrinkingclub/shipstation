@@ -10,8 +10,8 @@ const s3Config = {
 };
 
 // Wasabi
-if (process.env.WASABI_ENDPOINT) {
-  s3Config.endpoint = process.env.WASABI_ENDPOINT;
+if (process.env.S3_EXTERNAL_ENDPOINT) {
+  s3Config.endpoint = process.env.S3_EXTERNAL_ENDPOINT;
   s3Config.forcePathStyle = true; // Needed for Wasabi
 }
 

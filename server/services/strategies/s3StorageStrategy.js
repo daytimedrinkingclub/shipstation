@@ -10,7 +10,7 @@ require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
 const bucketName = process.env.BUCKET_NAME;
-const wasabiEndpoint = process.env.WASABI_ENDPOINT;
+const wasabiEndpoint = process.env.S3_EXTERNAL_ENDPOINT;
 
 class S3StorageStrategy {
   async saveFile(filePath, content) {
