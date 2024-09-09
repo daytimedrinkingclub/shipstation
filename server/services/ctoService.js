@@ -16,6 +16,7 @@ async function ctoService({
   sendEvent,
   client,
   shipType,
+  images,
 }) {
   const systemPrompt = [
     {
@@ -48,6 +49,7 @@ async function ctoService({
           sendEvent,
           client,
           shipType,
+          images,
         });
 
         messages.push({ role: "user", content: toolResult });

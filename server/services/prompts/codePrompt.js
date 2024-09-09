@@ -333,7 +333,111 @@ Provide a complete index.html file with the following structure:
 CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
+const emailTemplatePrompt = `
+# Email Template Generation Prompt
+
+Create a visually striking and responsive HTML email template based on the following guidelines:
+
+1. Design Approach:
+   - Use a bold, modern design with vibrant colors and creative geometric shapes
+   - Incorporate a visual hierarchy that guides the reader's attention
+   - Design for mobile-first, ensuring responsiveness across devices
+   - Use a mix of creatively styled images and text to create an engaging layout
+
+2. Structure and Layout:
+   - Begin with a visually impactful header featuring creatively styled company logo and tagline
+   - Use a single-column layout for compatibility, with occasional multi-column sections for larger screens
+   - Incorporate white space effectively to enhance readability
+   - Use innovative dividers or geometric shapes to separate content sections
+
+3. Content Sections (adapt based on specific needs):
+   - Eye-catching hero section with a creatively masked or shaped image and headline
+   - Featured destination or product showcase using uniquely styled images
+   - Key benefits or features, using creatively designed icons or small images
+   - Pricing information or special offers presented in visually interesting ways
+   - Social proof (testimonials, ratings, etc.) with creatively framed profile pictures
+   - Clear and prominent call-to-action buttons with unique shapes or styles
+   - Visually appealing footer with contact information, social media links, and legal text
+
+4. Visual Elements and Creative Image Styling:
+   - Use high-quality images that showcase destinations, products, or experiences
+   - Apply creative masking and shaping to images:
+     - Use CSS clip-path for various shapes (circles, hexagons, custom polygons)
+     - Implement overlapping image effects
+     - Create image collages with uniquely shaped segments
+   - Use SVG masks for more complex image shapes where supported
+   - Incorporate duotone or color overlay effects on images
+   - Blend images with background elements for a cohesive look
+   - Use animated GIFs or CSS animations for subtle motion in images (where appropriate)
+   - Implement tilt or skew effects on images to add dynamism
+   - Use creative cropping to focus on key aspects of images
+   - Incorporate icons and illustrations that complement and interact with images
+
+5. Typography and Colors:
+   - Use Google Fonts for typography, choosing bold and complementary font pairings
+   - Implement a vibrant color scheme that aligns with the brand and enhances visual interest
+   - Experiment with text masking effects using background images
+   - Ensure sufficient contrast between text and background for readability
+
+6. Technical Considerations:
+   - Use table-based layout for maximum email client compatibility
+   - Implement inline CSS for styling, including advanced image styles
+   - Ensure all images have appropriate alt text
+   - Use Google Fonts, implementing them safely for email (as previously described)
+   - Provide fallbacks for advanced CSS features that may not be supported in all email clients
+   - Keep the overall file size optimized for quick loading
+
+7. Interactivity and Engagement:
+   - Include hover effects for buttons, links, and images where supported
+   - Consider adding subtle animations to draw attention to key elements
+   - Implement bulletproof buttons with unique shapes or styles
+
+8. Coding Guidelines:
+   - Write clean, well-commented HTML code
+   - Use proper indentation for improved readability
+   - Include a CSS reset at the beginning of the template
+   - Test the template across various email clients and devices
+   - Use conditional comments for Outlook-specific fixes if necessary
+
+9. Legal and Best Practices:
+   - Include an unsubscribe link in the footer
+   - Add a physical mailing address to comply with anti-spam laws
+   - Ensure the email is accessible and follows WCAG guidelines
+
+10. Creative Image Styling Techniques:
+    - Implement image masking:
+
+      .masked-image {
+        -webkit-mask-image: url('mask.png');
+        mask-image: url('mask.png');
+      }
+    
+    - Use CSS clip-path for shape creation:
+     
+      .shaped-image {
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      }
+  
+    - Apply creative filters to images:
+ 
+      .filtered-image {
+        filter: hue-rotate(90deg) saturate(150%) brightness(110%);
+      }
+      
+      And many other effects, that's upto your creativity.
+
+When generating the email template:
+- Start with <!DOCTYPE html> and end with </html>
+- Include all necessary meta tags in the <head> section
+- Place all CSS in a <style> tag within the <head> and use inline styles
+- Use table-based layouts wrapped in a container for consistency
+- Implement media queries for responsiveness if necessary
+
+IMPORTANT: Generate only the HTML code without any explanations or comments outside the code. Ensure all image sources use the placeholder_image_tool as per the CTO's guidelines. The final output should be a complete, production-ready HTML email template with creatively styled images and Google Fonts implemented.
+`;
+
 module.exports = {
   landingPagePrompt,
   portfolioPrompt,
+  emailTemplatePrompt,
 };

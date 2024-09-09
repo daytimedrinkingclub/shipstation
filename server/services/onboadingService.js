@@ -8,6 +8,7 @@ const {
   startShippingLandingPageTool,
   TOOLS,
   imageAnalysisTool,
+  startShippingEmailTemplateTool,
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
@@ -24,7 +25,9 @@ async function processConversation({
   userId,
   shipType,
   message,
+  images,
 }) {
+  console.log("processConversation received images:", !!images);
   while (true) {
     if (abortSignal.aborted) {
       throw new DOMException("Aborted", "AbortError");
@@ -39,21 +42,46 @@ async function processConversation({
       if (shipType === SHIP_TYPES.PORTFOLIO) {
         tools.push(ctoTool);
         tools.push(startShippingPortfolioTool);
-        messages = [{ role: "user", content: message }];
       }
       if (shipType === SHIP_TYPES.LANDING_PAGE) {
         tools.push(ctoTool);
         tools.push(startShippingLandingPageTool);
-        messages = [{ role: "user", content: message }];
+      }
+      if (shipType === SHIP_TYPES.EMAIL_TEMPLATE) {
+        tools.push(ctoTool);
+        tools.push(startShippingEmailTemplateTool);
       }
       if (shipType === SHIP_TYPES.PROMPT) {
         tools.push(ctoTool);
         tools.push(productManagerTool);
         tools.push(searchTool);
         tools.push(imageAnalysisTool);
-        messages = [{ role: "user", content: message }];
       }
     }
+
+    let content = [{ type: "text", text: message }];
+
+    // Add images to the content if available
+    if (images && images.length > 0) {
+      images.forEach((img, index) => {
+        content.push(
+          {
+            type: "text",
+            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: img.mediaType,
+              data: img.file,
+            },
+          }
+        );
+      });
+    }
+
+    messages = [{ role: "user", content: content }];
 
     try {
       // insertMessage({
@@ -61,10 +89,18 @@ async function processConversation({
       //   role: "user",
       //   content: messages[0].content,
       // });
-      const systemPrompt =
-        shipType === SHIP_TYPES.PORTFOLIO
-          ? "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website."
-          : "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+      const systemPrompt = (() => {
+        switch (shipType) {
+          case SHIP_TYPES.PORTFOLIO:
+            return "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+          case SHIP_TYPES.LANDING_PAGE:
+            return "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+          case SHIP_TYPES.EMAIL_TEMPLATE:
+            return "Your task is to create an email template for the user. Analyze the user's requirements and use the start_shipping_email_template_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the email template.";
+          default:
+            throw new Error(`Unsupported ship type: ${shipType}`);
+        }
+      })();
 
       currentMessage = await client.sendMessage({
         system: systemPrompt,
@@ -111,6 +147,7 @@ async function processConversation({
           userId,
           client,
           shipType,
+          images,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -164,8 +201,15 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      console.log("startProject", data);
-      const { roomId, userId, apiKey, shipType, message } = data;
+      const { roomId, userId, apiKey, shipType, message, images } = data;
+      console.log("startProject", roomId, userId, apiKey, shipType, message);
+      images.forEach((img, index) => {
+        console.log(`Image ${index + 1}:`);
+        console.log("Image file data available:", !!img.file);
+        console.log(`File type: ${img.mediaType || "Unknown"}`);
+        console.log(`Caption: ${img.caption}`);
+      });
+
       const clientParams = { userId };
       if (apiKey) {
         // using own anthropic key
@@ -200,6 +244,7 @@ function handleOnboardingSocketEvents(io) {
           shipType,
           socket,
           message,
+          images,
         });
         return;
       } catch (error) {

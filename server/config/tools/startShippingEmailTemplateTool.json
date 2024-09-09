@@ -1,0 +1,36 @@
+{
+  "name": "start_shipping_email_template_tool",
+  "description": "Generate a plan summary for the user to understand the requirements of the email template and coordinate with the cto_tool to create the project for the user.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "template_name": {
+        "type": "string",
+        "description": "The name of the email template to be created"
+      },
+      "template_purpose": {
+        "type": "string",
+        "description": "The purpose of the email template, such as newsletter, promotional, transactional, etc."
+      },
+      "template_description": {
+        "type": "string",
+        "description": "A detailed description of the email template, including target audience, key message, and any specific requirements"
+      },
+      "content_sections": {
+        "type": "string",
+        "description": "Main sections to be included in the email template, such as header, main content, call-to-action, footer, etc."
+      },
+      "design_style": {
+        "type": "string",
+        "description": "The desired visual style for the email template, such as minimalist, colorful, corporate, playful, etc."
+      }
+    },
+    "required": [
+      "template_name",
+      "template_purpose",
+      "template_description",
+      "content_sections",
+      "design_style"
+    ]
+  }
+}

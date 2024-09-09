@@ -4,18 +4,80 @@ const codePrompt = require("./prompts/codePrompt");
 const { SHIP_TYPES } = require("./constants");
 require("dotenv").config();
 
+const { WebDesignAnalysisService } = require("./webDesignAnalysisService");
+
 const FileService = require("../services/fileService");
+const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisPrompt");
 const fileService = new FileService();
 
-async function codeAssistant({ query, filePath, client, shipType }) {
-  try {
-    let messages = [{ role: "user", content: [{ type: "text", text: query }] }];
-    let finalResponse = null;
+async function codeAssistant({ query, filePath, client, shipType, images }) {
+  console.log("codeAssistant received images:", !!images);
+  console.log("codeAssistant query:", query);
 
-    const systemPrompt =
-      shipType === SHIP_TYPES.LANDING_PAGE
-        ? codePrompt.landingPagePrompt
-        : codePrompt.portfolioPrompt;
+  try {
+    let finalResponse = null;
+    let analysisResult = null;
+
+    let messages = [];
+
+    console.log(
+      `Received code write request for ${shipType} with ${
+        images ? images.length : 0
+      } images`
+    );
+
+    const webDesignAnalysisService = new WebDesignAnalysisService(client);
+
+    // Check if images are available and not null
+    if (images && images.length > 0) {
+      try {
+        analysisResult = await webDesignAnalysisService.analyzeWebDesign(
+          images,
+          shipType
+        );
+      } catch (error) {
+        console.error("Error analyzing web design:", error);
+        // Continue without the analysis if there's an error
+      }
+    }
+
+    let systemPrompt;
+    let buildPrompt;
+
+    switch (shipType) {
+      case SHIP_TYPES.LANDING_PAGE:
+        systemPrompt = codePrompt.landingPagePrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.landingPagePrompt(
+          analysisResult?.analysis || "",
+          query
+        );
+        break;
+      case SHIP_TYPES.PORTFOLIO:
+        systemPrompt = codePrompt.portfolioPrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.portfolioPrompt(
+          analysisResult?.analysis || "",
+          query
+        );
+        break;
+      case SHIP_TYPES.EMAIL_TEMPLATE:
+        systemPrompt = codePrompt.emailTemplatePrompt;
+        buildPrompt = buildSiteFromAnalysisPrompt.mailTemplatePrompt(
+          analysisResult?.analysis || "",
+          query
+        );
+        break;
+      default:
+        throw new Error(`Unsupported ship type: ${shipType}`);
+    }
+
+    if (images && images.length > 0) {
+      messages.push({
+        role: "user",
+        content: [{ type: "text", text: buildPrompt }],
+      });
+    }
+
+    console.log("codeService messages content:", messages[0].content);
 
     while (true) {
       console.log("Sending request to Anthropic API...");
@@ -25,7 +87,7 @@ async function codeAssistant({ query, filePath, client, shipType }) {
         tools: [placeholderImageTool],
         tool_choice: { type: "auto" },
       });
-      console.log("codeService API call Stop Reason:", msg.stop_reason);
+      console.log("codeService: API call Stop Reason:", msg.stop_reason);
 
       if (msg.stop_reason === "end_turn") {
         const textContent = msg.content.find(
@@ -51,10 +113,9 @@ async function codeAssistant({ query, filePath, client, shipType }) {
 
     if (finalResponse) {
       // Remove comments before <!DOCTYPE html>
-      finalResponse = finalResponse.replace(
-        /^[\s\S]*?(?=<!DOCTYPE html>)/i,
-        ""
-      );
+      finalResponse = finalResponse
+        .replace(/^[\s\S]*?(?=<!DOCTYPE html>)/i, "")
+        .replace(/<\/html>\s*[\s\S]*$/i, "</html>");
 
       await fileService.saveFile(filePath, finalResponse);
       console.log(`Code successfully written to file: ${filePath}`);

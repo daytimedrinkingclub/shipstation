@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { pluralize } from "@/lib/utils";
 import { PROMPT_PLACEHOLDERS } from "@/constants";
 import LoadingGameOverlay from "./LoadingGameOverlay";
+import ImageUpload from "./ImageUpload";
 
 const ShipForm = ({ type, reset }) => {
   const [requirements, setRequirements] = useLocalStorage("requirements", "");
@@ -27,6 +28,7 @@ const ShipForm = ({ type, reset }) => {
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isKeyValidating, setIsKeyValidating] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
 
   const navigate = useNavigate();
   const { user, userLoading, availableShips, anthropicKey, setAnthropicKey } =
@@ -43,14 +45,35 @@ const ShipForm = ({ type, reset }) => {
     onClose: onSuccessClose,
   } = useDisclosure();
 
+  const handleImageUpload = (imageData) => {
+    setUploadedImages(
+      imageData.map((img) => ({
+        file: img.file,
+        caption: img.caption,
+        mediaType: img.mediaType,
+      }))
+    );
+  };
+
   const startProject = () => {
-    sendMessage("startProject", {
-      shipType: type,
-      apiKey: anthropicKey,
-      message: requirements,
-    });
-    onClose();
-    onLoaderOpen();
+    try {
+      console.log("Starting project with images:", uploadedImages);
+      sendMessage("startProject", {
+        shipType: type,
+        apiKey: anthropicKey,
+        message: requirements,
+        images: uploadedImages.map((img) => ({
+          file: img.file,
+          caption: img.caption,
+          mediaType: img.mediaType,
+        })),
+      });
+      onClose();
+      onLoaderOpen();
+    } catch (error) {
+      console.error("Error starting project:", error);
+      // Handle the error appropriately (e.g., show an error message to the user)
+    }
   };
 
   const handleSubmit = (e) => {
@@ -126,6 +149,7 @@ const ShipForm = ({ type, reset }) => {
           value={requirements}
           onChange={(e) => setRequirements(e.target.value)}
         />
+        <ImageUpload onImageUpload={handleImageUpload} />
         <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 sm:space-y-0">
           <TooltipProvider>
             <Tooltip>

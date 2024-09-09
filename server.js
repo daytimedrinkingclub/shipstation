@@ -32,6 +32,7 @@ const io = socketIo(server, {
     origin: "*", // Allow all origins
     methods: ["GET", "POST"],
   },
+  maxHttpBufferSize: 5e6, // 5MB
 });
 
 const PORT = process.env.PORT || 5001;
