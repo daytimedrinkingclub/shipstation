@@ -42,26 +42,46 @@ async function processConversation({
       if (shipType === SHIP_TYPES.PORTFOLIO) {
         tools.push(ctoTool);
         tools.push(startShippingPortfolioTool);
-        messages = [{ role: "user", content: message }];
       }
       if (shipType === SHIP_TYPES.LANDING_PAGE) {
         tools.push(ctoTool);
         tools.push(startShippingLandingPageTool);
-        messages = [{ role: "user", content: message }];
       }
       if (shipType === SHIP_TYPES.EMAIL_TEMPLATE) {
         tools.push(ctoTool);
         tools.push(startShippingEmailTemplateTool);
-        messages = [{ role: "user", content: message }];
       }
       if (shipType === SHIP_TYPES.PROMPT) {
         tools.push(ctoTool);
         tools.push(productManagerTool);
         tools.push(searchTool);
         tools.push(imageAnalysisTool);
-        messages = [{ role: "user", content: message }];
       }
     }
+
+    let content = [{ type: "text", text: message }];
+
+    // Add images to the content if available
+    if (images && images.length > 0) {
+      images.forEach((img, index) => {
+        content.push(
+          {
+            type: "text",
+            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: img.mediaType,
+              data: img.file,
+            },
+          }
+        );
+      });
+    }
+
+    messages = [{ role: "user", content: content }];
 
     try {
       // insertMessage({
@@ -69,10 +89,18 @@ async function processConversation({
       //   role: "user",
       //   content: messages[0].content,
       // });
-      const systemPrompt =
-        shipType === SHIP_TYPES.PORTFOLIO
-          ? "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website."
-          : "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+      const systemPrompt = (() => {
+        switch (shipType) {
+          case SHIP_TYPES.PORTFOLIO:
+            return "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+          case SHIP_TYPES.LANDING_PAGE:
+            return "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+          case SHIP_TYPES.EMAIL_TEMPLATE:
+            return "Your task is to create an email template for the user. Analyze the user's requirements and use the start_shipping_email_template_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the email template.";
+          default:
+            throw new Error(`Unsupported ship type: ${shipType}`);
+        }
+      })();
 
       currentMessage = await client.sendMessage({
         system: systemPrompt,

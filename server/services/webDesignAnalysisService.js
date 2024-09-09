@@ -38,7 +38,7 @@ class WebDesignAnalysisService {
         content.push(
           {
             type: "text",
-            text: `Image ${index + 1}: ${img.caption}`,
+            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
           },
           {
             type: "image",
