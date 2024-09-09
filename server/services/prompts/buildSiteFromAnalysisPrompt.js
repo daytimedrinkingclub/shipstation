@@ -1,5 +1,5 @@
 const landingPagePrompt = `
-Web Developer Prompt: Create a Modern, Responsive Landing Page
+Create a Modern, Responsive Landing Page
 
 You are a web developer tasked with creating a modern, visually appealing, and fully responsive landing page based on a detailed design analysis. Your primary goal is to accurately recreate the webpage described in the analysis while incorporating the specific design language, trends, and elements identified.
 
@@ -54,11 +54,27 @@ Specific Design Language Implementation:
 - Implement any gradient effects, micro-interactions, or parallax scrolling as described.
 - If dark mode elements are mentioned, ensure proper implementation and color contrast.
 
-<analysis>
-\${analysis}
-</analysis>
+Inspiration Image Analysis:
+\${inspiration_image_analysis}
 
-Based on the above analysis, create the HTML code for the responsive landing page. Include all necessary elements, styles, and functionality to match the described design as closely as possible across all device sizes. Ensure that your implementation adheres to the general guidelines, technical requirements, responsive design focus, and specific design language implementation instructions specified above.
+Guidelines:
+\${guidelines}
+
+Output Instructions:
+
+Based on the above guidelines and the inspiration image analysis, create the HTML code for the responsive landing page. Follow these specific instructions:
+
+1. Use the inspiration image analysis as a guide for the overall visual design, layout, color scheme, and aesthetic elements.
+
+2. The content, functionality, and purpose of the website should strictly adhere to the user requirement guidelines provided (company name, description, required sections, etc.).
+
+3. Combine the visual design inspiration with the specified content requirements to create a cohesive and effective landing page.
+
+4. Include all necessary HTML elements, inline Tailwind CSS classes, and JavaScript functionality to fully implement the design across all device sizes.
+
+5. Ensure that the final output is a complete, functioning HTML file that accurately represents both the inspirational design and the required content/functionality.
+
+Remember, while the visual design is inspired by the analysis, the actual content and purpose of the website must align with the specified user requirements.
 `;
 
 const portfolioPrompt = `
@@ -123,11 +139,27 @@ Specific Design Language Implementation:
 - Implement any gradient effects, micro-interactions, or parallax scrolling as described.
 - If dark mode elements are mentioned, ensure proper implementation and color contrast.
 
-<analysis>
-\${analysis}
-</analysis>
+Inspiration Image Analysis:
+\${inspiration_image_analysis}
 
-Based on the above analysis, create the HTML code for the responsive portfolio website. Include all necessary elements, styles, and functionality to match the described design as closely as possible across all device sizes. Ensure that your implementation adheres to the general guidelines, technical requirements, responsive design focus, and specific portfolio features instructions specified above.
+Guidelines:
+\${guidelines}
+
+Output Instructions:
+
+Based on the above guidelines and the inspiration image analysis, create the HTML code for the responsive landing page. Follow these specific instructions:
+
+1. Use the inspiration image analysis as a guide for the overall visual design, layout, color scheme, and aesthetic elements.
+
+2. The content, functionality, and purpose of the website should strictly adhere to the user requirement guidelines provided (company name, description, required sections, etc.).
+
+3. Combine the visual design inspiration with the specified content requirements to create a cohesive and effective landing page.
+
+4. Include all necessary HTML elements, inline Tailwind CSS classes, and JavaScript functionality to fully implement the design across all device sizes.
+
+5. Ensure that the final output is a complete, functioning HTML file that accurately represents both the inspirational design and the required content/functionality.
+
+Remember, while the visual design is inspired by the analysis, the actual content and purpose of the website must align with the specified user requirements.
 `;
 
 const mailTemplatePrompt = `
@@ -183,18 +215,42 @@ Specific Email Template Features:
 - Add a footer section with unsubscribe link, social media icons, and any legal text as described.
 - Implement any dynamic content areas or personalization tokens if mentioned in the analysis.
 
-<analysis>
-\${analysis}
-</analysis>
+Inspiration Image Analysis:
+\${inspiration_image_analysis}
 
-Based on the above analysis, create the HTML code for the responsive email template. Include all necessary elements and inline styles to match the described design as closely as possible while ensuring compatibility across email clients. Ensure that your implementation adheres to the general guidelines, technical requirements, responsive design focus, and specific email template features instructions specified above.
+Guidelines:
+\${guidelines}
+
+Output Instructions:
+
+Based on the above guidelines and the inspiration image analysis, create the HTML code for the responsive landing page. Follow these specific instructions:
+
+1. Use the inspiration image analysis as a guide for the overall visual design, layout, color scheme, and aesthetic elements.
+
+2. The content, functionality, and purpose of the website should strictly adhere to the user requirement guidelines provided (company name, description, required sections, etc.).
+
+3. Combine the visual design inspiration with the specified content requirements to create a cohesive and effective landing page.
+
+4. Include all necessary HTML elements, inline Tailwind CSS classes, and JavaScript functionality to fully implement the design across all device sizes.
+
+5. Ensure that the final output is a complete, functioning HTML file that accurately represents both the inspirational design and the required content/functionality.
+
+Remember, while the visual design is inspired by the analysis, the actual content and purpose of the website must align with the specified user requirements.
 `;
 
 module.exports = {
-  landingPagePrompt: (analysis) =>
-    landingPagePrompt.replace("${analysis}", analysis),
-  portfolioPrompt: (analysis) =>
-    portfolioPrompt.replace("${analysis}", analysis),
-  mailTemplatePrompt: (analysis) =>
-    mailTemplatePrompt.replace("${analysis}", analysis),
+  landingPagePrompt: (inspirationImageAnalysis, guidelines) =>
+    landingPagePrompt
+      .replace("${inspiration_image_analysis}", inspirationImageAnalysis)
+      .replace("${guidelines}", guidelines),
+
+  portfolioPrompt: (inspirationImageAnalysis, guidelines) =>
+    portfolioPrompt
+      .replace("${inspiration_image_analysis}", inspirationImageAnalysis)
+      .replace("${guidelines}", guidelines),
+
+  mailTemplatePrompt: (inspirationImageAnalysis, guidelines) =>
+    mailTemplatePrompt
+      .replace("${inspiration_image_analysis}", inspirationImageAnalysis)
+      .replace("${guidelines}", guidelines),
 };

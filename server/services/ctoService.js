@@ -18,7 +18,6 @@ async function ctoService({
   shipType,
   images,
 }) {
-  console.log("ctoService received images:", images);
   const systemPrompt = [
     {
       type: "text",

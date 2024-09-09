@@ -11,10 +11,15 @@ const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisProm
 const fileService = new FileService();
 
 async function codeAssistant({ query, filePath, client, shipType, images }) {
-  console.log("codeAssistant received images:", images);
+  console.log("codeAssistant received images:", !!images);
+  console.log("codeAssistant query:", query);
+
   try {
     let finalResponse = null;
     let analysisResult = null;
+
+    let messages = [];
+
     console.log(
       `Received code write request for ${shipType} with ${
         images ? images.length : 0
@@ -43,35 +48,36 @@ async function codeAssistant({ query, filePath, client, shipType, images }) {
       case SHIP_TYPES.LANDING_PAGE:
         systemPrompt = codePrompt.landingPagePrompt;
         buildPrompt = buildSiteFromAnalysisPrompt.landingPagePrompt(
-          analysisResult?.analysis || ""
+          analysisResult?.analysis || "",
+          query
         );
         break;
       case SHIP_TYPES.PORTFOLIO:
         systemPrompt = codePrompt.portfolioPrompt;
         buildPrompt = buildSiteFromAnalysisPrompt.portfolioPrompt(
-          analysisResult?.analysis || ""
+          analysisResult?.analysis || "",
+          query
         );
         break;
       case SHIP_TYPES.EMAIL_TEMPLATE:
         systemPrompt = codePrompt.emailTemplatePrompt;
         buildPrompt = buildSiteFromAnalysisPrompt.mailTemplatePrompt(
-          analysisResult?.analysis || ""
+          analysisResult?.analysis || "",
+          query
         );
         break;
       default:
         throw new Error(`Unsupported ship type: ${shipType}`);
     }
 
-    let messages = [
-      {
-        role: "user",
-        content: [{ type: "text", text: query }],
-      },
-    ];
-
     if (images && images.length > 0) {
-      messages[0].content.push({ type: "text", text: buildPrompt });
+      messages.push({
+        role: "user",
+        content: [{ type: "text", text: buildPrompt }],
+      });
     }
+
+    console.log("codeService messages content:", messages[0].content);
 
     while (true) {
       console.log("Sending request to Anthropic API...");
@@ -81,7 +87,7 @@ async function codeAssistant({ query, filePath, client, shipType, images }) {
         tools: [placeholderImageTool],
         tool_choice: { type: "auto" },
       });
-      console.log("codeService API call Stop Reason:", msg.stop_reason);
+      console.log("codeService: API call Stop Reason:", msg.stop_reason);
 
       if (msg.stop_reason === "end_turn") {
         const textContent = msg.content.find(

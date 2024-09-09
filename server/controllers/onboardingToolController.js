@@ -27,7 +27,7 @@ async function handleOnboardingToolUse({
   shipType,
   images,
 }) {
-  console.log("onboradingToolController recieved images:", images);
+  console.log("onboradingToolController recieved images:", !!images);
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
