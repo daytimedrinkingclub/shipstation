@@ -4,10 +4,10 @@ const axios = require("axios");
 
 const paypalClientId = process.env.PAYPAL_CLIENT_ID;
 const paypalClientSecret = process.env.PAYPAL_CLIENT_SECRET;
+const PAYPAL_BASE_URL = "https://api-m.paypal.com";
 
-const PAYPAL_OAUTH_TOKEN_URL = "https://api-m.paypal.com/v1/oauth2/token";
-const PAYPAL_VERIFY_WEBHOOK_URL =
-  "https://api-m.paypal.com/v1/notifications/verify-webhook-signature";
+const PAYPAL_OAUTH_TOKEN_URL = `${PAYPAL_BASE_URL}/v1/oauth2/token`;
+const PAYPAL_VERIFY_WEBHOOK_URL = `${PAYPAL_BASE_URL}/v1/notifications/verify-webhook-signature`;
 
 class PaymentService {
   constructor() {

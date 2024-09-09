@@ -15,6 +15,7 @@ const {
   getUserProfile,
   updateUserProfile,
 } = require("./server/services/dbService");
+
 const {
   handleOnboardingSocketEvents,
 } = require("./server/services/onboadingService");
@@ -121,16 +122,20 @@ app.post("/paypal-webhook", async (req, res) => {
     const { headers } = req;
 
     const isValid = await validatePaypalWebhook(headers, webhookEvent);
-
     if (!isValid) {
       return res.status(400).json({ error: "Invalid signature" });
     }
 
-    if (webhookEvent.event_type === "CHECKOUT.ORDER.COMPLETED") {
-      const email = webhookEvent.resource.payer?.email_address;
-      const user_id = await getUserIdFromEmail(email);
+    if (webhookEvent.event_type === "CHECKOUT.ORDER.APPROVED") {
+      // Retrieve the ShipStation user's email from the custom field
+      const shipstationEmail = webhookEvent.resource.purchase_units[0]?.custom_id;
+      
+      if (!shipstationEmail) {
+        return res.status(400).json({ error: "ShipStation email not found" });
+      }
+
+      const user_id = await getUserIdFromEmail(shipstationEmail);
       if (!user_id) {
-        console.error(`User not found for email: ${email}`);
         return res.status(404).json({ error: "User not found" });
       }
 
@@ -151,12 +156,11 @@ app.post("/paypal-webhook", async (req, res) => {
         provider: "paypal",
         ships_count: 1,
       };
-
       await insertPayment(paymentPayload);
-
+      
       // Retrieve the user's profile to determine the current ships count
       const profile = await getUserProfile(user_id);
-
+      
       // Update the user's profile to reflect the new ships count
       const profilePayload = { available_ships: profile.available_ships + 1 };
       await updateUserProfile(user_id, profilePayload);
@@ -168,7 +172,7 @@ app.post("/paypal-webhook", async (req, res) => {
           {
             title: "Payment Details",
             fields: [
-              { name: "Email", value: email },
+              { name: "ShipStation Email", value: shipstationEmail },
               { name: "Payment ID", value: webhookEvent.resource.id },
               { name: "Product", value: productType },
             ],
