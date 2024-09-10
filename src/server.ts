@@ -1,9 +1,9 @@
-const express = require("express");
-const http = require("http");
-const socketIo = require("socket.io");
-const cors = require("cors");
-const path = require("path");
-const { JSDOM } = require("jsdom");
+import express, { Express, Request, Response } from 'express';
+import http from 'http';
+import { Server as SocketIOServer, Socket } from 'socket.io';
+import cors from 'cors';
+import path from 'path';
+import { JSDOM } from 'jsdom';
 
 const {
   validateRazorpayWebhook,
@@ -25,9 +25,9 @@ const fileService = new FileService();
 
 require("dotenv").config();
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIo(server, {
+const app: Express = express();
+const server: http.Server = http.createServer(app);
+const io: SocketIOServer = new SocketIOServer(server, {
   cors: {
     origin: "*", // Allow all origins
     methods: ["GET", "POST"],
@@ -346,7 +346,17 @@ app.use("/site/:siteId", async (req, res, next) => {
   }
 });
 
-handleOnboardingSocketEvents(io);
+// Update the Socket.IO event handling
+io.on('connection', (socket: Socket) => {
+  console.log('A user connected');
+
+  // Handle onboarding socket events
+  handleOnboardingSocketEvents(io, socket);
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
 
 server.listen(PORT, () => {
   console.log(`Server running at ${PORT}`);

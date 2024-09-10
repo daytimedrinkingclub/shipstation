@@ -18,6 +18,20 @@ const generateProjectFolderName = (projectName) => {
   return toKebabCase(projectName) + "-" + nanoid(8);
 };
 
+interface ToolUseParams {
+  tool: {
+    name: string;
+    input: any;
+    id: string;
+  };
+  sendEvent: (event: string, data: any) => void;
+  messages: any[];
+  userId: string;
+  client: any;
+  shipType: string;
+  images?: any[];
+}
+
 async function handleOnboardingToolUse({
   tool,
   sendEvent,
@@ -26,7 +40,7 @@ async function handleOnboardingToolUse({
   client,
   shipType,
   images,
-}) {
+}: ToolUseParams) {
   console.log("onboradingToolController recieved images:", !!images);
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);

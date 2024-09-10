@@ -1,6 +1,6 @@
-const { supabaseClient } = require("./supabaseService");
+import { supabaseClient } from './supabaseService';
 
-async function insertConversation(payload) {
+export async function insertConversation(payload: any) {
   const { data, error } = await supabaseClient
     .from("conversations")
     .insert({ ...payload })

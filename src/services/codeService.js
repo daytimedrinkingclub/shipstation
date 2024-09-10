@@ -6,7 +6,7 @@ require("dotenv").config();
 
 const { WebDesignAnalysisService } = require("./webDesignAnalysisService");
 
-const FileService = require("../services/fileService");
+const FileService = require("./fileService");
 const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisPrompt");
 const fileService = new FileService();
 
