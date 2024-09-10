@@ -141,8 +141,8 @@ const Edit = () => {
     setCurrentDevice(newDevice);
     toast(`Congratulations! 🎉`, {
       description: `You've changed the device to ${newDevice}`,
-      position: "top-right",
-      duration: 2500,
+      position: "bottom-right",
+      duration: 1500,
     });
   };
 

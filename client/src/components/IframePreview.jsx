@@ -2,8 +2,8 @@ import React, {
   useRef,
   useImperativeHandle,
   forwardRef,
-  useEffect,
   useState,
+  useEffect,
 } from "react";
 import { DeviceFrameset } from "react-device-frameset";
 import Lottie from "react-lottie-player";
@@ -95,7 +95,6 @@ const IframePreview = forwardRef(
         className={`w-full h-full border-0 ${
           device && HAS_NOTCH.includes(device) ? "pt-8 bg-black" : ""
         }`}
-        style={{ height: "100%", width: "100%" }}
       ></iframe>
     ) : (
       <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -107,21 +106,15 @@ const IframePreview = forwardRef(
       currentView !== "fullscreen" && currentView !== "mobile"
         ? "overflow-auto"
         : ""
-    }`;
+    } ${currentView === "mobile" ? "flex items-center justify-center" : ""}`;
 
     if (device) {
       return (
         <div ref={containerRef} className={wrapperClass}>
-          <div
-            className="scale-[0.7]"
-            style={{ height: "100%", width: "100%" }}
-          >
-            <DeviceFrameset
-              device={device}
-              style={{ height: "100%", width: "100%" }}
-            >
-              {content}
-            </DeviceFrameset>
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="scale-[0.7]">
+              <DeviceFrameset device={device}>{content}</DeviceFrameset>
+            </div>
           </div>
         </div>
       );
