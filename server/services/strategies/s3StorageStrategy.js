@@ -10,7 +10,7 @@ require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
 const bucketName = process.env.BUCKET_NAME;
-const wasabiEndpoint = process.env.S3_EXTERNAL_ENDPOINT;
+const externalS3Endpoint = process.env.S3_EXTERNAL_ENDPOINT;
 
 class S3StorageStrategy {
   async saveFile(filePath, content) {
@@ -20,6 +20,7 @@ class S3StorageStrategy {
       Key: finalPath,
       Body: content,
     };
+    console.log(`Uploading to s3 with params: ${JSON.stringify(params)}`);
     try {
       await s3Handler.send(new PutObjectCommand(params));
       console.log(`Successfully uploaded to s3 on path: ${finalPath}`);
@@ -102,15 +103,17 @@ class S3StorageStrategy {
   }
 
   async getFile(filePath) {
+    const finalPath = `${WEBSITES_PATH}/${filePath}`;
+
     const params = {
       Bucket: bucketName,
-      Key: filePath,
+      Key: finalPath,
     };
     try {
       const data = await s3Handler.send(new GetObjectCommand(params));
       return data.Body;
     } catch (err) {
-      console.error(`Error getting file ${filePath}:`, err);
+      console.error(`Error getting file ${finalPath}:`, err);
       throw err;
     }
   }
@@ -228,9 +231,11 @@ class S3StorageStrategy {
   }
 
   getPublicUrl(filePath) {
-    if (wasabiEndpoint) {
-      // Wasabi case
-      return `${wasabiEndpoint}/${bucketName}/${WEBSITES_PATH}/${filePath}`;
+    if (externalS3Endpoint) {
+      // External S3 case
+      const finalPath = `${externalS3Endpoint}/${bucketName}/${WEBSITES_PATH}/${filePath}`;
+      console.log(`Public URL: ${finalPath}`);
+      return finalPath;
     } else {
       // Standard S3 case
       return `https://${bucketName}.s3.amazonaws.com/${WEBSITES_PATH}/${filePath}`;

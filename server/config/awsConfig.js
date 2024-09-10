@@ -9,10 +9,10 @@ const s3Config = {
   },
 };
 
-// Wasabi
+// If using external s3 service
 if (process.env.S3_EXTERNAL_ENDPOINT) {
   s3Config.endpoint = process.env.S3_EXTERNAL_ENDPOINT;
-  s3Config.forcePathStyle = true; // Needed for Wasabi
+  s3Config.forcePathStyle = true;
 }
 
 const s3Handler = new S3Client(s3Config);
