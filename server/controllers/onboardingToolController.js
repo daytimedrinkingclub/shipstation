@@ -27,7 +27,7 @@ async function handleOnboardingToolUse({
   shipType,
   images,
 }) {
-  console.log("onboradingToolController recieved images:", !!images);
+  console.log("onboradingToolController recieved images:", images);
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
@@ -171,6 +171,9 @@ async function handleOnboardingToolUse({
     const fileContent = await fileService.getFile(
       `${generatedFolderName}/readme.md`
     );
+
+    console.log("onboardingToolController readme fileContent", fileContent);
+
     const { message, slug } = await ctoService.ctoService({
       query: fileContent,
       projectFolderName: generatedFolderName,

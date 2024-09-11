@@ -1,11 +1,11 @@
 const S3StorageStrategy = require("./strategies/s3StorageStrategy");
 const LocalStorageStrategy = require("./strategies/localStorageStrategy");
-
+const SupabaseStorageStrategy = require("./strategies/supabaseStorageStrategy");
 class FileService {
   constructor() {
     this.strategy =
       process.env.USE_S3_STORAGE === "true"
-        ? new S3StorageStrategy()
+        ? new SupabaseStorageStrategy()
         : new LocalStorageStrategy();
   }
 

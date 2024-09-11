@@ -75,6 +75,11 @@ async function codeAssistant({ query, filePath, client, shipType, images }) {
         role: "user",
         content: [{ type: "text", text: buildPrompt }],
       });
+    } else {
+      messages.push({
+        role: "user",
+        content: [{ type: "text", text: query }],
+      });
     }
 
     console.log("codeService messages content:", messages[0].content);
