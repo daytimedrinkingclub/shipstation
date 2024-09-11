@@ -1,12 +1,22 @@
 const S3StorageStrategy = require("./strategies/s3StorageStrategy");
 const LocalStorageStrategy = require("./strategies/localStorageStrategy");
 const SupabaseStorageStrategy = require("./strategies/supabaseStorageStrategy");
+
 class FileService {
   constructor() {
-    this.strategy =
-      process.env.USE_S3_STORAGE === "true"
-        ? new SupabaseStorageStrategy()
-        : new LocalStorageStrategy();
+    this.strategy = this.selectStorageStrategy();
+  }
+
+  selectStorageStrategy() {
+    switch (process.env.STORAGE_STRATEGY) {
+      case "s3":
+        return new S3StorageStrategy();
+      case "supabase":
+        return new SupabaseStorageStrategy();
+      case "local":
+      default:
+        return new LocalStorageStrategy();
+    }
   }
 
   async saveFile(filePath, content) {

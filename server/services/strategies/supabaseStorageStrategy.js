@@ -9,12 +9,13 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
 );
-const BUCKET_NAME = "shipstation-websites";
-const WEBSITES_PREFIX = "websites";
+
+const BUCKET_NAME = process.env.BUCKET_NAME || "shipstation-websites";
+const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
 
 class SupabaseStorageStrategy {
   _getFullPath(filePath) {
-    return path.join(WEBSITES_PREFIX, filePath).replace(/\\/g, "/");
+    return path.join(WEBSITES_PATH, filePath).replace(/\\/g, "/");
   }
 
   async saveFile(filePath, content) {
