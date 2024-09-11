@@ -1,15 +1,44 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSocket } from "@/context/SocketProvider";
 
-const Chat = ({ shipId }) => {
+const Chat = ({ shipId, onCodeUpdate }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    if (socket) {
+      socket.on("chatResponse", handleChatResponse);
+      socket.on("codeUpdate", handleCodeUpdate);
+
+      return () => {
+        socket.off("chatResponse", handleChatResponse);
+        socket.off("codeUpdate", handleCodeUpdate);
+      };
+    }
+  }, [socket, onCodeUpdate]);
+
+  const handleChatResponse = (response) => {
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: response.message, sender: "ai" },
+    ]);
+    setIsLoading(false);
+  };
+
+  const handleCodeUpdate = (updatedCode) => {
+    onCodeUpdate(updatedCode);
+  };
 
   const handleSend = () => {
     if (input.trim()) {
-      setMessages([...messages, { text: input, sender: "user" }]);
-      // TODO: Send message to AI and get response
+      setIsLoading(true);
+      const userMessage = { text: input, sender: "user" };
+      setMessages((prevMessages) => [...prevMessages, userMessage]);
+      socket.emit("chatMessage", { shipId, message: input });
       setInput("");
     }
   };
@@ -43,8 +72,11 @@ const Chat = ({ shipId }) => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
             onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            disabled={isLoading}
           />
-          <Button onClick={handleSend}>Send</Button>
+          <Button onClick={handleSend} disabled={isLoading}>
+            {isLoading ? "Sending..." : "Send"}
+          </Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, useRef } from "react";
 import { format } from "date-fns";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import {
   Save,
@@ -12,9 +12,11 @@ import {
   Rows2,
   Maximize2,
   Smartphone,
+  ChevronLeft,
 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { useProject } from "@/hooks/useProject";
 import IframePreview, { DEVICE_FRAMES } from "@/components/IframePreview";
 import Dice from "@/components/random/Dice";
@@ -37,13 +39,20 @@ const ViewOptions = ({ currentView, onViewChange }) => {
   ];
 
   return (
-    <div className="flex space-x-2 mb-2">
-      {views.map((view) => (
+    <div className="flex">
+      {views.map((view, index) => (
         <Button
           key={view.id}
           variant={currentView === view.id ? "default" : "outline"}
-          size="sm"
+          size="icon"
           onClick={() => onViewChange(view.id)}
+          className={`w-10 h-10 px-2 ${
+            index === 0
+              ? "rounded-l-md rounded-r-none"
+              : index === views.length - 1
+              ? "rounded-r-md rounded-l-none"
+              : "rounded-none"
+          } ${index !== 0 ? "-ml-px" : ""}`}
         >
           <view.icon className="w-4 h-4" />
         </Button>
@@ -68,7 +77,7 @@ const Edit = () => {
   const [unsavedChanges, setUnsavedChanges] = useState(false);
 
   const [currentDevice, setCurrentDevice] = useState(DEVICE_FRAMES[0]);
-  const [activeTab, setActiveTab] = useState("code");
+  const [activeTab, setActiveTab] = useState("chat");
   const [currentView, setCurrentView] = useState("horizontal");
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
 
@@ -135,6 +144,14 @@ const Edit = () => {
     });
   };
 
+  const handleCodeUpdate = (updatedCode) => {
+    setFileContent(updatedCode);
+    setUnsavedChanges(true);
+    if (iframeRef.current) {
+      iframeRef.current.reload();
+    }
+  };
+
   const shuffleDevice = () => {
     const newDevice =
       DEVICE_FRAMES[Math.floor(Math.random() * DEVICE_FRAMES.length)];
@@ -153,42 +170,50 @@ const Edit = () => {
   return (
     <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
       <div className="flex justify-between items-center mb-2">
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-4">
+          <Link to="/" className="text-foreground hover:text-primary">
+            <ChevronLeft className="w-6 h-6" />
+          </Link>
+          <h1 className="text-xl font-semibold">{shipId}</h1>
+        </div>
+        <div className="flex items-center space-x-2">
+          <ViewOptions
+            currentView={currentView}
+            onViewChange={setCurrentView}
+          />
+          <Separator orientation="vertical" className="h-8 mx-2" />
           <Button
             variant="secondary"
-            size="sm"
-            onClick={() => {
-              handledownloadzip();
-              toast("Project will be downloaded shortly!");
-            }}
-            className="text-foreground bg-background hover:bg-accent"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Download
-          </Button>
-          <Button
-            variant="secondary"
-            size="sm"
+            className="h-10 px-2"
             onClick={() => {
               window.open(
                 `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
                 "_blank"
               );
             }}
-            className="text-foreground bg-background hover:bg-accent"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             View
           </Button>
+          <Button
+            variant="default"
+            size="icon"
+            className="h-10 px-2 bg-green-500 hover:bg-green-600"
+            onClick={() => {
+              handledownloadzip();
+              toast("Project will be downloaded shortly!");
+            }}
+          >
+            <Download className="w-4 h-4 " />
+          </Button>
         </div>
-        <ViewOptions currentView={currentView} onViewChange={setCurrentView} />
       </div>
       <ResizablePanelGroup
         direction={currentView === "vertical" ? "vertical" : "horizontal"}
         className="flex-1 overflow-hidden rounded-lg border border-border"
       >
         {currentView !== "fullscreen" && (
-          <ResizablePanel defaultSize={50} minSize={30}>
+          <ResizablePanel defaultSize={30} minSize={30}>
             <Tabs
               value={activeTab}
               onValueChange={setActiveTab}
@@ -196,28 +221,29 @@ const Edit = () => {
             >
               <div className="bg-card p-2 flex justify-between items-center">
                 <TabsList>
-                  <TabsTrigger value="code" className="flex items-center">
-                    <Code className="w-4 h-4 mr-2" />
-                    Code
-                  </TabsTrigger>
                   <TabsTrigger value="chat" className="flex items-center">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     AI Chat
                   </TabsTrigger>
+                  <TabsTrigger value="code" className="flex items-center">
+                    <Code className="w-4 h-4 mr-2" />
+                    Code
+                  </TabsTrigger>
                 </TabsList>
-                {activeTab === "code" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={submitting}
-                    onClick={handleFileSave}
-                    className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={submitting || activeTab !== "code"}
+                  onClick={handleFileSave}
+                  className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save
+                </Button>
               </div>
+              <TabsContent value="chat" className="flex-grow">
+                <Chat shipId={shipId} onCodeUpdate={handleCodeUpdate} />
+              </TabsContent>
               <TabsContent value="code" className="flex-grow">
                 <div className="h-full flex flex-col bg-background">
                   <div className="flex items-center gap-2 px-2 py-1">
@@ -260,9 +286,6 @@ const Edit = () => {
                     />
                   )}
                 </div>
-              </TabsContent>
-              <TabsContent value="chat" className="flex-grow">
-                <Chat shipId={shipId} />
               </TabsContent>
             </Tabs>
           </ResizablePanel>

@@ -258,6 +258,27 @@ function handleOnboardingSocketEvents(io) {
       }
     });
 
+    socket.on("chatMessage", async (data) => {
+      const { shipId, message } = data;
+      console.log("Received chat message:", message, "for ship:", shipId);
+
+      try {
+        const { refineCode } = require("./codeRefinementService");
+        const result = await refineCode(shipId, message, socket.userId);
+
+        socket.emit("chatResponse", { message: result.updatedMessage });
+
+        if (result.updatedCode) {
+          socket.emit("codeUpdate", result.updatedCode);
+        }
+      } catch (error) {
+        console.error("Error processing chat message:", error);
+        socket.emit("chatResponse", {
+          message: "An error occurred while processing your message.",
+        });
+      }
+    });
+
     socket.on("abortWebsiteCreation", () => {
       abortController.abort();
       console.log("Aborting website creation");
