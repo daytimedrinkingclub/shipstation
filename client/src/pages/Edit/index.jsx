@@ -241,10 +241,10 @@ const Edit = () => {
                   Save
                 </Button>
               </div>
-              <TabsContent value="chat" className="flex-grow">
+              <TabsContent value="chat" className="flex-grow overflow-hidden">
                 <Chat shipId={shipId} onCodeUpdate={handleCodeUpdate} />
               </TabsContent>
-              <TabsContent value="code" className="flex-grow">
+              <TabsContent value="code" className="flex-grow overflow-hidden">
                 <div className="h-full flex flex-col bg-background">
                   <div className="flex items-center gap-2 px-2 py-1">
                     <span className="font-bold text-foreground">
@@ -291,7 +291,7 @@ const Edit = () => {
           </ResizablePanel>
         )}
         {currentView !== "fullscreen" && <ResizableHandle withHandle />}
-        <ResizablePanel defaultSize={currentView === "fullscreen" ? 100 : 50}>
+        <ResizablePanel defaultSize={currentView === "fullscreen" ? 100 : 70}>
           <div ref={previewContainerRef} className="h-full overflow-hidden">
             <IframePreview
               device={currentView === "mobile" ? currentDevice : null}
