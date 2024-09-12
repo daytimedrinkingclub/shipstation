@@ -127,3 +127,29 @@ create table
   ) tablespace pg_default;
 
 create index if not exists idx_payments_user_id on public.payments using btree (user_id) tablespace pg_default;
+
+-- Commands to create policies for managing user access to tables
+CREATE POLICY manage_own_conversations
+ON public.conversations
+FOR SELECT, INSERT, UPDATE, DELETE
+TO public
+USING (auth.uid() = user_id);
+
+CREATE POLICY manage_own_ships
+ON public.ships
+FOR SELECT, INSERT, UPDATE, DELETE
+TO public
+USING (auth.uid() = user_id);
+
+CREATE POLICY read_own_profile
+ON public.user_profiles
+FOR SELECT
+TO public
+USING (auth.uid() = id);
+
+CREATE POLICY update_available_ships
+ON public.user_profiles
+FOR UPDATE
+TO public
+USING (auth.role() = 'admin'::text)
+WITH CHECK (auth.role() = 'admin'::text);
