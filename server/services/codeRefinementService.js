@@ -24,8 +24,8 @@ async function refineCode(shipId, message, userId) {
   let messages = conversation?.messages || [];
 
   // Prepare messages to be stored in the database
-  const messagesToSaveInDB = messages;
-  //   messagesToSaveInDB.push({ role: "user", content: message });
+  const messagesToSaveInDB = [...messages];
+  messagesToSaveInDB.push({ role: "user", content: message });
 
   const systemPrompt = `
     You are an AI assistant specialized in refining HTML code. Analyze the current HTML code and the user's request, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
