@@ -52,6 +52,9 @@ async function refineCode(shipId, message, userId) {
     </updated_code>
 
     The <updated_code> section must contain the full HTML document, fully formatted and indented, incorporating all requested changes while preserving the original structure and content of unchanged parts. Ensure that all changes follow the requested updates and do not affect other aspects of the code unless instructed. Remember to include ALL code, even parts that haven't changed. Do not use any form of shorthand or placeholders to represent unchanged code.
+
+    **Important:**
+    Please rewrite the whole code even if it is not changed, do not use any comments to indicate which parts are unchanged, this will break the website, we need to avoid that.
     `;
 
   const userMessage = `Current HTML code:\n${currentCode}\n\nUser request: ${message}`;
@@ -125,6 +128,11 @@ async function refineCode(shipId, message, userId) {
 
   console.log(`Updated code length: ${updatedCode.length} characters`);
 
+  // Create a backup of the current code
+  const backupFilePath = `${shipId}/backup.html`;
+  await fileService.saveFile(backupFilePath, currentCode);
+
+  // Save the updated code
   if (updatedCode) {
     console.log(`Saving updated code to ${filePath}`);
     await fileService.saveFile(filePath, updatedCode);
@@ -189,7 +197,53 @@ async function handleToolUse(tool, client) {
   return [];
 }
 
+async function undoCodeChange(shipId) {
+  const filePath = `${shipId}/index.html`;
+  const backupFilePath = `${shipId}/backup.html`;
+
+  try {
+    const backupCode = await fileService.getFile(backupFilePath);
+    const currentCode = await fileService.getFile(filePath);
+
+    // Save current code as redo backup
+    await fileService.saveFile(`${shipId}/redo_backup.html`, currentCode);
+
+    // Restore backup code
+    await fileService.saveFile(filePath, backupCode);
+
+    console.log(`Undo operation completed for shipId: ${shipId}`);
+    return { success: true, message: "Undo operation completed successfully" };
+  } catch (error) {
+    console.error(`Error during undo operation for shipId: ${shipId}`, error);
+    return { success: false, message: "Error during undo operation" };
+  }
+}
+
+async function redoCodeChange(shipId) {
+  const filePath = `${shipId}/index.html`;
+  const redoBackupFilePath = `${shipId}/redo_backup.html`;
+
+  try {
+    const redoBackupCode = await fileService.getFile(redoBackupFilePath);
+    const currentCode = await fileService.getFile(filePath);
+
+    // Save current code as undo backup
+    await fileService.saveFile(`${shipId}/backup.html`, currentCode);
+
+    // Restore redo backup code
+    await fileService.saveFile(filePath, redoBackupCode);
+
+    console.log(`Redo operation completed for shipId: ${shipId}`);
+    return { success: true, message: "Redo operation completed successfully" };
+  } catch (error) {
+    console.error(`Error during redo operation for shipId: ${shipId}`, error);
+    return { success: false, message: "Error during redo operation" };
+  }
+}
+
 module.exports = {
   refineCode,
   handleToolUse,
+  undoCodeChange,
+  redoCodeChange,
 };

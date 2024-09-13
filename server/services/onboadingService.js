@@ -27,7 +27,7 @@ async function processConversation({
   message,
   images,
 }) {
-  console.log("processConversation received images:", !!images);
+  console.log("processConversation received images:", images.length);
   while (true) {
     if (abortSignal.aborted) {
       throw new DOMException("Aborted", "AbortError");
@@ -275,6 +275,58 @@ function handleOnboardingSocketEvents(io) {
         console.error("Error processing chat message:", error);
         socket.emit("chatResponse", {
           message: "An error occurred while processing your message.",
+        });
+      }
+    });
+
+    socket.on("undoCodeChange", async (data) => {
+      const { shipId } = data;
+      console.log("Received undo request for ship:", shipId);
+
+      try {
+        const { undoCodeChange } = require("./codeRefinementService");
+        const result = await undoCodeChange(shipId);
+
+        if (result.success) {
+          socket.emit("undoResult", { success: true, message: result.message });
+          socket.emit("codeUpdate", result.updatedCode);
+        } else {
+          socket.emit("undoResult", {
+            success: false,
+            message: result.message,
+          });
+        }
+      } catch (error) {
+        console.error("Error processing undo request:", error);
+        socket.emit("undoResult", {
+          success: false,
+          message: "An error occurred while processing your undo request.",
+        });
+      }
+    });
+
+    socket.on("redoCodeChange", async (data) => {
+      const { shipId } = data;
+      console.log("Received redo request for ship:", shipId);
+
+      try {
+        const { redoCodeChange } = require("./codeRefinementService");
+        const result = await redoCodeChange(shipId);
+
+        if (result.success) {
+          socket.emit("redoResult", { success: true, message: result.message });
+          socket.emit("codeUpdate", result.updatedCode);
+        } else {
+          socket.emit("redoResult", {
+            success: false,
+            message: result.message,
+          });
+        }
+      } catch (error) {
+        console.error("Error processing redo request:", error);
+        socket.emit("redoResult", {
+          success: false,
+          message: "An error occurred while processing your redo request.",
         });
       }
     });

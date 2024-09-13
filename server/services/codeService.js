@@ -11,7 +11,7 @@ const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisProm
 const fileService = new FileService();
 
 async function codeAssistant({ query, filePath, client, shipType, images }) {
-  console.log("codeAssistant received images:", !!images);
+  console.log("codeAssistant received images:", images.length);
   console.log("codeAssistant query:", query);
 
   try {
