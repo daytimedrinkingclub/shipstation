@@ -1,0 +1,9 @@
+[api]
+endpoint = "https://your-self-hosted-instance.com"
+
+[db]
+host = ""
+port = 5432
+schema = "public"
+user = "postgres"
+password = "your-database-password"
