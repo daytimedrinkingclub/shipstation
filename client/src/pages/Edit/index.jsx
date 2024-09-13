@@ -187,6 +187,10 @@ const Edit = () => {
   const handleUndoResult = (result) => {
     if (result.success) {
       toast.success(result.message);
+      setFileContent(result.code);
+      if (iframeRef.current) {
+        iframeRef.current.reload();
+      }
     } else {
       toast.error(result.message);
     }
@@ -195,21 +199,27 @@ const Edit = () => {
   const handleRedoResult = (result) => {
     if (result.success) {
       toast.success(result.message);
+      setFileContent(result.code);
+      if (iframeRef.current) {
+        iframeRef.current.reload();
+      }
     } else {
       toast.error(result.message);
     }
   };
 
   useEffect(() => {
-    socket.on("undoResult", handleUndoResult);
-    socket.on("redoResult", handleRedoResult);
-    socket.on("codeUpdate", handleCodeUpdate);
+    if (socket) {
+      socket.on("undoResult", handleUndoResult);
+      socket.on("redoResult", handleRedoResult);
+      socket.on("codeUpdate", handleCodeUpdate);
 
-    return () => {
-      socket.off("undoResult", handleUndoResult);
-      socket.off("redoResult", handleRedoResult);
-      socket.off("codeUpdate", handleCodeUpdate);
-    };
+      return () => {
+        socket.off("undoResult", handleUndoResult);
+        socket.off("redoResult", handleRedoResult);
+        socket.off("codeUpdate", handleCodeUpdate);
+      };
+    }
   }, [socket]);
 
   if (!user || !shipId) {
