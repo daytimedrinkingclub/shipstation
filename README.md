@@ -1,21 +1,15 @@
 # [ShipStation](https://shipstation.ai)
 
-ShipStation, https://shipstation.ai is an AI based website and agents generation platform.
-
-To begin with, we are optimising simple landing page websites, next stop being generic connect-anything-to-anything services.
-
-Imagine working on some new platform which has solved a lot of good problems but just doesn't work effectively for you as the provider of the service can't understand you and you can't understand the provider.
-
-Our WIP tool is able to solve it with very high accuracy, say 95% of the time so that you, the saas provider and the required integration partner never need to be aware of each other and things get done for you.
+ShipStation, https://shipstation.ai is an AI based code generation platform.
+Currently, it is optimised for generating simple landing pages, portfolios, email templates, etc. with more complex features to follow.
 
 ## Features of ShipStation
 
 - User authentication (login/signup) via SupaBase
-- Basic landing page to communicate with user and understand what would make them happy
-- View previously generated projects and featured websites
-- Code editor to edit the generated website
+- Dashboard to generate new projects
+- View previously generated projects with code editor to edit the generated website
 - Option to use personal Anthropic API key for free usage
-- Integrated payment options via Razorpay/PayPal for purchasing credits. Paypal integration is not complete yet.
+- Integrated payment options via PayPal and Razorpay for purchasing credits.
 - Real-time progress tracking during website generation on websocket
 
 ## Project Architecture
@@ -31,14 +25,12 @@ The project is a full stack application
 - Anthropic API key 
 - Supabase account (for auth and more)
 - Tavily API key
-- Razorpay account (for payment integration) or can use stripe or skip it all together
-- Heroku for the server (for deploying shipstation itself) - mainly due to bucketeer addon
-- Bucketeer Heroku Addon for storing and retrieving the generated website - can use any other S3 compatible storage
+- Paypal account (for payment integration) or can use Razorpay or skip it all together
 
 ## Setup Instructions
 Clone the repository and follow the instructions below:
 ```bash
-git clone https://github.com/daytimedrinkingclub/shipstation-backend.git
+git clone https://github.com/daytimedrinkingclub/shipstation.git
 ```
 
 ### Supabase setup

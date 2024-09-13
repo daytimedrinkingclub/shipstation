@@ -28,6 +28,7 @@ async function processConversation({
   images,
 }) {
   console.log("processConversation received images:", images.length);
+
   while (true) {
     if (abortSignal.aborted) {
       throw new DOMException("Aborted", "AbortError");

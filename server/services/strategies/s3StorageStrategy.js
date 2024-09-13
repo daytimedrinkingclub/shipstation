@@ -10,7 +10,7 @@ require("dotenv").config();
 
 const WEBSITES_PATH = process.env.WEBSITES_PATH || "websites";
 const bucketName = process.env.BUCKET_NAME;
-const wasabiEndpoint = process.env.WASABI_ENDPOINT;
+const externalS3Endpoint = process.env.S3_EXTERNAL_ENDPOINT;
 
 class S3StorageStrategy {
   async saveFile(filePath, content) {
@@ -20,6 +20,7 @@ class S3StorageStrategy {
       Key: finalPath,
       Body: content,
     };
+    console.log(`Uploading to s3 with params: ${JSON.stringify(params)}`);
     try {
       await s3Handler.send(new PutObjectCommand(params));
       console.log(`Successfully uploaded to s3 on path: ${finalPath}`);
@@ -102,27 +103,57 @@ class S3StorageStrategy {
   }
 
   async getFile(filePath) {
+    const finalPath = `${WEBSITES_PATH}/${filePath}`;
+
     const params = {
       Bucket: bucketName,
-      Key: filePath,
+      Key: finalPath,
     };
     try {
       const data = await s3Handler.send(new GetObjectCommand(params));
-      return data.Body;
+      // Convert the readable stream to a string
+      const fileContent = await new Promise((resolve, reject) => {
+        let content = "";
+        data.Body.on("data", (chunk) => (content += chunk.toString()));
+        data.Body.on("error", reject);
+        data.Body.on("end", () => resolve(content));
+      });
+      return fileContent;
     } catch (err) {
-      console.error(`Error getting file ${filePath}:`, err);
+      console.error(`Error getting file ${finalPath}:`, err);
       throw err;
     }
   }
 
   async createZipFromDirectory(directoryPath) {
+    const prefix = `${WEBSITES_PATH}/${directoryPath}/`;
+    console.log(`Attempting to create zip from S3 prefix: ${prefix}`);
+    console.log(`WEBSITES_PATH: ${WEBSITES_PATH}`);
+    console.log(`Full S3 prefix: ${prefix}`);
+    console.log(`Bucket name: ${bucketName}`);
+
     const params = {
       Bucket: bucketName,
-      Prefix: `${WEBSITES_PATH}/${directoryPath}`,
+      Prefix: prefix,
     };
 
     try {
+      console.log(
+        `Listing objects in bucket: ${bucketName} with prefix: ${prefix}`
+      );
       const data = await s3Handler.send(new ListObjectsV2Command(params));
+
+      console.log(
+        `ListObjectsV2Command response:`,
+        JSON.stringify(data, null, 2)
+      );
+
+      if (!data.Contents || data.Contents.length === 0) {
+        console.log(`No files found in the specified directory: ${prefix}`);
+        throw new Error("No files found in the specified directory");
+      }
+
+      console.log(`Found ${data.Contents.length} objects in the directory`);
 
       const archive = archiver("zip", {
         zlib: { level: 9 },
@@ -132,44 +163,66 @@ class S3StorageStrategy {
       archive.pipe(streamPassThrough);
 
       for (const item of data.Contents) {
-        const fileData = await s3Handler.send(
-          new GetObjectCommand({
-            Bucket: bucketName,
-            Key: item.Key,
-          })
-        );
+        console.log(`Processing file: ${item.Key}`);
+        const fileParams = {
+          Bucket: bucketName,
+          Key: item.Key,
+        };
+        try {
+          const { Body } = await s3Handler.send(
+            new GetObjectCommand(fileParams)
+          );
 
-        const fileStream = fileData.Body;
-        const fileName = item.Key.replace(
-          `${WEBSITES_PATH}/${directoryPath}/`,
-          ""
-        );
-
-        archive.append(Readable.from(fileStream), { name: fileName });
+          if (Body) {
+            const fileName = item.Key.replace(prefix, "");
+            console.log(`Adding file to archive: ${fileName}`);
+            archive.append(Body, { name: fileName });
+          } else {
+            console.log(`Empty body for file: ${item.Key}`);
+          }
+        } catch (fileError) {
+          console.error(`Error processing file ${item.Key}:`, fileError);
+          // Continue with the next file instead of stopping the whole process
+        }
       }
 
+      console.log("Finalizing archive");
       await archive.finalize();
 
       return streamPassThrough;
     } catch (err) {
       console.error(`Error creating zip from '${directoryPath}':`, err);
+      if (err.$metadata) {
+        console.error(
+          `Error metadata:`,
+          JSON.stringify(err.$metadata, null, 2)
+        );
+      }
       throw err;
     }
   }
 
   async getProjectDirectoryStructure(projectPath) {
+    const prefix = `${WEBSITES_PATH}/${projectPath}`;
     const params = {
       Bucket: bucketName,
-      Prefix: `${WEBSITES_PATH}/${projectPath}`,
+      Prefix: prefix,
       Delimiter: "/",
     };
 
+    console.log(`Fetching directory structure for: ${params.Prefix}`);
+
     try {
       const data = await s3Handler.send(new ListObjectsV2Command(params));
+      console.log(
+        `ListObjectsV2Command response:`,
+        JSON.stringify(data, null, 2)
+      );
+
       const structure = [];
 
       for (const prefix of data.CommonPrefixes || []) {
-        const dirName = prefix.Prefix.split("/").slice(-2)[0];
+        const dirName = prefix.Prefix.split("/").pop();
         const dirPath = prefix.Prefix.replace(`${WEBSITES_PATH}/`, "");
         structure.push({
           name: dirName,
@@ -181,7 +234,7 @@ class S3StorageStrategy {
 
       for (const content of data.Contents || []) {
         const fileName = content.Key.split("/").pop();
-        if (fileName && content.Key !== `${WEBSITES_PATH}/${projectPath}`) {
+        if (fileName && content.Key !== prefix) {
           const filePath = content.Key.replace(`${WEBSITES_PATH}/`, "");
           structure.push({
             name: fileName,
@@ -192,45 +245,79 @@ class S3StorageStrategy {
         }
       }
 
-      if (
-        projectPath.split("/").length === 1 &&
-        structure.length === 1 &&
-        structure[0].type === "directory"
-      ) {
-        return structure[0].children;
-      }
-
       return structure;
     } catch (err) {
       console.error(
         `Error getting directory structure for '${projectPath}':`,
         err
       );
-      return [];
+      if (err.$metadata) {
+        console.error(
+          `Error metadata:`,
+          JSON.stringify(err.$metadata, null, 2)
+        );
+      }
+      throw err;
     }
   }
 
   async getFileStream(filePath) {
+    const fullPath = `${WEBSITES_PATH}/${filePath}`;
     const params = {
       Bucket: bucketName,
-      Key: `${WEBSITES_PATH}/${filePath}`,
+      Key: fullPath,
     };
 
     try {
+      // Check if the file exists before attempting to stream it
+      await s3Handler.send(new GetObjectCommand(params));
+
       const { Body, ContentType } = await s3Handler.send(
         new GetObjectCommand(params)
       );
-      return { stream: Body, contentType: ContentType };
+
+      if (!Body) {
+        throw new Error("S3 returned empty body");
+      }
+
+      // Convert the readable stream to a Node.js stream
+      const stream = Body.transformToWebStream().getReader();
+      const nodeStream = new Readable({
+        async read() {
+          try {
+            const { done, value } = await stream.read();
+            if (done) {
+              this.push(null);
+            } else {
+              this.push(Buffer.from(value));
+            }
+          } catch (error) {
+            this.destroy(error);
+          }
+        },
+      });
+
+      return {
+        stream: nodeStream,
+        contentType: ContentType || "application/octet-stream", // Fallback content type
+      };
     } catch (error) {
-      console.error(`Error fetching ${filePath}: ${error}`);
-      throw error;
+      if (error.$metadata?.httpStatusCode === 404) {
+        console.error(`File not found: ${fullPath}`);
+        throw new Error(`File not found: ${filePath}`);
+      } else {
+        console.error(`Error fetching stream for ${fullPath}:`, error);
+        throw new Error(`Error fetching file: ${filePath}`);
+      }
     }
   }
 
   getPublicUrl(filePath) {
-    if (wasabiEndpoint) {
-      // Wasabi case
-      return `${wasabiEndpoint}/${bucketName}/${WEBSITES_PATH}/${filePath}`;
+    if (externalS3Endpoint) {
+      // External S3 case
+      const finalPath = `${externalS3Endpoint}/${bucketName}/${WEBSITES_PATH}/${filePath}`;
+      console.log(`Public URL: ${finalPath}`);
+      return finalPath;
     } else {
       // Standard S3 case
       return `https://${bucketName}.s3.amazonaws.com/${WEBSITES_PATH}/${filePath}`;
