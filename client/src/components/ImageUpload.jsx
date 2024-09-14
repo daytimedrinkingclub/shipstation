@@ -65,6 +65,7 @@ const ImageUpload = ({ onImageUpload }) => {
   const [uploadStatus, setUploadStatus] = useState("idle");
   const [previews, setPreviews] = useState([]);
   const [isDraggingOnPage, setIsDraggingOnPage] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
 
   useEffect(() => {
     onImageUpload(previews);
@@ -121,6 +122,26 @@ const ImageUpload = ({ onImageUpload }) => {
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024,
   });
+
+  const handleImageClick = (e, index) => {
+    e.stopPropagation();
+    setSelectedImageIndex(index);
+  };
+
+  const closeImagePreview = (e) => {
+    e.stopPropagation();
+    setSelectedImageIndex(null);
+  };
+
+  const handleCaptionChange = (index, newCaption) => {
+    setPreviews((prev) => {
+      const newPreviews = prev.map((p, i) =>
+        i === index ? { ...p, caption: newCaption } : p
+      );
+      onImageUpload(newPreviews);
+      return newPreviews;
+    });
+  };
 
   const removeImage = (index) => {
     setPreviews((prev) => {
@@ -188,11 +209,11 @@ const ImageUpload = ({ onImageUpload }) => {
     };
   }, []);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty("--primary-rgb", "59, 130, 246");
-    return () =>
-      previews.forEach((preview) => URL.revokeObjectURL(preview.preview));
-  }, [previews]);
+  // useEffect(() => {
+  //   document.documentElement.style.setProperty("--primary-rgb", "59, 130, 246");
+  //   return () =>
+  //     previews.forEach((preview) => URL.revokeObjectURL(preview.preview));
+  // }, [previews]);
 
   return (
     <div className="w-full">
@@ -273,6 +294,7 @@ const ImageUpload = ({ onImageUpload }) => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
+                  onClick={(e) => handleImageClick(e, index)}
                 >
                   <img
                     src={preview.preview}
@@ -283,7 +305,9 @@ const ImageUpload = ({ onImageUpload }) => {
                     <input
                       type="text"
                       value={preview.caption || ""}
-                      onChange={(e) => updateCaption(index, e.target.value)}
+                      onChange={(e) =>
+                        handleCaptionChange(index, e.target.value)
+                      }
                       onKeyDown={(e) => handleCaptionKeyDown(e, index)}
                       placeholder="Add a caption..."
                       className="w-full text-sm p-1 border-b focus:outline-none focus:border-blue-500"
@@ -303,6 +327,27 @@ const ImageUpload = ({ onImageUpload }) => {
                   </motion.button>
                 </motion.div>
               ))}
+              {/* Image Preview Modal */}
+              {selectedImageIndex !== null && (
+                <div
+                  className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                  onClick={closeImagePreview}
+                >
+                  <div
+                    className="bg-white p-4 rounded-lg max-w-3xl max-h-[90vh] overflow-auto"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={previews[selectedImageIndex].preview}
+                      alt={`Preview ${selectedImageIndex + 1}`}
+                      className="max-w-full max-h-[80vh] object-contain"
+                    />
+                    <p className="mt-2 text-center text-gray-700">
+                      {previews[selectedImageIndex].caption || "No caption"}
+                    </p>
+                  </div>
+                </div>
+              )}
               {previews.length < 5 && (
                 <motion.div
                   className="w-48 h-48 border-2 border-dashed border-blue-500 rounded-lg flex items-center justify-center"

@@ -128,6 +128,38 @@ async function insertPayment(paymentData) {
   return data;
 }
 
+async function getCodeRefiningConversation(shipId) {
+  const { data, error } = await supabaseClient
+    .from("code_refining_conversations")
+    .select("*")
+    .eq("ship_id", shipId)
+    .single();
+
+  if (error && error.code !== "PGRST116") {
+    console.error("Error getting code refining conversation:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+async function upsertCodeRefiningConversation(shipId, userId, messages) {
+  const { data, error } = await supabaseClient
+    .from("code_refining_conversations")
+    .upsert(
+      { ship_id: shipId, user_id: userId, messages, updated_at: new Date() },
+      { onConflict: "ship_id" }
+    )
+    .select();
+
+  if (error) {
+    console.error("Error upserting code refining conversation:", error);
+    throw error;
+  }
+
+  return data[0];
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -138,4 +170,6 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
   insertPayment,
+  getCodeRefiningConversation,
+  upsertCodeRefiningConversation,
 };
