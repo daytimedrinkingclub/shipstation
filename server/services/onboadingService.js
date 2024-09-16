@@ -16,6 +16,7 @@ const {
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
+const { undoCodeChange, redoCodeChange } = require("./codeRefinementService");
 
 async function processConversation({
   client,
@@ -285,12 +286,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received undo request for ship:", shipId);
 
       try {
-        const { undoCodeChange } = require("./codeRefinementService");
         const result = await undoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("undoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("undoResult", {
             success: false,
@@ -311,12 +311,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received redo request for ship:", shipId);
 
       try {
-        const { redoCodeChange } = require("./codeRefinementService");
         const result = await redoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("redoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("redoResult", {
             success: false,

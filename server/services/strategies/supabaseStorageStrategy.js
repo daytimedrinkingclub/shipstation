@@ -171,7 +171,9 @@ class SupabaseStorageStrategy {
             name: item.name,
             type: "file",
             path: itemPath,
-            lastModified: new Date(item.metadata.lastModified),
+            lastModified: item.metadata.lastModified
+              ? new Date(item.metadata.lastModified)
+              : null,
           });
         }
       }
@@ -215,6 +217,22 @@ class SupabaseStorageStrategy {
         message: `Error accessing file: ${filePath}`,
         error,
       };
+    }
+  }
+
+  async deleteFile(filePath) {
+    try {
+      const fullPath = this._getFullPath(filePath);
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .remove([fullPath]);
+
+      if (error) throw error;
+      console.log(`File successfully deleted from Supabase: ${fullPath}`);
+      return true;
+    } catch (err) {
+      console.error(`Error deleting file ${filePath}:`, err);
+      throw err;
     }
   }
 }

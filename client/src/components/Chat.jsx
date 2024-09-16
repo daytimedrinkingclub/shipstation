@@ -38,35 +38,39 @@ const Chat = ({ shipId, onCodeUpdate }) => {
   }, [socket, onCodeUpdate, shipId]);
 
   const fetchConversationHistory = async () => {
-    const { data, error } = await supabase
-      .from("code_refining_conversations")
-      .select("messages")
-      .eq("ship_id", shipId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from("code_refining_conversations")
+        .select("messages")
+        .eq("ship_slug", shipId)
+        .maybeSingle();
 
-    if (error) {
-      if (error.code === "PGRST116") {
-        // No rows returned, set empty messages array
-        setMessages([]);
-      } else {
+      if (error) {
         console.error("Error fetching conversation history:", error);
+        setMessages([]);
+      } else if (data) {
+        const displayMessages = data.messages
+          .filter(
+            (msg) =>
+              msg.role === "user" ||
+              (msg.role === "assistant" &&
+                msg.content.some((c) => c.type === "text"))
+          )
+          .map((msg) => ({
+            text:
+              msg.role === "user"
+                ? msg.content
+                : msg.content.find((c) => c.type === "text").text,
+            sender: msg.role,
+          }));
+        setMessages(displayMessages);
+      } else {
+        // No data found, set empty messages array
+        setMessages([]);
       }
-    } else if (data) {
-      const displayMessages = data.messages
-        .filter(
-          (msg) =>
-            msg.role === "user" ||
-            (msg.role === "assistant" &&
-              msg.content.some((c) => c.type === "text"))
-        )
-        .map((msg) => ({
-          text:
-            msg.role === "user"
-              ? msg.content
-              : msg.content.find((c) => c.type === "text").text,
-          sender: msg.role,
-        }));
-      setMessages(displayMessages);
+    } catch (error) {
+      console.error("Unexpected error fetching conversation history:", error);
+      setMessages([]);
     }
   };
 

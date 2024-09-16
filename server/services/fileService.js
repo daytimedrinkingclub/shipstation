@@ -46,6 +46,10 @@ class FileService {
   async getProjectDirectoryStructure(projectPath) {
     return this.strategy.getProjectDirectoryStructure(projectPath);
   }
+
+  async deleteFile(filePath) {
+    return this.strategy.deleteFile(filePath);
+  }
 }
 
 module.exports = FileService;
