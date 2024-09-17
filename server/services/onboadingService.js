@@ -16,7 +16,11 @@ const {
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
-const { undoCodeChange, redoCodeChange } = require("./codeRefinementService");
+const {
+  undoCodeChange,
+  redoCodeChange,
+  refineCode,
+} = require("./codeRefinementService");
 
 async function processConversation({
   client,
@@ -261,12 +265,16 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message } = data;
+      const { shipId, message, useAllAssets } = data;
       console.log("Received chat message:", message, "for ship:", shipId);
 
       try {
-        const { refineCode } = require("./codeRefinementService");
-        const result = await refineCode(shipId, message, socket.userId);
+        const result = await refineCode(
+          shipId,
+          message,
+          socket.userId,
+          useAllAssets
+        );
 
         socket.emit("chatResponse", { message: result.updatedMessage });
 

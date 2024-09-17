@@ -2,18 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSocket } from "@/context/SocketProvider";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabaseClient";
+import { Checkbox } from "@/components/ui/checkbox";
 
-const Chat = ({ shipId, onCodeUpdate }) => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
-
+const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { socket } = useSocket();
   const messagesEndRef = useRef(null);
+  const [useAllAssets, setUseAllAssets] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -91,9 +89,13 @@ const Chat = ({ shipId, onCodeUpdate }) => {
       setIsLoading(true);
       const userMessage = { text: input, sender: "user" };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
-      socket.emit("chatMessage", { shipId, message: input });
+      socket.emit("chatMessage", { shipId, message: input, useAllAssets });
       setInput("");
     }
+  };
+
+  const handleAssetClick = () => {
+    onChangeTab("assets");
   };
 
   const ThreeDotLoader = () => {
@@ -139,6 +141,32 @@ const Chat = ({ shipId, onCodeUpdate }) => {
         <div ref={messagesEndRef} />
       </div>
       <div className="p-4 border-t border-border">
+        {assetCount > 0 && (
+          <div className="mb-4 p-4 bg-blue-100 rounded-md">
+            <p>
+              You have{" "}
+              <span
+                className="relative inline-block cursor-pointer text-blue-600 hover:text-blue-800 transition-colors duration-300 ease-in-out"
+                onClick={handleAssetClick}
+              >
+                <span className="underline">
+                  {assetCount} asset{assetCount !== 1 ? "s" : ""}
+                </span>
+              </span>{" "}
+              available.
+            </p>
+            <div className="flex items-center mt-2">
+              <Checkbox
+                id="useAllAssets"
+                checked={useAllAssets}
+                onCheckedChange={setUseAllAssets}
+              />
+              <label htmlFor="useAllAssets" className="ml-2 text-sm">
+                Use all available assets
+              </label>
+            </div>
+          </div>
+        )}
         <div className="flex flex-col space-y-2">
           <Textarea
             value={input}

@@ -45,8 +45,6 @@ async function handleCodeRefinementToolUse({ tool, client }) {
     ];
   }
 
-  // Handle other code refinement-specific tools here if needed
-
   console.log(`No matching tool found for: ${tool.name}`);
   return [];
 }

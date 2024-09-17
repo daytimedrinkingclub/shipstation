@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import Editor from "@monaco-editor/react";
@@ -41,6 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Loader } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -110,6 +111,54 @@ const Edit = () => {
   const [isUndoing, setIsUndoing] = useState(false);
   const [isRedoing, setIsRedoing] = useState(false);
   const [isChatUpdating, setIsChatUpdating] = useState(false);
+
+  const [assets, setAssets] = useState([]);
+  const [assetCount, setAssetCount] = useState(0);
+
+  const fetchAssets = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ships")
+        .select("assets")
+        .eq("slug", shipId)
+        .single();
+
+      if (error) throw error;
+
+      let parsedAssets = [];
+      if (data && data.assets) {
+        if (Array.isArray(data.assets)) {
+          parsedAssets = data.assets;
+        } else if (typeof data.assets === "string") {
+          try {
+            const parsed = JSON.parse(data.assets);
+            parsedAssets = Array.isArray(parsed) ? parsed : [];
+          } catch (parseError) {
+            console.error("Error parsing assets JSON:", parseError);
+          }
+        }
+      }
+      setAssets(parsedAssets);
+      setAssetCount(parsedAssets.length);
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+      setAssets([]);
+      setAssetCount(0);
+    }
+  }, [shipId]);
+
+  useEffect(() => {
+    fetchAssets();
+  }, [fetchAssets]);
+
+  const updateAssets = useCallback((newAssets) => {
+    setAssets(newAssets);
+    setAssetCount(newAssets.length);
+  }, []);
+
+  const changeTab = (tabName) => {
+    setActiveTab(tabName);
+  };
 
   useEffect(() => {
     if (!userLoading && (!user || !shipId)) {
@@ -392,7 +441,12 @@ const Edit = () => {
                   )}
                 </div>
                 <TabsContent value="chat" className="flex-grow overflow-hidden">
-                  <Chat shipId={shipId} onCodeUpdate={handleChatUpdate} />
+                  <Chat
+                    shipId={shipId}
+                    onCodeUpdate={handleChatUpdate}
+                    assetCount={assetCount}
+                    onChangeTab={changeTab}
+                  />
                 </TabsContent>
                 <TabsContent value="code" className="flex-grow overflow-hidden">
                   <div className="h-full flex flex-col bg-background">
@@ -441,7 +495,12 @@ const Edit = () => {
                   value="assets"
                   className="flex-grow overflow-hidden"
                 >
-                  <AssetUploader shipId={shipId} />
+                  <AssetUploader
+                    shipId={shipId}
+                    assets={assets}
+                    onAssetsChange={updateAssets}
+                    fetchAssets={fetchAssets}
+                  />
                 </TabsContent>
               </Tabs>
             </ResizablePanel>

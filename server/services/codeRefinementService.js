@@ -9,7 +9,7 @@ const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
-async function refineCode(shipId, message, userId) {
+async function refineCode(shipId, message, userId, useAllAssets) {
   console.log(`Starting code refinement for shipId: ${shipId}`);
 
   const client = new AnthropicService({ userId });
@@ -22,9 +22,18 @@ async function refineCode(shipId, message, userId) {
   const conversation = await dbService.getCodeRefiningConversation(shipId);
   let messages = conversation?.messages || [];
 
+  console.log("useAllAssets", useAllAssets);
+
+  let assets = [];
+  if (useAllAssets) {
+    console.log("Fetching all assets for shipId:", shipId);
+    assets = await dbService.fetchAssets(shipId);
+    console.log("Assets fetched:", assets.length);
+  }
+
   const messagesToSaveInDB = [...messages, { role: "user", content: message }];
 
-  const systemPrompt = getSystemPrompt();
+  const systemPrompt = getSystemPrompt(assets);
   const userMessage = `Current HTML code:\n${currentCode}\n\nUser request: ${message}`;
 
   messages.push({ role: "user", content: userMessage });
@@ -41,35 +50,52 @@ async function refineCode(shipId, message, userId) {
   let currentMessage = initialResponse;
   messages.push({ role: currentMessage.role, content: currentMessage.content });
 
-  while (currentMessage.stop_reason === "tool_use") {
-    console.log("Tool use detected. Processing tool use...");
-    const tool = currentMessage.content.find(
-      (content) => content.type === "tool_use"
+  while (true) {
+    console.log(
+      "codeRefinement: API call Stop Reason:",
+      currentMessage.stop_reason
     );
-    if (tool) {
-      console.log(`Tool name: ${tool.name}`);
-      const toolResult = await handleCodeRefinementToolUse({ tool, client });
-      console.log("Tool result:", toolResult);
-      messages.push({ role: "user", content: toolResult });
-      console.log("Appended tool result to messages");
+
+    if (currentMessage.stop_reason === "end_turn") {
+      const textContent = currentMessage.content.find(
+        (content) => content.type === "text"
+      );
+      if (textContent && textContent.text) {
+        finalResponse = textContent.text;
+        break;
+      }
+    } else if (currentMessage.stop_reason === "tool_use") {
+      const toolUses = currentMessage.content.filter(
+        (content) => content.type === "tool_use"
+      );
+      if (toolUses.length > 0) {
+        const toolResults = [];
+        for (const toolUse of toolUses) {
+          const toolResult = await handleCodeRefinementToolUse({
+            tool: toolUse,
+            client,
+          });
+          console.log("Tool result received");
+          toolResults.push(...toolResult);
+        }
+        messages.push({ role: "user", content: toolResults });
+        console.log("Messages updated with tool results");
+      }
+      console.log("Sending request to Anthropic API...");
       currentMessage = await client.sendMessage({
         system: systemPrompt,
-        messages,
+        messages: messages,
         tools: [searchTool, placeholderImageTool],
         tool_choice: { type: "auto" },
       });
-      console.log("Received new message from Anthropic API after tool use");
+      console.log("Received response from Anthropic API", currentMessage);
+
       messages.push({ role: "assistant", content: currentMessage.content });
-      console.log("Appended new assistant message to messages");
-    } else {
-      console.log("No tool found in the message content. Breaking the loop.");
-      break;
+      console.log("Messages updated with assistant response");
     }
   }
 
-  const { updatedMessage, updatedCode } = extractUpdatedContent(
-    currentMessage.content[0].text
-  );
+  const { updatedMessage, updatedCode } = extractUpdatedContent(finalResponse);
 
   await saveUpdatedCode(filePath, updatedCode);
   await updateShipVersion(shipId);
@@ -125,8 +151,8 @@ async function saveNewVersion(shipId, currentCode) {
   return newVersion;
 }
 
-function getSystemPrompt() {
-  return `
+function getSystemPrompt(assets) {
+  let prompt = `
     You are an AI assistant specialized in refining HTML code. Analyze the current HTML code and the user's request, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
 
     Important rules:
@@ -135,7 +161,30 @@ function getSystemPrompt() {
     3. If the request is unclear or could cause issues, ask for clarification.
     4. **Never use ellipsis or placeholders**: Always include the entire HTML code, even parts that haven't changed. Do not use "..." or any other shorthand to represent unchanged code.
     5. **Do not use comments to indicate unchanged sections**: Never add comments like "<!-- Rest of the sections remain unchanged -->". Always include the full code for all sections.
+  `;
 
+  if (assets.length > 0) {
+    prompt += `\n\nUser Assets:
+    The following assets have been provided by the user. You MUST incorporate these assets into the website as per their descriptions. This is a user requirement that should be fulfilled:
+
+    ${assets
+      .map(
+        (asset) =>
+          `- ${asset.fileName}: ${
+            asset.comment || "No description provided"
+          } (URL: ${asset.url})`
+      )
+      .join("\n    ")}
+
+    When incorporating these assets:
+    1. Use the provided URLs directly in the HTML code (e.g., in img src attributes).
+    2. Place the assets in appropriate sections based on their descriptions.
+    3. If an asset's purpose is not clear, use your best judgment to place it where it fits best in the context of the website.
+    4. Ensure all assets are used in the HTML code.
+    `;
+  }
+
+  prompt += `
     You have access to the following tools:
     1. **search_tool**: Use this to find relevant information for refining the code.
     2. **placeholder_image_tool**: Use this to find and update placeholder images in the code.
@@ -154,7 +203,9 @@ function getSystemPrompt() {
 
     **Important:**
     Please rewrite the whole code even if it is not changed, do not use any comments to indicate which parts are unchanged, this will break the website, we need to avoid that.
-    `;
+  `;
+
+  return prompt;
 }
 
 function extractUpdatedContent(responseText) {
@@ -212,7 +263,7 @@ async function undoCodeChange(shipId) {
   console.log("allVersions", allVersions);
   console.log("currentVersion", currentVersion);
 
-  if (allVersions.length < 2) {
+  if (allVersions.length < 1) {
     return { success: false, message: "No previous version available" };
   }
 

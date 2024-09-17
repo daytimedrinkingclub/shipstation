@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Info, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,48 +6,39 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { LoaderCircle } from "lucide-react";
 import { useProject } from "@/hooks/useProject";
-import { createClient } from "@supabase/supabase-js";
 
-const AssetUploader = ({ shipId }) => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
-
-  const [assets, setAssets] = useState([]);
-  const [uploadedAssets, setUploadedAssets] = useState([]);
+const AssetUploader = ({ shipId, assets, onAssetsChange, fetchAssets }) => {
+  const [assetsToUpload, setAssetsToUpload] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const { uploadAssets } = useProject(shipId);
 
   const onDrop = useCallback((acceptedFiles) => {
-    setAssets((prevAssets) => [
-      ...prevAssets,
-      ...acceptedFiles.map((file) => ({ file, comment: "" })),
-    ]);
+    const newAssets = acceptedFiles.map((file) => ({ file, comment: "" }));
+    setAssetsToUpload((prev) => [...prev, ...newAssets]);
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   const removeAsset = (index) => {
-    setAssets((prevAssets) => prevAssets.filter((_, i) => i !== index));
+    setAssetsToUpload((prev) => prev.filter((_, i) => i !== index));
   };
 
   const updateComment = (index, comment) => {
-    setAssets((prevAssets) =>
-      prevAssets.map((asset, i) =>
-        i === index ? { ...asset, comment } : asset
-      )
+    setAssetsToUpload((prev) =>
+      prev.map((asset, i) => (i === index ? { ...asset, comment } : asset))
     );
   };
 
   const handleUploadAssets = async () => {
     setIsUploading(true);
     try {
-      const newUploadedAssets = await uploadAssets(assets);
-      setUploadedAssets((prev) => [...prev, ...newUploadedAssets]);
-      setAssets([]);
+      await uploadAssets(assetsToUpload);
+      await fetchAssets(); // Refetch all assets
+      setAssetsToUpload([]); // Clear the list of assets to be uploaded
       toast.success("Assets uploaded successfully");
     } catch (error) {
+      console.error("Error uploading assets:", error);
       toast.error("Failed to upload assets");
     } finally {
       setIsUploading(false);
@@ -67,51 +58,6 @@ const AssetUploader = ({ shipId }) => {
         toast.error("Failed to copy URL");
       });
   };
-
-  useEffect(() => {
-    const fetchAssets = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("ships")
-          .select("assets")
-          .eq("slug", shipId)
-          .single();
-
-        if (error) throw error;
-
-        if (data && data.assets) {
-          if (Array.isArray(data.assets)) {
-            setUploadedAssets(data.assets);
-          } else if (typeof data.assets === "string") {
-            try {
-              const parsedAssets = JSON.parse(data.assets);
-              setUploadedAssets(
-                Array.isArray(parsedAssets) ? parsedAssets : []
-              );
-            } catch (parseError) {
-              console.error("Error parsing assets JSON:", parseError);
-              setUploadedAssets([]);
-            }
-          } else if (
-            typeof data.assets === "object" &&
-            Object.keys(data.assets).length === 0
-          ) {
-            setUploadedAssets([]);
-          } else {
-            console.error("Unexpected assets format:", data.assets);
-            setUploadedAssets([]);
-          }
-        } else {
-          setUploadedAssets([]);
-        }
-      } catch (error) {
-        console.error("Error fetching assets:", error);
-        toast.error("Failed to fetch assets");
-      }
-    };
-
-    fetchAssets();
-  }, [shipId, supabase]);
 
   return (
     <div className="p-4">
@@ -137,11 +83,11 @@ const AssetUploader = ({ shipId }) => {
         </p>
       </div>
 
-      {uploadedAssets.length > 0 ? (
+      {assets && assets.length > 0 && (
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">Uploaded Assets:</h3>
           <ul className="space-y-2">
-            {uploadedAssets.map((asset, index) => (
+            {assets.map((asset, index) => (
               <li
                 key={index}
                 className="flex items-center justify-between bg-gray-100 p-2 rounded"
@@ -179,17 +125,13 @@ const AssetUploader = ({ shipId }) => {
             ))}
           </ul>
         </div>
-      ) : (
-        <div className="mt-4 text-center text-gray-500">
-          No assets uploaded yet.
-        </div>
       )}
 
-      {assets.length > 0 && (
+      {assetsToUpload.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-lg font-semibold mb-2">Selected Assets:</h3>
+          <h3 className="text-lg font-semibold mb-2">Assets to Upload:</h3>
           <ul className="space-y-4">
-            {assets.map((asset, index) => (
+            {assetsToUpload.map((asset, index) => (
               <li
                 key={index}
                 className="flex items-center justify-between bg-gray-100 p-4 rounded"
@@ -228,6 +170,12 @@ const AssetUploader = ({ shipId }) => {
               "Upload Assets"
             )}
           </Button>
+        </div>
+      )}
+
+      {(!assets || assets.length === 0) && assetsToUpload.length === 0 && (
+        <div className="mt-4 text-center text-gray-500">
+          No assets uploaded yet.
         </div>
       )}
     </div>

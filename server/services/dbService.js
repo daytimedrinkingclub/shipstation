@@ -326,6 +326,41 @@ async function updateShipAssets(shipId, newAssets) {
   return updatedAssets;
 }
 
+async function fetchAssets(shipId) {
+  try {
+    console.log(`Fetching assets for shipId: ${shipId}`);
+    const { data, error } = await supabaseClient
+      .from("ships")
+      .select("assets")
+      .eq("slug", shipId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching assets from database: ${error.message}`);
+      throw error;
+    }
+
+    let parsedAssets = [];
+    if (data && data.assets) {
+      if (Array.isArray(data.assets)) {
+        parsedAssets = data.assets;
+      } else if (typeof data.assets === "string") {
+        try {
+          const parsed = JSON.parse(data.assets);
+          parsedAssets = Array.isArray(parsed) ? parsed : [];
+        } catch (parseError) {
+          console.error("Error parsing assets JSON:", parseError);
+        }
+      }
+    }
+
+    return parsedAssets;
+  } catch (error) {
+    console.error("Error fetching assets:", error);
+    return [];
+  }
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -346,4 +381,5 @@ module.exports = {
   getAllCodeVersions,
   deleteCodeVersion,
   updateShipAssets,
+  fetchAssets,
 };
