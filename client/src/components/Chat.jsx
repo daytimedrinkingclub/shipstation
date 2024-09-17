@@ -1,17 +1,44 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { useSocket } from "@/context/SocketProvider";
 import { supabase } from "@/lib/supabaseClient";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Copy,
+  Send,
+  Paperclip,
+  X,
+  File,
+  Image,
+  LoaderCircle,
+  Info,
+  Upload,
+} from "lucide-react";
+import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useProject } from "@/hooks/useProject";
 
-const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab }) => {
+const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { socket } = useSocket();
   const messagesEndRef = useRef(null);
-  const [useAllAssets, setUseAllAssets] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [fileDescriptions, setFileDescriptions] = useState({});
+  const { uploadAssets } = useProject(shipId);
+  const [filesToUpload, setFilesToUpload] = useState([]);
+  const [uploadedFileInfos, setUploadedFileInfos] = useState([]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -85,41 +112,97 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab }) => {
   };
 
   const handleSend = () => {
-    if (input.trim()) {
+    if (input.trim() || uploadedFileInfos.length > 0) {
       setIsLoading(true);
       const userMessage = { text: input, sender: "user" };
       setMessages((prevMessages) => [...prevMessages, userMessage]);
-      socket.emit("chatMessage", { shipId, message: input, useAllAssets });
+
+      socket.emit("chatMessage", {
+        shipId,
+        message: input,
+        assets: uploadedFileInfos,
+      });
+
       setInput("");
+      setUploadedFileInfos([]);
     }
   };
 
-  const handleAssetClick = () => {
-    onChangeTab("assets");
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
   };
 
-  const ThreeDotLoader = () => {
-    return (
-      <div className="flex space-x-2">
-        <div
-          className="w-2 h-2 bg-white rounded-full animate-bounce"
-          style={{ animationDelay: "0s" }}
-        ></div>
-        <div
-          className="w-2 h-2 bg-white rounded-full animate-bounce"
-          style={{ animationDelay: "0.2s" }}
-        ></div>
-        <div
-          className="w-2 h-2 bg-white rounded-full animate-bounce"
-          style={{ animationDelay: "0.4s" }}
-        ></div>
-      </div>
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleFiles = (files) => {
+    const newFiles = Array.from(files);
+    setFilesToUpload(newFiles);
+    setFileDescriptions(
+      newFiles.reduce((acc, file) => ({ ...acc, [file.name]: "" }), {})
     );
+    setIsDialogOpen(true);
+  };
+
+  const handleDescriptionChange = (fileName, description) => {
+    setFileDescriptions((prev) => ({
+      ...prev,
+      [fileName]: description,
+    }));
+  };
+
+  const handleUpload = async () => {
+    setIsLoading(true);
+    try {
+      const assetsToUpload = filesToUpload.map((file) => ({
+        file,
+        comment: fileDescriptions[file.name] || "",
+      }));
+      const uploadedAssets = await uploadAssets(assetsToUpload);
+
+      const newFileInfos = uploadedAssets.map((asset) => ({
+        name: asset.fileName,
+        url: asset.url,
+        comment: asset.comment,
+      }));
+
+      setUploadedFileInfos((prevFileInfos) => [
+        ...prevFileInfos,
+        ...newFileInfos,
+      ]);
+      setFilesToUpload([]);
+      setFileDescriptions({});
+      setIsDialogOpen(false);
+      toast.success("Assets uploaded successfully");
+    } catch (error) {
+      console.error("Error uploading assets:", error);
+      toast.error("Failed to upload assets");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-scroll p-4 pt-4 max-h-[calc(100vh-120px)]">
+    <div
+      className="flex flex-col h-full relative"
+      onDragEnter={handleDrag}
+      onDragLeave={handleDrag}
+      onDragOver={handleDrag}
+      onDrop={handleDrop}
+    >
+      <div className="flex-1 overflow-y-auto p-4">
         {messages.map((message, index) => (
           <div
             key={index}
@@ -140,34 +223,29 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab }) => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <div className="p-4 border-t border-border">
-        {assetCount > 0 && (
-          <div className="mb-4 p-4 bg-blue-100 rounded-md">
-            <p>
-              You have{" "}
-              <span
-                className="relative inline-block cursor-pointer text-blue-600 hover:text-blue-800 transition-colors duration-300 ease-in-out"
-                onClick={handleAssetClick}
-              >
-                <span className="underline">
-                  {assetCount} asset{assetCount !== 1 ? "s" : ""}
-                </span>
-              </span>{" "}
-              available.
-            </p>
-            <div className="flex items-center mt-2">
-              <Checkbox
-                id="useAllAssets"
-                checked={useAllAssets}
-                onCheckedChange={setUseAllAssets}
-              />
-              <label htmlFor="useAllAssets" className="ml-2 text-sm">
-                Use all available assets
-              </label>
-            </div>
+      <div className="p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <div className="flex items-center">
+            <label
+              htmlFor="file-upload"
+              className="cursor-pointer flex items-center text-sm text-gray-600 hover:text-gray-800"
+            >
+              <Paperclip className="w-4 h-4 mr-1" />
+              Add assets
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              onChange={(e) => handleFiles(e.target.files)}
+              multiple
+            />
           </div>
-        )}
-        <div className="flex flex-col space-y-2">
+          <span className="text-xs text-gray-500">
+            You can also drag and drop files here
+          </span>
+        </div>
+        <div className="relative">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -175,12 +253,106 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab }) => {
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             disabled={isLoading}
             rows={3}
+            className="pr-12"
           />
-          <Button onClick={handleSend} disabled={isLoading}>
-            {isLoading ? <ThreeDotLoader /> : "Send"}
-          </Button>
+          {input.trim() && (
+            <Button
+              onClick={handleSend}
+              disabled={isLoading}
+              size="sm"
+              className="absolute top-2 right-2"
+            >
+              {isLoading ? (
+                <LoaderCircle className="w-4 h-4 animate-spin" />
+              ) : (
+                <Send className="w-4 h-4" />
+              )}
+            </Button>
+          )}
         </div>
       </div>
+      {uploadedFileInfos.length > 0 && (
+        <div className="px-4 pb-4 flex flex-wrap gap-2">
+          {uploadedFileInfos.map((file, index) => (
+            <div key={index} className="relative group">
+              <Badge
+                className="flex items-center px-6 h-10"
+                variant={"secondary"}
+              >
+                {file.name}
+              </Badge>
+              <Button
+                onClick={() => {
+                  setUploadedFileInfos((prev) =>
+                    prev.filter((_, i) => i !== index)
+                  );
+                }}
+                variant="destructive"
+                size="icon"
+                className="absolute -top-1 -right-1 p-0 h-6 w-6 rounded-full"
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+      {dragActive && (
+        <div className="absolute inset-0 bg-blue-100 bg-opacity-90 border-2 border-blue-500 rounded-md flex items-center justify-center z-10 backdrop-blur-sm px-4">
+          <File className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
+          <p className="text-blue-700 text-center">
+            Drop files here to add as assets to your website
+            <br />
+            <span className="text-sm">
+              Upload images, PDFs, videos, or any other files you want to use in
+              your site
+            </span>
+          </p>
+          <Image className="w-6 h-6 text-blue-700 transform -rotate-12 ml-2" />
+        </div>
+      )}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Enter Asset Descriptions</DialogTitle>
+            <div className="mb-4 text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
+              <Info className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
+              <p className="px-2">
+                Adding descriptions to your assets helps our AI better
+                understand and utilize them in your project. Please provide a
+                brief description for each uploaded file.
+              </p>
+            </div>
+          </DialogHeader>
+          {Object.entries(fileDescriptions).map(
+            ([fileName, description], index) => (
+              <div key={index} className="mb-4">
+                <p className="mb-2">{fileName}</p>
+                <Input
+                  placeholder="Enter description"
+                  value={description}
+                  onChange={(e) =>
+                    handleDescriptionChange(fileName, e.target.value)
+                  }
+                />
+              </div>
+            )
+          )}
+          <DialogFooter>
+            <Button onClick={() => setIsDialogOpen(false)} variant="outline">
+              Cancel
+            </Button>
+            <Button onClick={handleUpload} disabled={isLoading}>
+              {isLoading ? (
+                <LoaderCircle className="w-4 h-4 animate-spin mr-2" />
+              ) : (
+                <Upload className="w-4 h-4 mr-2" />
+              )}
+              Upload
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

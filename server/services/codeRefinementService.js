@@ -9,7 +9,7 @@ const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
-async function refineCode(shipId, message, userId, useAllAssets) {
+async function refineCode(shipId, message, userId, assets) {
   console.log(`Starting code refinement for shipId: ${shipId}`);
 
   const client = new AnthropicService({ userId });
@@ -22,14 +22,7 @@ async function refineCode(shipId, message, userId, useAllAssets) {
   const conversation = await dbService.getCodeRefiningConversation(shipId);
   let messages = conversation?.messages || [];
 
-  console.log("useAllAssets", useAllAssets);
-
-  let assets = [];
-  if (useAllAssets) {
-    console.log("Fetching all assets for shipId:", shipId);
-    assets = await dbService.fetchAssets(shipId);
-    console.log("Assets fetched:", assets.length);
-  }
+  console.log("assets received", assets.length);
 
   const messagesToSaveInDB = [...messages, { role: "user", content: message }];
 

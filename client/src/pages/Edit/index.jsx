@@ -373,10 +373,10 @@ const Edit = () => {
                   }}
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
-                  View
+                  Preview Live Site
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Open in New Tab</TooltipContent>
+              <TooltipContent>Preview your site in a new tab</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -419,7 +419,7 @@ const Edit = () => {
                     </TabsTrigger>
                     <TabsTrigger value="assets" className="flex items-center">
                       <Files className="w-4 h-4 mr-2" />
-                      Assets
+                      Assets ({assetCount})
                     </TabsTrigger>
                   </TabsList>
                   {activeTab === "code" && (
@@ -441,12 +441,7 @@ const Edit = () => {
                   )}
                 </div>
                 <TabsContent value="chat" className="flex-grow overflow-hidden">
-                  <Chat
-                    shipId={shipId}
-                    onCodeUpdate={handleChatUpdate}
-                    assetCount={assetCount}
-                    onChangeTab={changeTab}
-                  />
+                  <Chat shipId={shipId} onCodeUpdate={handleChatUpdate} />
                 </TabsContent>
                 <TabsContent value="code" className="flex-grow overflow-hidden">
                   <div className="h-full flex flex-col bg-background">

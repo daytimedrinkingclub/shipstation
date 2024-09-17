@@ -265,16 +265,13 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message, useAllAssets } = data;
-      console.log("Received chat message:", message, "for ship:", shipId);
+      const { shipId, message, assets } = data;
+      console.log("Received chat message:", message, "\nfor ship:", shipId);
+      console.log("Message:", message);
+      console.log("Assets:", assets.length);
 
       try {
-        const result = await refineCode(
-          shipId,
-          message,
-          socket.userId,
-          useAllAssets
-        );
+        const result = await refineCode(shipId, message, socket.userId, assets);
 
         socket.emit("chatResponse", { message: result.updatedMessage });
 
