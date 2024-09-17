@@ -9,7 +9,6 @@ import {
   Code,
   MessageSquare,
   Columns2,
-  Rows2,
   Maximize2,
   Smartphone,
   ChevronLeft,
@@ -46,7 +45,6 @@ import { supabase } from "@/lib/supabaseClient";
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
     { id: "horizontal", icon: Columns2, tooltip: "Horizontal View" },
-    { id: "vertical", icon: Rows2, tooltip: "Vertical View" },
     { id: "mobile", icon: Smartphone, tooltip: "Mobile View" },
     { id: "fullscreen", icon: Maximize2, tooltip: "Fullscreen View" },
   ];
@@ -397,7 +395,7 @@ const Edit = () => {
           </div>
         </div>
         <ResizablePanelGroup
-          direction={currentView === "vertical" ? "vertical" : "horizontal"}
+          direction="horizontal"
           className="flex-1 overflow-hidden rounded-lg border border-border"
         >
           {currentView !== "fullscreen" && (
