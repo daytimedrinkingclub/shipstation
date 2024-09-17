@@ -40,6 +40,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Loader } from "lucide-react";
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -76,6 +77,14 @@ const ViewOptions = ({ currentView, onViewChange }) => {
   );
 };
 
+const LoaderCircle = () => {
+  return (
+    <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
+      <Loader className="animate-spin text-black" size={48} />
+    </div>
+  );
+};
+
 const Edit = () => {
   const navigate = useNavigate();
   const { user, userLoading } = useContext(AuthContext);
@@ -96,6 +105,11 @@ const Edit = () => {
   const [activeTab, setActiveTab] = useState("chat");
   const [currentView, setCurrentView] = useState("horizontal");
   const [hasShownErrorToast, setHasShownErrorToast] = useState(false);
+
+  const [isCodeUpdating, setIsCodeUpdating] = useState(false);
+  const [isUndoing, setIsUndoing] = useState(false);
+  const [isRedoing, setIsRedoing] = useState(false);
+  const [isChatUpdating, setIsChatUpdating] = useState(false);
 
   useEffect(() => {
     if (!userLoading && (!user || !shipId)) {
@@ -160,31 +174,18 @@ const Edit = () => {
     });
   };
 
-  const handleCodeUpdate = (updatedCode) => {
-    setFileContent(updatedCode);
-    setUnsavedChanges(false);
-  };
-
-  const shuffleDevice = () => {
-    const newDevice =
-      DEVICE_FRAMES[Math.floor(Math.random() * DEVICE_FRAMES.length)];
-    setCurrentDevice(newDevice);
-    toast(`Congratulations! 🎉`, {
-      description: `You've changed the device to ${newDevice}`,
-      position: "bottom-right",
-      duration: 1500,
-    });
-  };
-
   const handleUndo = () => {
+    setIsUndoing(true);
     socket.emit("undoCodeChange", { shipId });
   };
 
   const handleRedo = () => {
+    setIsRedoing(true);
     socket.emit("redoCodeChange", { shipId });
   };
 
   const handleUndoResult = (result) => {
+    setIsUndoing(false);
     if (result.success) {
       toast.success(result.message);
       setFileContent(result.code);
@@ -197,6 +198,7 @@ const Edit = () => {
   };
 
   const handleRedoResult = (result) => {
+    setIsRedoing(false);
     if (result.success) {
       toast.success(result.message);
       setFileContent(result.code);
@@ -206,6 +208,26 @@ const Edit = () => {
     } else {
       toast.error(result.message);
     }
+  };
+
+  const handleCodeUpdate = (updatedCode) => {
+    setIsCodeUpdating(true);
+    setFileContent(updatedCode);
+    setUnsavedChanges(false);
+    if (iframeRef.current) {
+      iframeRef.current.reload();
+    }
+    setTimeout(() => setIsCodeUpdating(false), 1000);
+  };
+
+  const handleChatUpdate = (updatedCode) => {
+    setIsChatUpdating(true);
+    setFileContent(updatedCode);
+    setUnsavedChanges(false);
+    if (iframeRef.current) {
+      iframeRef.current.reload();
+    }
+    setTimeout(() => setIsChatUpdating(false), 1000);
   };
 
   useEffect(() => {
@@ -221,6 +243,17 @@ const Edit = () => {
       };
     }
   }, [socket]);
+
+  const shuffleDevice = () => {
+    const newDevice =
+      DEVICE_FRAMES[Math.floor(Math.random() * DEVICE_FRAMES.length)];
+    setCurrentDevice(newDevice);
+    toast(`Congratulations! 🎉`, {
+      description: `You've changed the device to ${newDevice}`,
+      position: "bottom-right",
+      duration: 1500,
+    });
+  };
 
   if (!user || !shipId) {
     return null;
@@ -249,6 +282,7 @@ const Edit = () => {
                     variant="outline"
                     size="icon"
                     onClick={handleUndo}
+                    disabled={isUndoing}
                     className="w-10 h-10 px-2 rounded-l-md rounded-r-none"
                   >
                     <Undo2 className="w-4 h-4" />
@@ -262,6 +296,7 @@ const Edit = () => {
                     variant="outline"
                     size="icon"
                     onClick={handleRedo}
+                    disabled={isRedoing}
                     className="w-10 h-10 px-2 rounded-l-none rounded-r-md -ml-px"
                   >
                     <Redo2 className="w-4 h-4" />
@@ -357,7 +392,7 @@ const Edit = () => {
                   )}
                 </div>
                 <TabsContent value="chat" className="flex-grow overflow-hidden">
-                  <Chat shipId={shipId} onCodeUpdate={handleCodeUpdate} />
+                  <Chat shipId={shipId} onCodeUpdate={handleChatUpdate} />
                 </TabsContent>
                 <TabsContent value="code" className="flex-grow overflow-hidden">
                   <div className="h-full flex flex-col bg-background">
@@ -413,7 +448,10 @@ const Edit = () => {
           )}
           {currentView !== "fullscreen" && <ResizableHandle withHandle />}
           <ResizablePanel defaultSize={currentView === "fullscreen" ? 100 : 70}>
-            <div ref={previewContainerRef} className="h-full overflow-hidden">
+            <div
+              ref={previewContainerRef}
+              className="h-full overflow-hidden relative"
+            >
               <IframePreview
                 device={currentView === "mobile" ? currentDevice : null}
                 ref={iframeRef}
@@ -421,6 +459,9 @@ const Edit = () => {
                 currentView={currentView}
                 isLoading={isFileLoading}
               />
+              {(isUndoing || isRedoing || isCodeUpdating || isChatUpdating) && (
+                <LoaderCircle />
+              )}
               {currentView === "mobile" && (
                 <div className="absolute bottom-8 right-8 z-10">
                   <Dice onRoll={shuffleDevice} />

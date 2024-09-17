@@ -96,6 +96,25 @@ const Chat = ({ shipId, onCodeUpdate }) => {
     }
   };
 
+  const ThreeDotLoader = () => {
+    return (
+      <div className="flex space-x-2">
+        <div
+          className="w-2 h-2 bg-white rounded-full animate-bounce"
+          style={{ animationDelay: "0s" }}
+        ></div>
+        <div
+          className="w-2 h-2 bg-white rounded-full animate-bounce"
+          style={{ animationDelay: "0.2s" }}
+        ></div>
+        <div
+          className="w-2 h-2 bg-white rounded-full animate-bounce"
+          style={{ animationDelay: "0.4s" }}
+        ></div>
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-scroll p-4 pt-4 max-h-[calc(100vh-120px)]">
@@ -130,7 +149,7 @@ const Chat = ({ shipId, onCodeUpdate }) => {
             rows={3}
           />
           <Button onClick={handleSend} disabled={isLoading}>
-            {isLoading ? "Sending..." : "Send"}
+            {isLoading ? <ThreeDotLoader /> : "Send"}
           </Button>
         </div>
       </div>

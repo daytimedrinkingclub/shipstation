@@ -284,6 +284,48 @@ async function deleteCodeVersion(shipId, version) {
   return data;
 }
 
+async function updateShipAssets(shipId, newAssets) {
+  // First, get the current assets
+  const { data: currentData, error: fetchError } = await supabaseClient
+    .from("ships")
+    .select("assets")
+    .eq("slug", shipId)
+    .single();
+
+  if (fetchError) {
+    console.error("Error fetching current assets:", fetchError);
+    throw fetchError;
+  }
+
+  // Combine current assets with new assets
+  let updatedAssets = currentData.assets || [];
+  if (Array.isArray(updatedAssets)) {
+    updatedAssets = [...updatedAssets, ...newAssets];
+  } else if (typeof updatedAssets === "string") {
+    try {
+      updatedAssets = [...JSON.parse(updatedAssets), ...newAssets];
+    } catch (parseError) {
+      console.error("Error parsing current assets:", parseError);
+      updatedAssets = newAssets;
+    }
+  } else {
+    updatedAssets = newAssets;
+  }
+
+  // Update the ships table with the combined assets
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .update({ assets: JSON.stringify(updatedAssets) })
+    .eq("slug", shipId);
+
+  if (error) {
+    console.error("Error updating ship assets:", error);
+    throw error;
+  }
+
+  return updatedAssets;
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -303,4 +345,5 @@ module.exports = {
   updateCurrentCodeVersion,
   getAllCodeVersions,
   deleteCodeVersion,
+  updateShipAssets,
 };

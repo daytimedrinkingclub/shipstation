@@ -5,6 +5,8 @@ const mime = require("mime-types");
 const path = require("path");
 require("dotenv").config();
 
+const { updateShipAssets } = require("../dbService");
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
@@ -232,6 +234,43 @@ class SupabaseStorageStrategy {
       return true;
     } catch (err) {
       console.error(`Error deleting file ${filePath}:`, err);
+      throw err;
+    }
+  }
+
+  async uploadAssets(shipId, assets) {
+    try {
+      const uploadedAssets = [];
+      for (const asset of assets) {
+        const fileName = `${Date.now()}-${asset.file.originalname}`;
+        const fullPath = this._getFullPath(`${shipId}/assets/${fileName}`);
+
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fullPath, asset.file.buffer, {
+            contentType: asset.file.mimetype,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fullPath);
+
+        uploadedAssets.push({
+          url: publicUrlData.publicUrl,
+          comment: asset.comment,
+          fileName: asset.file.originalname,
+        });
+      }
+
+      // Update the ships table with the new assets
+      await updateShipAssets(shipId, uploadedAssets);
+
+      return uploadedAssets;
+    } catch (err) {
+      console.error(`Error uploading assets for ship ${shipId}:`, err);
       throw err;
     }
   }

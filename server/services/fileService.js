@@ -50,6 +50,10 @@ class FileService {
   async deleteFile(filePath) {
     return this.strategy.deleteFile(filePath);
   }
+
+  async uploadAssets(shipId, assets) {
+    return this.strategy.uploadAssets(shipId, assets);
+  }
 }
 
 module.exports = FileService;
