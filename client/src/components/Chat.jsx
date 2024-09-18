@@ -305,7 +305,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
               multiple
             />
           </div>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-gray-500 hidden md:block">
             You can also drag and drop files here
           </span>
         </div>

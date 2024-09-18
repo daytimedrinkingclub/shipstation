@@ -10,7 +10,7 @@ const suggestions = [
 
 const ChatSuggestions = ({ onSuggestionClick }) => {
   return (
-    <div className="mb-4">
+    <div>
       <p className="text-sm text-muted-foreground mb-2">
         Quick suggestions to get started:
       </p>
@@ -20,9 +20,10 @@ const ChatSuggestions = ({ onSuggestionClick }) => {
             key={index}
             variant="outline"
             size="sm"
+            className="h-auto py-2 px-3 text-left text-wrap inline-flex items-center justify-start"
             onClick={() => onSuggestionClick(suggestion)}
           >
-            {suggestion}
+            <span className="text-sm">{suggestion}</span>
           </Button>
         ))}
       </div>
