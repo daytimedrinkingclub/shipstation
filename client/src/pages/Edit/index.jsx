@@ -358,21 +358,15 @@ const Edit = () => {
             </div>
 
             <div className="flex flex-row items-center space-x-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowMobilePreview(!showMobilePreview)}
-                    className="w-10 h-10 md:hidden"
-                  >
-                    <Eye className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {showMobilePreview ? "Show Editor" : "Show Preview"}
-                </TooltipContent>
-              </Tooltip>
+              <Button
+                variant={`${showMobilePreview ? "default" : "outline"}`}
+                onClick={() => setShowMobilePreview(!showMobilePreview)}
+                className="w-auto h-10 md:hidden"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+
               <div className="hidden md:flex">
                 <ViewOptions
                   currentView={currentView}
