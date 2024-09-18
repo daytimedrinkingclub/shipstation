@@ -154,10 +154,6 @@ const Edit = () => {
     setAssetCount(newAssets.length);
   }, []);
 
-  const changeTab = (tabName) => {
-    setActiveTab(tabName);
-  };
-
   useEffect(() => {
     if (!userLoading && (!user || !shipId)) {
       navigate("/");
@@ -302,6 +298,11 @@ const Edit = () => {
     });
   };
 
+  const handleAssetsUpdate = (newAssets) => {
+    setAssets((prevAssets) => [...prevAssets, ...newAssets]);
+    setAssetCount((prevCount) => prevCount + newAssets.length);
+  };
+
   if (!user || !shipId) {
     return null;
   }
@@ -374,23 +375,20 @@ const Edit = () => {
                   Preview Live Site
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Preview your site in a new tab</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
                   variant="default"
-                  size="icon"
                   className="h-10 px-2 bg-green-500 hover:bg-green-600"
                   onClick={() => {
                     handledownloadzip();
                     toast("Project will be downloaded shortly!");
                   }}
                 >
-                  <Download className="w-4 h-4 " />
+                  <Download className="w-4 h-4 mr-2" /> Export Project
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Download Project</TooltipContent>
             </Tooltip>
           </div>
         </div>
@@ -439,7 +437,13 @@ const Edit = () => {
                   )}
                 </div>
                 <TabsContent value="chat" className="flex-grow overflow-hidden">
-                  <Chat shipId={shipId} onCodeUpdate={handleChatUpdate} />
+                  <Chat
+                    shipId={shipId}
+                    onCodeUpdate={handleChatUpdate}
+                    onAssetsUpdate={handleAssetsUpdate}
+                    assets={assets}
+                    assetCount={assetCount}
+                  />
                 </TabsContent>
                 <TabsContent value="code" className="flex-grow overflow-hidden">
                   <div className="h-full flex flex-col bg-background">

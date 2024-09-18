@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import ThreeDotLoader from "@/components/random/ThreeDotLoader";
+import ChatSuggestions from "@/components/ChatSuggestions";
 import { useSocket } from "@/context/SocketProvider";
 import { supabase } from "@/lib/supabaseClient";
 import {
@@ -26,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useProject } from "@/hooks/useProject";
 
-const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
+const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,18 +41,27 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
   const { uploadAssets } = useProject(shipId);
   const [filesToUpload, setFilesToUpload] = useState([]);
   const [uploadedFileInfos, setUploadedFileInfos] = useState([]);
+  const [initialMessageFetched, setInitialMessageFetched] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  const initChat = async () => {
+    await fetchConversationHistory();
+    await fetchInitialUserMessage();
+    setInitialMessageFetched(true);
+  };
+
+  useEffect(() => {
+    initChat();
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
   useEffect(() => {
-    fetchConversationHistory();
-
     if (socket) {
       socket.on("chatResponse", handleChatResponse);
       socket.on("codeUpdate", handleCodeUpdate);
@@ -90,7 +101,6 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
           }));
         setMessages(displayMessages);
       } else {
-        // No data found, set empty messages array
         setMessages([]);
       }
     } catch (error) {
@@ -99,10 +109,44 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
     }
   };
 
+  const fetchInitialUserMessage = async () => {
+    const { data, error } = await supabase
+      .from("ships")
+      .select("prompt")
+      .eq("slug", shipId)
+      .maybeSingle();
+
+    if (data && data.prompt) {
+      setMessages((prevMessages) => {
+        // Check if the initial messages are already in the array
+        const initialMessagesExist = prevMessages.some(
+          (msg) => msg.sender === "user" && msg.text === data.prompt
+        );
+
+        if (!initialMessagesExist) {
+          const userMessage = { text: data.prompt, sender: "user" };
+          const aiMessage = {
+            text: `Sure! Your website is live at shipstation.ai/site/${shipId}. How can I help you further with your project?`,
+            sender: "assistant",
+          };
+
+          // If there are existing messages, add the new ones at the beginning
+          if (prevMessages.length > 0) {
+            return [userMessage, aiMessage, ...prevMessages];
+          } else {
+            // If there are no existing messages, just return the new ones
+            return [userMessage, aiMessage];
+          }
+        }
+        return prevMessages;
+      });
+    }
+  };
+
   const handleChatResponse = (response) => {
     setMessages((prevMessages) => [
       ...prevMessages,
-      { text: response.updatedMessage, sender: "assistant" },
+      { text: response.message, sender: "assistant" },
     ]);
     setIsLoading(false);
   };
@@ -186,12 +230,19 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
       setFileDescriptions({});
       setIsDialogOpen(false);
       toast.success("Assets uploaded successfully");
+
+      // Call the onAssetsUpdate callback with the new assets
+      onAssetsUpdate(uploadedAssets);
     } catch (error) {
       console.error("Error uploading assets:", error);
       toast.error("Failed to upload assets");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSuggestionClick = (suggestion) => {
+    setInput(suggestion);
   };
 
   return (
@@ -203,26 +254,39 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
       onDrop={handleDrop}
     >
       <div className="flex-1 overflow-y-auto p-4">
-        {messages.map((message, index) => (
-          <div
-            key={index}
-            className={`mb-2 ${
-              message.sender === "user" ? "text-right" : "text-left"
-            }`}
-          >
-            <span
-              className={`inline-block p-2 rounded ${
-                message.sender === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground"
+        {initialMessageFetched &&
+          messages.map((message, index) => (
+            <div
+              key={index}
+              className={`mb-2 flex ${
+                message.sender === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {message.text}
+              <span
+                className={`inline-block p-2 rounded max-w-[80%] ${
+                  message.sender === "user"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary text-secondary-foreground"
+                }`}
+              >
+                {message.text || ""}
+              </span>
+            </div>
+          ))}
+        {isLoading && (
+          <div className="flex justify-start mb-2">
+            <span className="inline-block p-2 h-10 flex items-center rounded max-w-[80%] bg-secondary text-secondary-foreground">
+              <ThreeDotLoader />
             </span>
           </div>
-        ))}
+        )}
         <div ref={messagesEndRef} />
       </div>
+      {messages.length <= 2 && (
+        <div className="px-4">
+          <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
+        </div>
+      )}
       <div className="p-4">
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center">
@@ -249,7 +313,7 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message..."
+            placeholder="Describe changes or attach files/images for your website..."
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
             disabled={isLoading}
             rows={3}
@@ -314,8 +378,8 @@ const Chat = ({ shipId, onCodeUpdate, assetCount, onChangeTab, assets }) => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Enter Asset Descriptions</DialogTitle>
-            <div className="mb-4 text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
+            <DialogTitle className="mb-2">Enter Asset Descriptions</DialogTitle>
+            <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
               <Info className="mr-2 h-5 w-5 text-primary flex-shrink-0" />
               <p className="px-2">
                 Adding descriptions to your assets helps our AI better
