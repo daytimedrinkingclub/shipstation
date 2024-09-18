@@ -398,8 +398,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
             Drop files here to add as assets to your website
             <br />
             <span className="text-sm">
-              Upload images, PDFs, videos, or any other files you want to use in
-              your site
+              Upload images, PDFs, or any other files you want to use in your
+              site
             </span>
           </p>
           <Image className="w-6 h-6 text-blue-700 transform -rotate-12 ml-2" />

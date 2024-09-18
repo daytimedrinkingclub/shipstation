@@ -25,7 +25,7 @@ import { useProject } from "@/hooks/useProject";
 import IframePreview, { DEVICE_FRAMES } from "@/components/IframePreview";
 import Dice from "@/components/random/Dice";
 import Chat from "@/components/Chat";
-import AssetUploader from "@/components/AssetUploader";
+import Assets from "@/components/Assets";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -312,7 +312,7 @@ const Edit = () => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="mx-auto flex flex-col h-full p-4 bg-background text-foreground">
+      <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
           <div className="flex items-center space-x-4 w-full md:w-auto">
             <Tooltip>
@@ -503,7 +503,7 @@ const Edit = () => {
                 </div>
               </TabsContent>
               <TabsContent value="assets" className="flex-grow overflow-hidden">
-                <AssetUploader
+                <Assets
                   shipId={shipId}
                   assets={assets}
                   onAssetsChange={updateAssets}
@@ -643,7 +643,7 @@ const Edit = () => {
                     value="assets"
                     className="flex-grow overflow-hidden"
                   >
-                    <AssetUploader
+                    <Assets
                       shipId={shipId}
                       assets={assets}
                       onAssetsChange={updateAssets}
