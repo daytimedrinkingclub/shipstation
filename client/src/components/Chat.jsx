@@ -240,7 +240,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
 
   const handleFiles = (files) => {
     const newFiles = Array.from(files);
-    setFilesToUpload(newFiles);
+    setTempFiles(newFiles);
     setFileDescriptions(
       newFiles.reduce((acc, file) => ({ ...acc, [file.name]: "" }), {})
     );
@@ -259,6 +259,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   };
 
   const handleDialogConfirm = () => {
+    setFilesToUpload((prevFiles) => [...prevFiles, ...tempFiles]);
+    setTempFiles([]);
     setIsDialogOpen(false);
   };
 
@@ -415,7 +417,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
               </p>
             </div>
           </DialogHeader>
-          {filesToUpload.map((file, index) => (
+          {tempFiles.map((file, index) => (
             <div key={index} className="mb-4">
               <p className="mb-2">{file.name}</p>
               <Input

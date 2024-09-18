@@ -20,9 +20,13 @@ async function refineCode(shipId, message, userId, assets, assetInfo) {
   await dbService.updateCurrentCodeVersion(shipId, newVersion);
 
   const conversation = await dbService.getCodeRefiningConversation(shipId);
-  let messages = (conversation?.messages || []).map(msg => 
-    msg.role === 'user' ? { role: msg.role, content: msg.content } : msg
-  );
+
+  let messages = Array.isArray(conversation?.messages)
+    ? conversation.messages.map((msg) =>
+        msg.role === "user" ? { role: msg.role, content: msg.content } : msg
+      )
+    : [];
+
   let dbMessages = conversation?.messages || [];
 
   console.log("assets received", assets.length);
