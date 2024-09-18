@@ -60,22 +60,32 @@ class SupabaseStorageStrategy {
       const fullPrefix = this._getFullPath(prefix);
       console.log(`Full prefix: ${fullPrefix}`);
 
+      const options = {
+        limit: 1000,
+        offset: 0,
+      };
+
+      // Only add sortBy if it's a valid option
+      if (["name", "created_at", "updated_at"].includes(sortBy)) {
+        options.sortBy = { column: sortBy, order: sortOrder };
+      } else {
+        console.warn(
+          `Invalid sortBy value: ${sortBy}. Falling back to default sorting.`
+        );
+      }
+
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
-        .list(fullPrefix, {
-          limit: 1000,
-          offset: 0,
-          sortBy: { column: sortBy, order: sortOrder },
-        });
+        .list(fullPrefix, options);
 
       if (error) throw error;
 
-      console.log(
-        `Data received from Supabase:`,
-        JSON.stringify(data, null, 2)
-      );
+      // Extract only the names from the data
+      const websiteNames = data.map((item) => item.name);
 
-      return data;
+      console.log(`Processed data:`, JSON.stringify(websiteNames, null, 2));
+
+      return websiteNames;
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
       return [];

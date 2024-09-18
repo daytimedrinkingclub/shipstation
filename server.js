@@ -193,9 +193,8 @@ app.post("/paypal-webhook", async (req, res) => {
 app.get("/all-websites", async (req, res) => {
   try {
     const websites = await fileService.listFolders("");
-    res.json({
-      websites: websites.filter((website) => !website.startsWith(".")),
-    });
+    console.log(websites);
+    res.json(websites);
   } catch (err) {
     console.error("Error listing websites:", err);
     res.status(500).json({ error: "Internal Server Error" });
