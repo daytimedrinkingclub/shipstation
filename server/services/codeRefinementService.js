@@ -9,7 +9,7 @@ const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
-async function refineCode(shipId, message, userId, assets) {
+async function refineCode(shipId, message, userId, assets, assetInfo) {
   console.log(`Starting code refinement for shipId: ${shipId}`);
 
   const client = new AnthropicService({ userId });
@@ -20,13 +20,19 @@ async function refineCode(shipId, message, userId, assets) {
   await dbService.updateCurrentCodeVersion(shipId, newVersion);
 
   const conversation = await dbService.getCodeRefiningConversation(shipId);
-  let messages = conversation?.messages || [];
+  let messages = (conversation?.messages || []).map(msg => 
+    msg.role === 'user' ? { role: msg.role, content: msg.content } : msg
+  );
+  let dbMessages = conversation?.messages || [];
 
   console.log("assets received", assets.length);
 
-  const messagesToSaveInDB = [...messages, { role: "user", content: message }];
+  const messagesToSaveInDB = [
+    ...dbMessages,
+    { role: "user", content: message, assetInfo: assetInfo },
+  ];
 
-  const systemPrompt = getSystemPrompt(assets);
+  const systemPrompt = getSystemPrompt(assets, assetInfo);
   const userMessage = `Current HTML code:\n${currentCode}\n\nUser request: ${message}`;
 
   messages.push({ role: "user", content: userMessage });
@@ -144,7 +150,7 @@ async function saveNewVersion(shipId, currentCode) {
   return newVersion;
 }
 
-function getSystemPrompt(assets) {
+function getSystemPrompt(assets, assetInfo) {
   let prompt = `
     You are an AI assistant specialized in refining HTML code. Analyze the current HTML code and the user's request, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
 
@@ -159,6 +165,8 @@ function getSystemPrompt(assets) {
   if (assets.length > 0) {
     prompt += `\n\nUser Assets:
     The following assets have been provided by the user. You MUST incorporate these assets into the website as per their descriptions. This is a user requirement that should be fulfilled:
+
+    ${assetInfo}
 
     ${assets
       .map(

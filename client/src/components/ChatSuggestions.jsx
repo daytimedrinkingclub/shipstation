@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 
 const suggestions = [
   "Could you please update the color theme to a purple palette?",
-  "Can you change the hero text?",
   "I'd like to change the font to Inter throughout the website.",
   "Can you remove the contact form from the page?",
 ];

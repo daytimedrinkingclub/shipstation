@@ -312,7 +312,7 @@ const Edit = () => {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
+      <div className="mx-auto flex flex-col h-full p-4 bg-background text-foreground">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
           <div className="flex items-center space-x-4 w-full md:w-auto">
             <Tooltip>
@@ -385,6 +385,19 @@ const Edit = () => {
                 size="icon"
                 className="w-10 h-10 md:w-auto md:px-2"
                 onClick={() => {
+                  handledownloadzip();
+                  toast("Project will be downloaded shortly!");
+                }}
+              >
+                <Download className="w-4 h-4 md:mr-2" />
+                <span className="hidden md:inline">Export Project</span>
+              </Button>
+
+              <Button
+                variant="default"
+                size="icon"
+                className="w-10 h-10 md:w-auto md:px-2"
+                onClick={() => {
                   window.open(
                     `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
                     "_blank"
@@ -393,19 +406,6 @@ const Edit = () => {
               >
                 <ExternalLink className="w-4 h-4 md:mr-2" />
                 <span className="hidden md:inline">Preview Live Site</span>
-              </Button>
-
-              <Button
-                variant="default"
-                size="icon"
-                className="w-10 h-10 md:w-auto md:px-2 bg-green-500 hover:bg-green-600"
-                onClick={() => {
-                  handledownloadzip();
-                  toast("Project will be downloaded shortly!");
-                }}
-              >
-                <Download className="w-4 h-4 md:mr-2" />
-                <span className="hidden md:inline">Export Project</span>
               </Button>
             </div>
           </div>
@@ -429,7 +429,12 @@ const Edit = () => {
                   </TabsTrigger>
                   <TabsTrigger value="assets" className="flex items-center">
                     <Files className="w-4 h-4 mr-2" />
-                    Assets ({assetCount})
+                    <span className="text-sm">Assets</span>
+                    {assetCount === 0 ? null : (
+                      <Badge variant="default" className="rounded-full ml-2">
+                        {assetCount}
+                      </Badge>
+                    )}
                   </TabsTrigger>
                 </TabsList>
                 {activeTab === "code" && (
@@ -547,7 +552,15 @@ const Edit = () => {
                       </TabsTrigger>
                       <TabsTrigger value="assets" className="flex items-center">
                         <Files className="w-4 h-4 mr-2" />
-                        Assets ({assetCount})
+                        <span className="text-sm">Assets</span>
+                        {assetCount === 0 ? null : (
+                          <Badge
+                            variant="default"
+                            className="rounded-full ml-2"
+                          >
+                            {assetCount}
+                          </Badge>
+                        )}
                       </TabsTrigger>
                     </TabsList>
                     {activeTab === "code" && (
