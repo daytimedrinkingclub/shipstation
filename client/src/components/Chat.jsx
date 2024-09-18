@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import ThreeDotLoader from "@/components/random/ThreeDotLoader";
 import ChatSuggestions from "@/components/ChatSuggestions";
 import { useSocket } from "@/context/SocketProvider";
@@ -42,6 +44,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const [fileDescriptions, setFileDescriptions] = useState({});
   const [isUploadDisabled, setIsUploadDisabled] = useState(true);
   const [initialMessageFetched, setInitialMessageFetched] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
   const [tempFiles, setTempFiles] = useState([]);
   const [filesToUpload, setFilesToUpload] = useState([]);
@@ -51,9 +54,11 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   };
 
   const initChat = async () => {
+    setIsLoadingMessages(true);
     await fetchConversationHistory();
     await fetchInitialUserMessage();
     setInitialMessageFetched(true);
+    setIsLoadingMessages(false);
   };
 
   useEffect(() => {
@@ -273,7 +278,21 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       onDrop={handleDrop}
     >
       <div className="flex-1 overflow-y-auto p-4">
-        {initialMessageFetched &&
+        {isLoadingMessages ? (
+          // Skeleton loader
+          <>
+            <div className="flex justify-end mb-2">
+              <Skeleton className="h-10 w-3/4 rounded" />
+            </div>
+            <div className="flex justify-start mb-2">
+              <Skeleton className="h-20 w-3/4 rounded" />
+            </div>
+            <div className="flex justify-end mb-2">
+              <Skeleton className="h-10 w-2/4 rounded" />
+            </div>
+          </>
+        ) : (
+          initialMessageFetched &&
           messages.map((message, index) => (
             <div
               key={index}
@@ -302,7 +321,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                 )}
               </div>
             </div>
-          ))}
+          ))
+        )}
         {isLoading && (
           <div className="flex justify-start mb-2">
             <span className="inline-block p-2 h-10 flex items-center rounded max-w-[80%] bg-secondary text-secondary-foreground">
