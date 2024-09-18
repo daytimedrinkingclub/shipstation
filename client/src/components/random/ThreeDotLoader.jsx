@@ -1,7 +1,7 @@
 const ThreeDotLoader = () => {
   return (
     <div className="flex items-center justify-center">
-      <style jsx>{`
+      <style>{`
         @keyframes pulse {
           0%,
           100% {

@@ -30,6 +30,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useProject } from "@/hooks/useProject";
 
+import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
+
 const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const { socket } = useSocket();
   const { uploadAssets } = useProject(shipId);
@@ -151,7 +153,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         if (!initialMessagesExist) {
           const userMessage = { text: data.prompt, sender: "user" };
           const aiMessage = {
-            text: `Sure! Your website is live at shipstation.ai/site/${shipId}. How can I help you further with your project?`,
+            text: `Sure! Your website is live at https://shipstation.ai/site/${shipId} How can I help you further with your project?`,
             sender: "assistant",
           };
 
@@ -192,6 +194,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
           }));
           uploadedAssets = await uploadAssets(assetsToUpload);
         }
+
+        onAssetsUpdate(uploadedAssets);
 
         const assetInfo =
           uploadedAssets.length > 0
@@ -312,7 +316,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {message.text || ""}
+                  {convertUrlsToLinks(message.text || "")}
                 </span>
                 {message.assetInfo && (
                   <span className="text-sm text-muted-foreground mt-1">
