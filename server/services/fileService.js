@@ -11,11 +11,11 @@ class FileService {
     switch (process.env.STORAGE_STRATEGY) {
       case "s3":
         return new S3StorageStrategy();
-      case "supabase":
-        return new SupabaseStorageStrategy();
       case "local":
-      default:
         return new LocalStorageStrategy();
+      case "supabase":
+      default:
+        return new SupabaseStorageStrategy();
     }
   }
 

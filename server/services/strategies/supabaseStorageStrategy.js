@@ -53,7 +53,13 @@ class SupabaseStorageStrategy {
 
   async listFolders(prefix, sortBy = "name", sortOrder = "asc") {
     try {
+      console.log(
+        `listFolders called with prefix: "${prefix}", sortBy: ${sortBy}, sortOrder: ${sortOrder}`
+      );
+
       const fullPrefix = this._getFullPath(prefix);
+      console.log(`Full prefix: ${fullPrefix}`);
+
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
         .list(fullPrefix, {
@@ -64,15 +70,12 @@ class SupabaseStorageStrategy {
 
       if (error) throw error;
 
-      const folders = data
-        .filter(
-          (item) =>
-            item.metadata &&
-            item.metadata.mimetype === "application/x-directory"
-        )
-        .map((item) => item.name);
+      console.log(
+        `Data received from Supabase:`,
+        JSON.stringify(data, null, 2)
+      );
 
-      return folders;
+      return data;
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
       return [];
@@ -106,31 +109,7 @@ class SupabaseStorageStrategy {
 
       try {
         const fullPath = this._getFullPath(directoryPath);
-        const { data, error } = await supabase.storage
-          .from(BUCKET_NAME)
-          .list(fullPath, {
-            limit: 1000,
-            offset: 0,
-          });
-
-        if (error) throw error;
-
-        for (const item of data) {
-          try {
-            const { data: fileData, error: fileError } = await supabase.storage
-              .from(BUCKET_NAME)
-              .download(`${fullPath}/${item.name}`);
-
-            if (fileError) throw fileError;
-
-            // Convert Blob to Buffer
-            const buffer = Buffer.from(await fileData.arrayBuffer());
-            archive.append(buffer, { name: item.name });
-          } catch (fileErr) {
-            console.warn(`Skipping file ${item.name}: ${fileErr.message}`);
-            // Continue with the next file instead of throwing an error
-          }
-        }
+        await this.addToArchive(archive, fullPath, "");
 
         archive.finalize();
       } catch (err) {
@@ -140,6 +119,58 @@ class SupabaseStorageStrategy {
       archive.on("error", (err) => reject(err));
       archive.on("end", () => resolve(streamPassThrough));
     });
+  }
+
+  async addToArchive(archive, fullPath, relativePath) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .list(fullPath, {
+          limit: 1000,
+          offset: 0,
+        });
+
+      if (error) {
+        console.warn(`Error listing ${fullPath}: ${error.message}`);
+        return;
+      }
+
+      for (const item of data) {
+        const itemFullPath = `${fullPath}/${item.name}`;
+        const itemRelativePath = path
+          .join(relativePath, item.name)
+          .replace(/\\/g, "/");
+
+        if (
+          item.metadata &&
+          item.metadata.mimetype === "application/x-directory"
+        ) {
+          // It's a directory, recurse into it
+          await this.addToArchive(archive, itemFullPath, itemRelativePath);
+        } else {
+          // It's a file, try to add it to the archive
+          try {
+            const { data: fileData, error: fileError } = await supabase.storage
+              .from(BUCKET_NAME)
+              .download(itemFullPath);
+
+            if (fileError) {
+              console.warn(`Skipping file ${item.name}: ${fileError.message}`);
+              continue;
+            }
+
+            const buffer = Buffer.from(await fileData.arrayBuffer());
+            archive.append(buffer, { name: itemRelativePath });
+          } catch (fileErr) {
+            console.warn(
+              `Error processing file ${item.name}: ${fileErr.message}`
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`Error processing directory ${fullPath}: ${err.message}`);
+    }
   }
 
   async getProjectDirectoryStructure(projectPath) {
@@ -173,9 +204,6 @@ class SupabaseStorageStrategy {
             name: item.name,
             type: "file",
             path: itemPath,
-            lastModified: item.metadata.lastModified
-              ? new Date(item.metadata.lastModified)
-              : null,
           });
         }
       }
