@@ -8,6 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 
 const Assets = ({ assets }) => {
@@ -44,51 +50,79 @@ const Assets = ({ assets }) => {
           {assets.map((asset, index) => (
             <Card
               key={index}
-              className="h-auto hover:shadow-lg transition-shadow duration-300"
+              className="overflow-hidden transition-all duration-300 hover:shadow-lg"
             >
-              <CardHeader className="p-4 bg-gray-50">
-                <div className="aspect-square bg-white rounded-md flex items-center justify-center overflow-hidden border border-gray-200">
-                  {isImageFile(asset.fileName || asset.url) ? (
-                    <img
-                      src={asset.url}
-                      alt={asset.fileName}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <div className="text-4xl font-bold text-gray-400 flex flex-col items-center">
-                      <FileIcon className="h-12 w-12 mb-2" />
-                      {getFileExtension(asset.fileName || asset.url)}
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="px-4 pt-2 pb-0">
-                <CardTitle className="text-sm font-medium truncate">
-                  {asset.fileName || asset.url.split("/").pop()}
-                </CardTitle>
-                <p className="text-sm text-gray-600 truncate">
-                  {asset.comment}
-                </p>
+              <div className="aspect-square bg-gray-100 relative">
+                {isImageFile(asset.fileName) ? (
+                  <img
+                    src={asset.url}
+                    alt={asset.fileName}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                    <FileIcon className="h-16 w-16 mb-2" />
+                    <span className="text-sm font-medium">
+                      {getFileExtension(asset.fileName)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <CardContent className="p-4">
+                <h3
+                  className="font-semibold text-sm mb-1 truncate"
+                  title={asset.fileName}
+                >
+                  {asset.fileName}
+                </h3>
+                {asset.comment && (
+                  <p
+                    className="text-sm text-gray-600 truncate"
+                    title={asset.comment}
+                  >
+                    {asset.comment}
+                  </p>
+                )}
               </CardContent>
-              <CardFooter className="py-2 px-4 flex justify-between">
-                <Button
-                  variant="icon"
-                  size="icon"
-                  onClick={() => copyToClipboard(asset.url, index)}
-                >
-                  {copiedIndex === index ? (
-                    <Check className="h-4 w-4 text-green-500" />
-                  ) : (
-                    <Copy className="h-4 w-4" />
-                  )}
-                </Button>
-                <Button
-                  variant="icon"
-                  size="icon"
-                  onClick={() => window.open(asset.url, "_blank")}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+              <CardFooter className="p-2 bg-gray-50 flex justify-between">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => copyToClipboard(asset.url, index)}
+                        className="hover:bg-gray-200"
+                      >
+                        {copiedIndex === index ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{copiedIndex === index ? "Copied!" : "Copy URL"}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => window.open(asset.url, "_blank")}
+                        className="hover:bg-gray-200"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Open in new tab</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </CardFooter>
             </Card>
           ))}
