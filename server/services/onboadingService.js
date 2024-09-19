@@ -16,6 +16,11 @@ const {
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
+const {
+  undoCodeChange,
+  redoCodeChange,
+  refineCode,
+} = require("./codeRefinementService");
 
 async function processConversation({
   client,
@@ -260,12 +265,19 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message } = data;
-      console.log("Received chat message:", message, "for ship:", shipId);
+      const { shipId, message, assets, assetInfo } = data;
+      console.log("Received chat message:", message, "\nfor ship:", shipId);
+      console.log("Message:", message);
+      console.log("Assets:", assets.length, assetInfo);
 
       try {
-        const { refineCode } = require("./codeRefinementService");
-        const result = await refineCode(shipId, message, socket.userId);
+        const result = await refineCode(
+          shipId,
+          message,
+          socket.userId,
+          assets,
+          assetInfo
+        );
 
         socket.emit("chatResponse", { message: result.updatedMessage });
 
@@ -285,12 +297,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received undo request for ship:", shipId);
 
       try {
-        const { undoCodeChange } = require("./codeRefinementService");
         const result = await undoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("undoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("undoResult", {
             success: false,
@@ -311,12 +322,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received redo request for ship:", shipId);
 
       try {
-        const { redoCodeChange } = require("./codeRefinementService");
         const result = await redoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("redoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("redoResult", {
             success: false,

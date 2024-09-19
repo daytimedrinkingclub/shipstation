@@ -27,7 +27,6 @@ async function handleOnboardingToolUse({
   shipType,
   images,
 }) {
-
   console.log("onboradingToolController recieved images:", images.length);
 
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
@@ -192,7 +191,7 @@ async function handleOnboardingToolUse({
     const ship = {
       user_id: userId,
       status: "completed",
-      prompt: messages[0].content,
+      prompt: messages[0].content[0].text,
       mode,
       slug,
       execution_time: duration,

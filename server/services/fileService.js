@@ -11,11 +11,11 @@ class FileService {
     switch (process.env.STORAGE_STRATEGY) {
       case "s3":
         return new S3StorageStrategy();
-      case "supabase":
-        return new SupabaseStorageStrategy();
       case "local":
-      default:
         return new LocalStorageStrategy();
+      case "supabase":
+      default:
+        return new SupabaseStorageStrategy();
     }
   }
 
@@ -27,8 +27,8 @@ class FileService {
     return this.strategy.saveDirectory(directoryPath, remotePath);
   }
 
-  async listFolders(prefix, sortBy = "modifiedAt", sortOrder = "desc") {
-    return this.strategy.listFolders(prefix, sortBy, sortOrder);
+  async listFolders(prefix) {
+    return this.strategy.listFolders(prefix);
   }
 
   async getFile(filePath) {
@@ -45,6 +45,14 @@ class FileService {
 
   async getProjectDirectoryStructure(projectPath) {
     return this.strategy.getProjectDirectoryStructure(projectPath);
+  }
+
+  async deleteFile(filePath) {
+    return this.strategy.deleteFile(filePath);
+  }
+
+  async uploadAssets(shipId, assets) {
+    return this.strategy.uploadAssets(shipId, assets);
   }
 }
 
