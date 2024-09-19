@@ -42,16 +42,12 @@
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
-
-          const data = await response.json();
-
-          const { websites } = data;
-
+          const { websites } = await response.json();
           const serverContainer = document.getElementById(
             "recent-server-websites"
           );
 
-          function createCard(item) {
+          function createCard(item, isS3) {
             const card = document.createElement("a");
             card.href = `https://shipstation.ai/site/${item}/`;
             card.target = "_blank";
@@ -62,7 +58,7 @@
           }
 
           websites.forEach((item) => {
-            serverContainer.appendChild(createCard(item));
+            serverContainer.appendChild(createCard(item, false));
           });
         } catch (error) {
           console.error("Failed to fetch items:", error);
