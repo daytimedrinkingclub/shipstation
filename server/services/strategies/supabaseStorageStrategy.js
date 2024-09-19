@@ -51,7 +51,7 @@ class SupabaseStorageStrategy {
     }
   }
 
-  async listFolders(prefix, sortBy = "name", sortOrder = "asc") {
+  async listFolders(prefix, sortBy = "created_at", sortOrder = "desc") {
     try {
       console.log(
         `listFolders called with prefix: "${prefix}", sortBy: ${sortBy}, sortOrder: ${sortOrder}`
@@ -85,10 +85,11 @@ class SupabaseStorageStrategy {
 
       console.log(`Processed data:`, JSON.stringify(websiteNames, null, 2));
 
-      return websiteNames;
+      // Return the data in the expected format
+      return { websites: websiteNames };
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
-      return [];
+      return { websites: [] };
     }
   }
 

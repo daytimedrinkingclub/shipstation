@@ -49,6 +49,17 @@ app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
+app.get("/all-websites", async (req, res) => {
+  try {
+    const { websites } = await fileService.listFolders("");
+    console.log(websites);
+    res.json({ websites });
+  } catch (err) {
+    console.error("Error listing websites:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Serve React app for all other routes (including 404)
 app.get("/ship", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
@@ -187,17 +198,6 @@ app.post("/paypal-webhook", async (req, res) => {
   } catch (error) {
     console.error("Error processing PayPal webhook:", error);
     res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.get("/all-websites", async (req, res) => {
-  try {
-    const websites = await fileService.listFolders("");
-    console.log(websites);
-    res.json(websites);
-  } catch (err) {
-    console.error("Error listing websites:", err);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 

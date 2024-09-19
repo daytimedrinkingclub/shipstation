@@ -27,8 +27,8 @@ class FileService {
     return this.strategy.saveDirectory(directoryPath, remotePath);
   }
 
-  async listFolders(prefix, sortBy = "modifiedAt", sortOrder = "desc") {
-    return this.strategy.listFolders(prefix, sortBy, sortOrder);
+  async listFolders(prefix) {
+    return this.strategy.listFolders(prefix);
   }
 
   async getFile(filePath) {
