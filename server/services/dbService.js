@@ -361,6 +361,31 @@ async function fetchAssets(shipId) {
   }
 }
 
+async function getShipPrompt(shipId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("ships")
+      .select("prompt")
+      .eq("slug", shipId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching prompt from database: ${error.message}`);
+      throw error;
+    }
+
+    if (!data || !data.prompt) {
+      console.log(`No prompt found for shipId: ${shipId}`);
+      return null;
+    }
+
+    return data.prompt;
+  } catch (error) {
+    console.error("Error fetching ship prompt:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -382,4 +407,5 @@ module.exports = {
   deleteCodeVersion,
   updateShipAssets,
   fetchAssets,
+  getShipPrompt,
 };

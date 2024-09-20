@@ -5,7 +5,6 @@ const cors = require("cors");
 const path = require("path");
 const { JSDOM } = require("jsdom");
 
-const { createClient } = require("@supabase/supabase-js");
 const multer = require("multer");
 
 const {
@@ -17,6 +16,7 @@ const {
   insertPayment,
   getUserProfile,
   updateUserProfile,
+  getShipPrompt,
 } = require("./server/services/dbService");
 const {
   handleOnboardingSocketEvents,
@@ -46,14 +46,23 @@ app.use(express.static("public"));
 app.use(cors());
 
 app.get("/all", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
 app.get("/all-websites", async (req, res) => {
   try {
-    const { websites } = await fileService.listFolders("");
+    const websites = await fileService.listFolders("");
     console.log(websites);
-    res.json({ websites });
+    const websitesWithPrompts = await Promise.all(
+      websites.map(async (website) => {
+        const prompt = await getShipPrompt(website);
+        return { website, prompt };
+      })
+    );
+    res.json({ websites: websitesWithPrompts });
   } catch (err) {
     console.error("Error listing websites:", err);
     res.status(500).json({ error: "Internal Server Error" });

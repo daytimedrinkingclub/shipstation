@@ -81,15 +81,13 @@ class SupabaseStorageStrategy {
       if (error) throw error;
 
       // Extract only the names from the data
-      const websiteNames = data.map((item) => item.name);
-
-      console.log(`Processed data:`, JSON.stringify(websiteNames, null, 2));
+      const folders = data.map((item) => item.name);
 
       // Return the data in the expected format
-      return { websites: websiteNames };
+      return folders;
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
-      return { websites: [] };
+      return [];
     }
   }
 
