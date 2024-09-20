@@ -95,7 +95,7 @@
 
       async function fetchAndRenderWebsites() {
         try {
-          const response = await fetch("http://localhost:3000/all-websites");
+          const response = await fetch("https://shipstation.ai/all-websites");
           const data = await response.json();
           const container = document.getElementById("recent-server-websites");
 
