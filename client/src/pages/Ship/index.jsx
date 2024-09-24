@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import ShipForm from "@/components/ShipForm";
-import OnboardingProcess from "@/components/ShipOnboarding";
+import ShipOnboarding from "@/components/ShipOnboarding";
 import AppLayout from "@/components/layout/AppLayout";
 
 const Ship = () => {
@@ -24,7 +24,7 @@ const Ship = () => {
 
   return (
     <AppLayout>
-      <OnboardingProcess type={selectedType} reset={handleReset} />
+      <ShipOnboarding type={selectedType} reset={handleReset} />
     </AppLayout>
   );
 };

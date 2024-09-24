@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HexColorPicker } from "react-colorful";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 const designLanguages = [
-  { id: "minimal", name: "Minimal", image: "/placeholder.svg" },
-  { id: "modern", name: "Modern", image: "/placeholder.svg" },
-  { id: "classic", name: "Classic", image: "/placeholder.svg" },
-  { id: "bold", name: "Bold", image: "/placeholder.svg" },
+  { id: "minimal", name: "Minimal", link: "https://example.com/minimal" },
+  { id: "modern", name: "Modern", link: "https://example.com/modern" },
+  { id: "classic", name: "Classic", link: "https://example.com/classic" },
+  { id: "bold", name: "Bold", link: "https://example.com/bold" },
+  {
+    id: "neubrutalism",
+    name: "Neubrutalism",
+    link: "https://example.com/neubrutalism",
+  },
+  {
+    id: "glassmorphism",
+    name: "Glassmorphism",
+    link: "https://example.com/glassmorphism",
+  },
 ];
 
 const fontOptions = [
@@ -45,10 +53,10 @@ const colorPalettes = [
 ];
 
 export default function ShipDesign() {
-  const [selectedDesign, setSelectedDesign] = useState("");
-  const [primaryColor, setPrimaryColor] = useState("#3B82F6");
-  const [secondaryColor, setSecondaryColor] = useState("#10B981");
-  const [accentColor, setAccentColor] = useState("#F59E0B");
+  const [selectedDesign, setSelectedDesign] = useState("minimal");
+  const [primaryColor, setPrimaryColor] = useState("#05445E");
+  const [secondaryColor, setSecondaryColor] = useState("#189AB4");
+  const [accentColor, setAccentColor] = useState("#75E6DA");
   const [selectedFont, setSelectedFont] = useState("sans");
   const [currentPaletteIndex, setCurrentPaletteIndex] = useState(0);
 
@@ -59,19 +67,6 @@ export default function ShipDesign() {
     setAccentColor(palette.colors[2]);
   }, [currentPaletteIndex]);
 
-  const nextPalette = () => {
-    setCurrentPaletteIndex(
-      (prevIndex) => (prevIndex + 1) % colorPalettes.length
-    );
-  };
-
-  const prevPalette = () => {
-    setCurrentPaletteIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + colorPalettes.length) % colorPalettes.length
-    );
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -81,23 +76,19 @@ export default function ShipDesign() {
     >
       <h2 className="text-2xl font-bold">Website Design</h2>
 
-      <Tabs defaultValue="language" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="language">Design Language</TabsTrigger>
-          <TabsTrigger value="colors">Color Palette</TabsTrigger>
-          <TabsTrigger value="typography">Typography</TabsTrigger>
-        </TabsList>
-        <TabsContent value="language" className="mt-4">
+      <div className="space-y-8">
+        <div>
           <h3 className="text-xl font-semibold mb-4">
             Choose a Design Language
           </h3>
           <RadioGroup value={selectedDesign} onValueChange={setSelectedDesign}>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               {designLanguages.map((design) => (
                 <motion.div
                   key={design.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative"
                 >
                   <RadioGroupItem
                     value={design.id}
@@ -106,67 +97,82 @@ export default function ShipDesign() {
                   />
                   <Label
                     htmlFor={design.id}
-                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
+                    className={`block overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
+                      selectedDesign === design.id
+                        ? "border-primary shadow-lg"
+                        : "border-muted bg-background hover:border-primary hover:shadow-md"
+                    }`}
                   >
-                    <img
-                      src={design.image}
-                      alt={design.name}
-                      className="w-full h-32 object-cover mb-2 rounded"
-                    />
-                    {design.name}
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold text-foreground">
+                        {design.name}
+                      </h3>
+                      <a
+                        href={design.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-2 inline-flex items-center text-sm font-medium text-primary hover:underline"
+                      >
+                        View Example Site
+                        <ExternalLink className="ml-1 h-4 w-4" />
+                      </a>
+                    </div>
                   </Label>
                 </motion.div>
               ))}
             </div>
           </RadioGroup>
-        </TabsContent>
-        <TabsContent value="colors" className="mt-4">
+        </div>
+
+        <div>
           <h3 className="text-xl font-semibold mb-4">Color Palette</h3>
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="icon" onClick={prevPalette}>
-                <ChevronUp className="h-4 w-4" />
-              </Button>
-              <div className="text-center">
-                <h4 className="font-semibold">
-                  {colorPalettes[currentPaletteIndex].name}
-                </h4>
-                <div className="flex space-x-2 mt-2">
-                  {colorPalettes[currentPaletteIndex].colors.map(
-                    (color, index) => (
-                      <div
-                        key={index}
-                        className="w-8 h-8 rounded-full"
-                        style={{ backgroundColor: color }}
-                      />
-                    )
-                  )}
-                </div>
-              </div>
-              <Button variant="outline" size="icon" onClick={nextPalette}>
-                <ChevronDown className="h-4 w-4" />
-              </Button>
+          <RadioGroup
+            value={currentPaletteIndex.toString()}
+            onValueChange={(value) => setCurrentPaletteIndex(Number(value))}
+          >
+            <div className="grid grid-cols-3 gap-4">
+              {colorPalettes.map((palette, index) => (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="relative"
+                >
+                  <RadioGroupItem
+                    value={index.toString()}
+                    id={`palette-${index}`}
+                    className="peer sr-only"
+                  />
+                  <Label
+                    htmlFor={`palette-${index}`}
+                    className={`block overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
+                      currentPaletteIndex === index
+                        ? "border-primary shadow-lg"
+                        : "border-muted bg-background hover:border-primary hover:shadow-md"
+                    }`}
+                  >
+                    <div className="p-4">
+                      <h4 className="font-semibold text-center mb-2">
+                        {palette.name}
+                      </h4>
+                      <div className="flex justify-center space-x-2">
+                        {palette.colors.map((color, colorIndex) => (
+                          <div
+                            key={colorIndex}
+                            className="w-8 h-8 rounded-full"
+                            style={{ backgroundColor: color }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </Label>
+                </motion.div>
+              ))}
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-              <ColorPicker
-                label="Primary Color"
-                color={primaryColor}
-                onChange={setPrimaryColor}
-              />
-              <ColorPicker
-                label="Secondary Color"
-                color={secondaryColor}
-                onChange={setSecondaryColor}
-              />
-              <ColorPicker
-                label="Accent Color"
-                color={accentColor}
-                onChange={setAccentColor}
-              />
-            </div>
-          </div>
-        </TabsContent>
-        <TabsContent value="typography" className="mt-4">
+          </RadioGroup>
+        </div>
+
+        <div>
           <h3 className="text-xl font-semibold mb-4">Typography</h3>
           <RadioGroup value={selectedFont} onValueChange={setSelectedFont}>
             <div className="space-y-2">
@@ -178,8 +184,8 @@ export default function ShipDesign() {
               ))}
             </div>
           </RadioGroup>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
 
       <div className="bg-muted p-6 rounded-lg">
         <h3 className="text-lg font-semibold mb-4">Preview</h3>
@@ -233,27 +239,5 @@ export default function ShipDesign() {
 
       <Button className="w-full">Apply Design</Button>
     </motion.div>
-  );
-}
-
-function ColorPicker({ label, color, onChange }) {
-  return (
-    <div className="space-y-2">
-      <Label>{label}</Label>
-      <div className="flex items-center space-x-2">
-        <div className="relative">
-          <HexColorPicker color={color} onChange={onChange} />
-          <div
-            className="absolute top-0 left-0 w-full h-full rounded-md"
-            style={{ backgroundColor: color }}
-          />
-        </div>
-        <Input
-          value={color}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-24"
-        />
-      </div>
-    </div>
   );
 }

@@ -21,6 +21,7 @@ const {
   redoCodeChange,
   refineCode,
 } = require("./codeRefinementService");
+const { generateSiteContent } = require("./siteContentService");
 
 async function processConversation({
   client,
@@ -338,6 +339,30 @@ function handleOnboardingSocketEvents(io) {
         socket.emit("redoResult", {
           success: false,
           message: "An error occurred while processing your redo request.",
+        });
+      }
+    });
+
+    socket.on("generateSiteContent", async (data) => {
+      const { userMessage, type, portfolioType } = data;
+      console.log("Received generateSiteContent request");
+
+      try {
+        const result = await generateSiteContent(
+          socket.userId,
+          userMessage,
+          type,
+          portfolioType
+        );
+
+        socket.emit("siteContentGenerated", {
+          sections: result.sections,
+          socials: result.socials,
+        });
+      } catch (error) {
+        console.error("Error generating site content:", error);
+        socket.emit("siteContentGenerationError", {
+          message: "An error occurred while generating site content.",
         });
       }
     });

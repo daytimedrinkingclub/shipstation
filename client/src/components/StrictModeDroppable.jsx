@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
-import { Droppable } from "react-beautiful-dnd";
+import { Droppable } from "@hello-pangea/dnd";
 
-export const StrictModeDroppable = ({ children, ...props }) => {
+export const StrictModeDroppable = ({
+  children,
+  type = "DEFAULT_TYPE",
+  ...props
+}) => {
   const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
@@ -16,5 +20,9 @@ export const StrictModeDroppable = ({ children, ...props }) => {
     return null;
   }
 
-  return <Droppable {...props}>{children}</Droppable>;
+  return (
+    <Droppable type={type} {...props}>
+      {children}
+    </Droppable>
+  );
 };

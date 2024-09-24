@@ -1,30 +1,57 @@
-import { useState, useContext } from "react";
+import { useEffect, useContext, useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import { Sparkles, ArrowLeft } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import ShipForm from "./ShipForm";
+import PortfolioContent from "./PortfolioContent";
 import Stepper from "./Stepper";
 import { motion, AnimatePresence } from "framer-motion";
 import ShipContent from "./ShipContent";
 import ShipDesign from "./ShipDesign";
+import {
+  setCurrentStep,
+  setSections,
+  setSocials,
+} from "@/store/onboardingSlice";
+import { toast } from "sonner";
+import { useSocket } from "@/context/SocketProvider";
+const steps = ["Prompt", "Content", "Design"];
 
-const steps = ["Project Type", "Prompt", "Content", "Design"];
+export default function ShipOnboarding({ type }) {
+  const { socket } = useSocket();
+  const dispatch = useDispatch();
+  const { currentStep } = useSelector((state) => state.onboarding);
+  const userPrompt = useSelector((state) => state.onboarding.userPrompt);
+  const portfolioType = useSelector((state) => state.onboarding.portfolioType);
 
-export default function Component() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [projectType, setProjectType] = useState("landing");
-  const [shipConfig, setShipConfig] = useState(null);
   const { availableShips } = useContext(AuthContext);
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+    if (currentStep === 0) {
+      socket.emit("generateSiteContent", {
+        userMessage: userPrompt,
+        type: type,
+        ...(type === "portfolio" ? { portfolioType: portfolioType } : null),
+      });
+
+      socket.on("siteContentGenerated", (response) => {
+        dispatch(setSections(response.sections));
+        dispatch(setSocials(response.socials));
+        if (currentStep < steps.length - 1) {
+          dispatch(setCurrentStep(currentStep + 1));
+        }
+      });
+    } else {
+      if (currentStep < steps.length - 1) {
+        dispatch(setCurrentStep(currentStep + 1));
+      }
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      dispatch(setCurrentStep(currentStep - 1));
     }
   };
 
@@ -37,31 +64,8 @@ export default function Component() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
-            className="space-y-6"
           >
-            <h2 className="text-2xl font-bold text-primary">
-              Choose Project Type
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Select the type of project you want to create:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["landing", "portfolio"].map((type) => (
-                <motion.div
-                  key={type}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={() => setProjectType(type)}
-                    variant={projectType === type ? "default" : "outline"}
-                    className="w-full h-16 text-lg capitalize font-semibold"
-                  >
-                    {type}
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
+            <ShipForm type={type} reset={() => dispatch(setCurrentStep(0))} />
           </motion.div>
         );
       case 1:
@@ -72,24 +76,10 @@ export default function Component() {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            <ShipForm type={projectType} reset={() => setCurrentStep(0)} />
+            <ShipContent type={type} />
           </motion.div>
         );
       case 2:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ShipContent
-              projectType={projectType}
-              prompt={shipConfig?.prompt}
-            />
-          </motion.div>
-        );
-      case 3:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -150,6 +140,7 @@ export default function Component() {
         >
           <Button
             onClick={handleNext}
+            // disabled={isProcessingPdf}
             className={`transition-all duration-300 bg-primary text-primary-foreground hover:bg-primary/90 group relative overflow-hidden text-lg px-6 py-3 ${
               currentStep === steps.length - 1
                 ? "w-full sm:w-auto justify-center"

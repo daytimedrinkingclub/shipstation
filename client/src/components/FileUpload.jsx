@@ -1,71 +1,101 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { X, Upload, ImageIcon } from "lucide-react";
+import { X, Upload, ImageIcon, FileIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDispatch } from "react-redux";
 
-const ImageUpload = ({ onImageUpload }) => {
+const FileUpload = ({ onFileUpload, type }) => {
   const [uploadStatus, setUploadStatus] = useState("idle");
   const [previews, setPreviews] = useState([]);
   const [isDraggingOnPage, setIsDraggingOnPage] = useState(false);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const [selectedFileIndex, setSelectedFileIndex] = useState(null);
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    onImageUpload(previews);
-  }, [previews, onImageUpload]);
+    onFileUpload(previews);
+  }, [previews, onFileUpload]);
 
-  const onDrop = useCallback((acceptedFiles) => {
-    setUploadStatus("uploading");
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      setUploadStatus("uploading");
 
-    const processFile = (file) => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const result = event.target.result;
-          const [header, base64Data] = result.split(",");
-          const mediaType = file.type || header.split(":")[1].split(";")[0];
+      const processFile = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const result = event.target.result;
+            const [header, base64Data] = result.split(",");
+            const mediaType = file.type || header.split(":")[1].split(";")[0];
 
-          resolve({
-            file: base64Data,
-            caption: "",
-            mediaType: mediaType,
-            preview: URL.createObjectURL(file),
-          });
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    };
+            console.log("Processing file:", file.name, "MediaType:", mediaType);
 
-    Promise.all(acceptedFiles.map(processFile))
-      .then((processedFiles) => {
-        setPreviews((prev) => [...prev, ...processedFiles].slice(0, 5));
-        setUploadStatus("success");
-      })
-      .catch(() => {
-        setUploadStatus("error");
-      });
-  }, []);
+            const processedFile = {
+              file: base64Data,
+              caption: "",
+              mediaType: mediaType,
+              preview: URL.createObjectURL(file),
+              fileName: file.name,
+            };
+
+            resolve(processedFile);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      Promise.all(acceptedFiles.map(processFile))
+        .then((processedFiles) => {
+          setPreviews((prev) => [...prev, ...processedFiles].slice(0, 5));
+          setUploadStatus("success");
+
+          const images = processedFiles.filter(
+            (f) => f.mediaType !== "application/pdf"
+          );
+          const resumePDF = processedFiles.find(
+            (f) => f.mediaType === "application/pdf"
+          );
+
+          onFileUpload({ images, resumePDF });
+        })
+        .catch(() => {
+          setUploadStatus("error");
+        });
+    },
+    [onFileUpload]
+  );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: {
-      "image/jpeg": [],
-      "image/jpg": [],
-      "image/png": [],
-      "image/gif": [],
-      "image/webp": [],
-    },
+    accept:
+      type === "portfolio"
+        ? {
+            "image/jpeg": [],
+            "image/jpg": [],
+            "image/png": [],
+            "image/gif": [],
+            "image/webp": [],
+            "application/pdf": [],
+          }
+        : {
+            "image/jpeg": [],
+            "image/jpg": [],
+            "image/png": [],
+            "image/gif": [],
+            "image/webp": [],
+          },
     maxFiles: 5,
     maxSize: 5 * 1024 * 1024,
   });
 
-  const handleImageClick = (e, index) => {
+  const handleFileClick = (e, index) => {
     e.stopPropagation(); // Prevent the click from bubbling up to the dropzone
-    setSelectedImageIndex(index);
+    setSelectedFileIndex(index);
   };
 
-  const closeImagePreview = () => {
-    setSelectedImageIndex(null);
+  const closeFilePreview = () => {
+    setSelectedFileIndex(null);
   };
 
   const handleCaptionChange = (index, newCaption) => {
@@ -73,16 +103,16 @@ const ImageUpload = ({ onImageUpload }) => {
       const newPreviews = prev.map((p, i) =>
         i === index ? { ...p, caption: newCaption } : p
       );
-      onImageUpload(newPreviews);
+      onFileUpload(newPreviews);
       return newPreviews;
     });
   };
 
-  const removeImage = (e, index) => {
+  const removeFile = (e, index) => {
     e.stopPropagation(); // Prevent the click from bubbling up to the dropzone
     setPreviews((prev) => {
       const newPreviews = prev.filter((_, i) => i !== index);
-      onImageUpload(newPreviews);
+      onFileUpload(newPreviews);
       return newPreviews;
     });
     setUploadStatus(previews.length === 1 ? "idle" : "success");
@@ -116,7 +146,7 @@ const ImageUpload = ({ onImageUpload }) => {
 
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        closeImagePreview();
+        closeFilePreview();
       }
     };
 
@@ -134,6 +164,20 @@ const ImageUpload = ({ onImageUpload }) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  const isImageFile = (fileName) => {
+    const imageExtensions = ["jpg", "jpeg", "png", "gif", "bmp", "webp"];
+    const extension = fileName.split(".").pop().toLowerCase();
+    return imageExtensions.includes(extension);
+  };
+
+  const isPdfFile = (fileName) => {
+    return fileName.split(".").pop().toLowerCase() === "pdf";
+  };
+
+  const getFileExtension = (fileName) => {
+    return fileName.split(".").pop().toUpperCase();
+  };
 
   return (
     <div className="w-full">
@@ -167,10 +211,10 @@ const ImageUpload = ({ onImageUpload }) => {
                   className="text-center"
                 >
                   <h2 className="text-gray-700 text-xl font-medium mb-2">
-                    Drop your images here
+                    Drop your files here
                   </h2>
                   <p className="text-gray-500 text-sm">
-                    Release to upload up to 5 images
+                    Release to upload up to 5 files
                   </p>
                 </motion.div>
               </motion.div>
@@ -186,16 +230,31 @@ const ImageUpload = ({ onImageUpload }) => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3 }}
-                  onClick={(e) => handleImageClick(e, index)}
+                  onClick={(e) => handleFileClick(e, index)}
                 >
                   <div className="relative h-32">
-                    <img
-                      src={preview.preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
+                    {isImageFile(preview.fileName) ? (
+                      <img
+                        src={preview.preview}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : isPdfFile(preview.fileName) ? (
+                      <embed
+                        src={preview.preview}
+                        type="application/pdf"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
+                        <FileIcon className="h-16 w-16 mb-2" />
+                        <span className="text-sm font-medium">
+                          {getFileExtension(preview.fileName)}
+                        </span>
+                      </div>
+                    )}
                     <motion.button
-                      onClick={(e) => removeImage(e, index)}
+                      onClick={(e) => removeFile(e, index)}
                       className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full shadow-sm"
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
@@ -255,7 +314,9 @@ const ImageUpload = ({ onImageUpload }) => {
                   ? "Uploading..."
                   : uploadStatus === "error"
                   ? "Error uploading. Please try again."
-                  : "Drag & drop images here, or click to select"}
+                  : type === "portfolio"
+                  ? "Drag & drop your design or inspiration images here, or click to select. You can also add your resume PDF."
+                  : "Drag & drop your design or inspiration images here, or click to select."}
               </motion.p>
               <motion.p
                 className="text-xs text-gray-400"
@@ -263,34 +324,46 @@ const ImageUpload = ({ onImageUpload }) => {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
-                Max 5 images, 5MB each
+                Max 5 files, 5MB each
               </motion.p>
             </div>
           )}
         </div>
       </motion.div>
 
-      {/* Image Preview Modal */}
-      {selectedImageIndex !== null && (
+      {/* File Preview Modal */}
+      {selectedFileIndex !== null && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={closeImagePreview}
+          onClick={closeFilePreview}
         >
           <div
             className="bg-white p-4 rounded-lg max-w-3xl max-h-[90vh] overflow-auto relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <img
-              src={previews[selectedImageIndex].preview}
-              alt={`Preview ${selectedImageIndex + 1}`}
-              className="max-w-full max-h-[80vh] object-contain"
-              style={{ outline: "none" }}
-            />
+            {isImageFile(previews[selectedFileIndex].fileName) ? (
+              <img
+                src={previews[selectedFileIndex].preview}
+                alt={`Preview ${selectedFileIndex + 1}`}
+                className="max-w-full max-h-[80vh] object-contain"
+                style={{ outline: "none" }}
+              />
+            ) : isPdfFile(previews[selectedFileIndex].fileName) ? (
+              <embed
+                src={previews[selectedFileIndex].preview}
+                type="application/pdf"
+                className="w-full h-full"
+              />
+            ) : (
+              <div className="text-center text-gray-500">
+                No preview available
+              </div>
+            )}
             <p className="mt-2 text-center text-gray-700">
-              {previews[selectedImageIndex].caption || "No caption"}
+              {previews[selectedFileIndex].caption || "No caption"}
             </p>
             <motion.button
-              onClick={closeImagePreview}
+              onClick={closeFilePreview}
               className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full shadow-md"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -304,4 +377,4 @@ const ImageUpload = ({ onImageUpload }) => {
   );
 };
 
-export default ImageUpload;
+export default FileUpload;
