@@ -24,6 +24,7 @@ const {
 const { postToDiscordWebhook } = require("./server/services/webhookService");
 
 const FileService = require("./server/services/fileService");
+const { addDomainMapping } = require("./server/services/domainService");
 const fileService = new FileService();
 
 require("dotenv").config();
@@ -374,6 +375,23 @@ app.post("/upload-assets", upload.array("assets"), async (req, res) => {
   } catch (error) {
     console.error("Error uploading assets:", error);
     res.status(500).json({ error: "Failed to upload assets" });
+  }
+});
+
+app.post("/add-custom-domain", async (req, res) => {
+  const { domain, shipId, shipSlug } = req.body;
+  if (!domain || !shipId || !shipSlug) {
+    return res
+      .status(400)
+      .json({ error: "Missing domain, shipId or shipSlug" });
+  }
+
+  try {
+    await addDomainMapping(domain, shipId, shipSlug);
+    res.status(200).json({ message: "Custom domain added successfully" });
+  } catch (error) {
+    console.error("Error adding custom domain:", error);
+    res.status(500).json({ error: "Failed to add custom domain" });
   }
 });
 
