@@ -1,7 +1,7 @@
 import { useEffect, useContext, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowLeft } from "lucide-react";
+import { Sparkles, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import ShipForm from "./ShipForm";
 import PortfolioContent from "./PortfolioContent";
@@ -21,17 +21,22 @@ const steps = ["Prompt", "Content", "Design"];
 export default function ShipOnboarding({ type }) {
   const { socket } = useSocket();
   const dispatch = useDispatch();
-  const { currentStep } = useSelector((state) => state.onboarding);
-  const userPrompt = useSelector((state) => state.onboarding.userPrompt);
-  const portfolioType = useSelector((state) => state.onboarding.portfolioType);
 
   const { availableShips } = useContext(AuthContext);
 
+  const { currentStep } = useSelector((state) => state.onboarding);
+  const userPrompt = useSelector((state) => state.onboarding.userPrompt);
+  const portfolioType = useSelector((state) => state.onboarding.portfolioType);
+  const shipType = useSelector((state) => state.onboarding.shipType);
+
+  const [isGenerating, setIsGenerating] = useState(false);
+
   const handleNext = () => {
     if (currentStep === 0) {
+      setIsGenerating(true);
       socket.emit("generateSiteContent", {
         userMessage: userPrompt,
-        type: type,
+        type: shipType,
         ...(type === "portfolio" ? { portfolioType: portfolioType } : null),
       });
 
@@ -41,6 +46,7 @@ export default function ShipOnboarding({ type }) {
         if (currentStep < steps.length - 1) {
           dispatch(setCurrentStep(currentStep + 1));
         }
+        setIsGenerating(false);
       });
     } else {
       if (currentStep < steps.length - 1) {
@@ -65,7 +71,10 @@ export default function ShipOnboarding({ type }) {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            <ShipForm type={type} reset={() => dispatch(setCurrentStep(0))} />
+            <ShipForm
+              reset={() => dispatch(setCurrentStep(0))}
+              isGenerating={isGenerating}
+            />
           </motion.div>
         );
       case 1:
@@ -76,7 +85,7 @@ export default function ShipOnboarding({ type }) {
             exit={{ opacity: 0, x: -50 }}
             transition={{ duration: 0.3 }}
           >
-            <ShipContent type={type} />
+            <ShipContent />
           </motion.div>
         );
       case 2:
@@ -140,7 +149,7 @@ export default function ShipOnboarding({ type }) {
         >
           <Button
             onClick={handleNext}
-            // disabled={isProcessingPdf}
+            disabled={isGenerating}
             className={`transition-all duration-300 bg-primary text-primary-foreground hover:bg-primary/90 group relative overflow-hidden text-lg px-6 py-3 ${
               currentStep === steps.length - 1
                 ? "w-full sm:w-auto justify-center"
@@ -161,9 +170,17 @@ export default function ShipOnboarding({ type }) {
             <span className="relative">
               {currentStep === steps.length - 1
                 ? "Generate Project"
+                : isGenerating
+                ? "Generating Content..."
                 : "Next Step"}
             </span>
-            <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-180 transition-transform" />
+            {isGenerating ? (
+              <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+            ) : currentStep === steps.length - 1 ? (
+              <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-180 transition-transform" />
+            ) : (
+              <ArrowRight className="ml-2 h-5 w-5" />
+            )}
           </Button>
         </motion.div>
       </div>

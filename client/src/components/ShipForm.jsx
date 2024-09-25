@@ -36,7 +36,7 @@ const portfolioTypes = [
   { id: "Musician" },
 ];
 
-const ShipForm = ({ type, reset }) => {
+const ShipForm = ({ reset, isGenerating }) => {
   const { sendMessage, socket } = useSocket();
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -45,6 +45,7 @@ const ShipForm = ({ type, reset }) => {
   const [uploadedImages, setUploadedImages] = useState([]);
   const userPrompt = useSelector((state) => state.onboarding.userPrompt);
   const portfolioType = useSelector((state) => state.onboarding.portfolioType);
+  const shipType = useSelector((state) => state.onboarding.shipType);
 
   const [customType, setCustomType] = useState("");
   const [isCustomTypeConfirmed, setIsCustomTypeConfirmed] = useState(false);
@@ -182,7 +183,7 @@ const ShipForm = ({ type, reset }) => {
 
   return (
     <div className="w-full">
-      {type === "portfolio" && (
+      {shipType === "portfolio" && (
         <div className="mb-6 w-full">
           <h3 className="text-lg font-medium mb-3">Choose Portfolio Type</h3>
           <RadioGroup
@@ -277,14 +278,15 @@ const ShipForm = ({ type, reset }) => {
       <form className="flex flex-col items-center">
         <Textarea
           className="w-full h-48 bg-background text-foreground border-input mb-8"
-          placeholder={PROMPT_PLACEHOLDERS[type]}
+          placeholder={PROMPT_PLACEHOLDERS[shipType]}
           value={userPrompt}
+          disabled={isGenerating}
           onChange={(e) => {
             dispatch(setUserPrompt(e.target.value));
           }}
         />
 
-        <FileUpload onFileUpload={handleFileUpload} type={type} />
+        <FileUpload onFileUpload={handleFileUpload} type={shipType} />
         <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 sm:space-y-0 mt-4">
           <TooltipProvider>
             <Tooltip>
@@ -315,10 +317,12 @@ const ShipForm = ({ type, reset }) => {
         onSubmitKey={handleSubmitAnthropicKey}
         anthropicKey={anthropicKey}
         setAnthropicKey={setAnthropicKey}
-        type={type}
+        type={shipType}
         isKeyValidating={isKeyValidating}
       />
-      {isLoaderOpen && <LoadingGameOverlay isOpen={isLoaderOpen} type={type} />}
+      {isLoaderOpen && (
+        <LoadingGameOverlay isOpen={isLoaderOpen} type={shipType} />
+      )}
       <SuccessOverlay
         isOpen={isSuccessOpen}
         onClose={reset}

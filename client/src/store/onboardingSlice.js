@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const initialState = {
+  shipType: "",
   currentStep: 0,
   userPrompt: "",
   portfolioType: "",
@@ -13,6 +14,9 @@ const onboardingSlice = createSlice({
   name: "onboarding",
   initialState,
   reducers: {
+    setShipType: (state, action) => {
+      state.shipType = action.payload;
+    },
     setCurrentStep: (state, action) => {
       state.currentStep = action.payload;
     },
@@ -63,6 +67,7 @@ const onboardingSlice = createSlice({
 });
 
 export const {
+  setShipType,
   setCurrentStep,
   setUserPrompt,
   setPortfolioType,
