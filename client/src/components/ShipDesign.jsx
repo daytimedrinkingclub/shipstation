@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Sketch } from "@uiw/react-color";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,8 @@ export default function ShipDesign() {
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [selectedFont, setSelectedFont] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [colorPalette, setColorPalette] = useState({});
+  const [activeColor, setActiveColor] = useState(null);
 
   const shipType = useSelector((state) => state.onboarding.shipType);
 
@@ -42,8 +45,8 @@ export default function ShipDesign() {
       setDesignLanguages(data);
       if (data.length > 0) {
         setSelectedDesign(data[0]);
-        setSelectedFont(data[0].fonts[0]); // Select the first font by default
-        console.log("Initial selected design:", data[0]);
+        setSelectedFont(data[0].fonts[0]);
+        setColorPalette(data[0].color_palette);
       }
     }
     setIsLoading(false);
@@ -54,8 +57,8 @@ export default function ShipDesign() {
       (design) => design.id === designId
     );
     setSelectedDesign(selectedPreset);
-    setSelectedFont(selectedPreset.fonts[0]); // Reset selected font when design changes
-    console.log("Selected design changed:", selectedPreset);
+    setSelectedFont(selectedPreset.fonts[0]);
+    setColorPalette(selectedPreset.color_palette);
   };
 
   const handleFontChange = (fontName) => {
@@ -63,7 +66,13 @@ export default function ShipDesign() {
       (font) => font.name === fontName
     );
     setSelectedFont(newSelectedFont);
-    console.log("Selected font changed:", newSelectedFont);
+  };
+
+  const handleColorChange = (newColor, colorKey) => {
+    setColorPalette((prevPalette) => ({
+      ...prevPalette,
+      [colorKey]: newColor,
+    }));
   };
 
   // Prepare fonts for GoogleFontLoader
@@ -157,26 +166,39 @@ export default function ShipDesign() {
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Color Palette</h3>
                   <div className="flex inline-flex rounded-lg overflow-hidden">
-                    {Object.entries(selectedDesign.color_palette).map(
-                      ([key, color], index) => (
-                        <TooltipProvider key={index}>
-                          <Tooltip delayDuration={0}>
-                            <TooltipTrigger>
-                              <div
-                                className="w-12 h-24"
-                                style={{ backgroundColor: color }}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>
-                                {key}: {color}
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )
-                    )}
+                    {Object.entries(colorPalette).map(([key, color], index) => (
+                      <TooltipProvider key={index}>
+                        <Tooltip delayDuration={0}>
+                          <TooltipTrigger>
+                            <div
+                              className="w-12 h-24 relative"
+                              style={{ backgroundColor: color }}
+                              onClick={() => setActiveColor(key)}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>
+                              {key}: {color}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
                   </div>
+                  {activeColor && (
+                    <div className="absolute z-10 mt-2">
+                      <div
+                        className="fixed inset-0"
+                        onClick={() => setActiveColor(null)}
+                      />
+                      <Sketch
+                        color={colorPalette[activeColor]}
+                        onChange={(color) =>
+                          handleColorChange(color.hex, activeColor)
+                        }
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div>
