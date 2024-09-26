@@ -1,4 +1,10 @@
+const { getCurrentDate } = require("../../utils/date");
+
+const currentDate = getCurrentDate();
+
 const landingPagePrompt = `
+Current Date: ${currentDate}
+
 Write code as per the guidelines provided, using web-components architecture with the provided guidelines. Never use React, Vue, Alpine, or any other frontend library. Follow the guidelines provided by the CTO.
 
 ## HTML Generation Guidelines
@@ -161,6 +167,8 @@ CRITICAL: When generating code, provide ONLY the entire index.html file content,
 `;
 
 const portfolioPrompt = `
+Current Date: ${currentDate}
+
 Write code as per the guidelines provided, using web-components architecture with the provided guidelines. Never use React, Vue, Alpine, or any other frontend library. Follow the guidelines provided by the CTO.
 
 ## HTML Generation Guidelines
@@ -334,7 +342,7 @@ CRITICAL: When generating code, provide ONLY the entire index.html file content,
 `;
 
 const emailTemplatePrompt = `
-# Email Template Generation Prompt
+Current Date: ${currentDate}
 
 Create a visually striking and responsive HTML email template based on the following guidelines:
 

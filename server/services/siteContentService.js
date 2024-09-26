@@ -3,6 +3,7 @@ const { AnthropicService } = require("../services/anthropicService");
 const {
   handleSiteContentToolUse,
 } = require("../controllers/siteContentToolController");
+const { getCurrentDate } = require("../utils/date");
 
 async function generateSiteContent(userId, prompt, type, portfolioType = null) {
   console.log(`Starting content generation, type: ${type}`);
@@ -90,6 +91,8 @@ async function generateSiteContent(userId, prompt, type, portfolioType = null) {
 
 function getSystemPrompt(type, portfolioType) {
   let prompt = `
+    Current Date: ${getCurrentDate()}
+
     You are an AI assistant specialized in generating website content. Based on the user's prompt and the specified type of website, create appropriate content sections.
 
      Important rules:

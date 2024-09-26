@@ -1,4 +1,8 @@
+const { getCurrentDate } = require("../../utils/date");
+
 const prompt = `
+Current Date: ${getCurrentDate()}
+
 These are the development guidelines to be always followed strictly:
 
 1. Technology Stack:
