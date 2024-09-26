@@ -111,6 +111,12 @@ export default function ShipContent() {
     };
   }, []);
 
+  useEffect(() => {
+    if (sectionsRef.current) {
+      sectionsRef.current.scrollTop = sectionsRef.current.scrollHeight;
+    }
+  }, [sections]);
+
   return (
     <TooltipProvider delayDuration={0}>
       <motion.div
