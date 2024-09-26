@@ -28,6 +28,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import FilePreview from "./FilePreview";
 import { useProject } from "@/hooks/useProject";
 
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
@@ -254,6 +255,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       newFiles.reduce((acc, file) => ({ ...acc, [file.name]: "" }), {})
     );
     setIsDialogOpen(true);
+    console.log("Temporary files:", newFiles);
   };
 
   const handleDescriptionChange = (fileName, description) => {
@@ -430,7 +432,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         </div>
       )}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-4xl">
           <DialogHeader>
             <DialogTitle className="mb-2">Enter asset descriptions</DialogTitle>
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
@@ -441,18 +443,31 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
               </p>
             </div>
           </DialogHeader>
-          {tempFiles.map((file, index) => (
-            <div key={index} className="mb-4">
-              <p className="mb-2">{file.name}</p>
-              <Input
-                placeholder="Enter description (required)"
-                value={fileDescriptions[file.name] || ""}
-                onChange={(e) =>
-                  handleDescriptionChange(file.name, e.target.value)
-                }
-              />
-            </div>
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
+            {tempFiles.map((file, index) => (
+              <div key={index} className="flex flex-col gap-2">
+                <FilePreview file={file} />
+                <div className="mt-2">
+                  <p
+                    className="text-sm font-semibold truncate"
+                    title={file.name}
+                  >
+                    {file.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(file.size / 1024).toFixed(2)} KB
+                  </p>
+                </div>
+                <Input
+                  placeholder="Enter description (required)"
+                  value={fileDescriptions[file.name] || ""}
+                  onChange={(e) =>
+                    handleDescriptionChange(file.name, e.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </div>
           <DialogFooter className="flex flex-col md:flex-row gap-2">
             <Button
               onClick={handleDialogConfirm}
