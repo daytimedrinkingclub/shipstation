@@ -4,7 +4,9 @@ import { Sketch } from "@uiw/react-color";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+
+import { ExternalLink, Plus, Info } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   Tooltip,
@@ -15,6 +17,14 @@ import {
 import { useSelector } from "react-redux";
 import GoogleFontLoader from "react-google-font";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export default function ShipDesign() {
   const [designLanguages, setDesignLanguages] = useState([]);
@@ -23,6 +33,9 @@ export default function ShipDesign() {
   const [isLoading, setIsLoading] = useState(true);
   const [colorPalette, setColorPalette] = useState({});
   const [activeColor, setActiveColor] = useState(null);
+  const [customFont, setCustomFont] = useState("");
+  const [fonts, setFonts] = useState([]);
+  const [fontWeights, setFontWeights] = useState({});
 
   const shipType = useSelector((state) => state.onboarding.shipType);
 
@@ -45,8 +58,15 @@ export default function ShipDesign() {
       setDesignLanguages(data);
       if (data.length > 0) {
         setSelectedDesign(data[0]);
+        setFonts(data[0].fonts);
         setSelectedFont(data[0].fonts[0]);
         setColorPalette(data[0].color_palette);
+        // Initialize font weights
+        const initialWeights = {};
+        data[0].fonts.forEach((font) => {
+          initialWeights[font.name] = font.weights[0].toString();
+        });
+        setFontWeights(initialWeights);
       }
     }
     setIsLoading(false);
@@ -57,36 +77,87 @@ export default function ShipDesign() {
       (design) => design.id === designId
     );
     setSelectedDesign(selectedPreset);
+    setFonts(selectedPreset.fonts);
     setSelectedFont(selectedPreset.fonts[0]);
     setColorPalette(selectedPreset.color_palette);
+
+    const initialWeights = {};
+    selectedPreset.fonts.forEach((font) => {
+      initialWeights[font.name] = font.weights[0].toString();
+    });
+    setFontWeights(initialWeights);
   };
 
   const handleFontChange = (fontName) => {
-    const newSelectedFont = selectedDesign.fonts.find(
-      (font) => font.name === fontName
-    );
+    const newSelectedFont = fonts.find((font) => font.name === fontName);
     setSelectedFont(newSelectedFont);
   };
 
   const handleColorChange = (newColor, colorKey) => {
     setColorPalette((prevPalette) => ({
       ...prevPalette,
-      [colorKey]: newColor,
+      [colorKey]: {
+        ...prevPalette[colorKey],
+        value: newColor,
+      },
     }));
   };
 
-  // Prepare fonts for GoogleFontLoader
-  const fontsToLoad = designLanguages.reduce((acc, design) => {
-    if (Array.isArray(design.fonts)) {
-      design.fonts.forEach((font) => {
-        acc.push({
-          font: font.name,
-          weights: font.weights.map(Number),
-        });
-      });
+  const handleAddCustomFont = () => {
+    if (
+      customFont &&
+      !fonts.some(
+        (font) => font.name.toLowerCase() === customFont.toLowerCase()
+      )
+    ) {
+      const capitalizedFontName = customFont
+        .trim()
+        .split(" ")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+        )
+        .join(" ");
+
+      const newFont = {
+        name: capitalizedFontName,
+        weights: [400, 500, 600, 700],
+      };
+      setFonts((prevFonts) => [...prevFonts, newFont]);
+      setSelectedFont(newFont);
+      setFontWeights((prevWeights) => ({
+        ...prevWeights,
+        [capitalizedFontName]: "400",
+      }));
+      setCustomFont("");
     }
-    return acc;
-  }, []);
+  };
+
+  const handleCustomFontKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleAddCustomFont();
+    }
+  };
+
+  const handleFontWeightChange = (fontName, weight) => {
+    setFontWeights((prevWeights) => ({
+      ...prevWeights,
+      [fontName]: weight,
+    }));
+  };
+
+  const weightOptions = [
+    { value: "400", label: "Regular" },
+    { value: "500", label: "Medium" },
+    { value: "600", label: "Semibold" },
+    { value: "700", label: "Bold" },
+  ];
+
+  // Prepare fonts for GoogleFontLoader
+  const fontsToLoad = fonts.map((font) => ({
+    font: font.name,
+    weights: font.weights.map(Number),
+  }));
 
   return (
     <motion.div
@@ -171,15 +242,13 @@ export default function ShipDesign() {
                         <Tooltip delayDuration={0}>
                           <TooltipTrigger>
                             <div
-                              className="w-12 h-24 relative"
-                              style={{ backgroundColor: color }}
+                              className="w-8 h-16 relative"
+                              style={{ backgroundColor: color.value }}
                               onClick={() => setActiveColor(key)}
                             />
                           </TooltipTrigger>
                           <TooltipContent>
-                            <p>
-                              {key}: {color}
-                            </p>
+                            <p>{color.label}</p>
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
@@ -192,7 +261,7 @@ export default function ShipDesign() {
                         onClick={() => setActiveColor(null)}
                       />
                       <Sketch
-                        color={colorPalette[activeColor]}
+                        color={colorPalette[activeColor].value}
                         onChange={(color) =>
                           handleColorChange(color.hex, activeColor)
                         }
@@ -203,51 +272,97 @@ export default function ShipDesign() {
 
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Typography</h3>
+                  <div className="flex items-center space-x-2 mb-4">
+                    <Input
+                      placeholder="Add custom Google Font"
+                      value={customFont}
+                      onChange={(e) => setCustomFont(e.target.value)}
+                      onKeyDown={handleCustomFontKeyDown}
+                      className="w-64"
+                    />
+                    <Button onClick={handleAddCustomFont} size="sm">
+                      <Plus className="mr-2 h-4 w-4" /> Add Font
+                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Info className="h-5 w-5 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>We only use Google Fonts for custom fonts</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <RadioGroup
                     value={selectedFont?.name}
                     onValueChange={handleFontChange}
                   >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {Array.isArray(selectedDesign.fonts) &&
-                        selectedDesign.fonts.map((font, index) => (
-                          <motion.div
-                            key={index}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="relative"
+                      {fonts.map((font, index) => (
+                        <motion.div
+                          key={index}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="relative"
+                        >
+                          <RadioGroupItem
+                            value={font.name}
+                            id={`font-${font.name}`}
+                            className="peer sr-only"
+                          />
+                          <Label
+                            htmlFor={`font-${font.name}`}
+                            className={`block overflow-hidden rounded-xl border-2 bg-muted transition-all duration-300 ease-in-out ${
+                              selectedFont?.name === font.name
+                                ? "border-primary shadow-md"
+                                : "border-transparent hover:border-primary hover:shadow-md"
+                            }`}
                           >
-                            <RadioGroupItem
-                              value={font.name}
-                              id={`font-${font.name}`}
-                              className="peer sr-only"
-                            />
-                            <Label
-                              htmlFor={`font-${font.name}`}
-                              className={`block overflow-hidden rounded-xl border-2 bg-muted transition-all duration-300 ease-in-out ${
-                                selectedFont?.name === font.name
-                                  ? "border-primary shadow-md"
-                                  : "border-transparent hover:border-primary hover:shadow-md"
-                              }`}
-                            >
-                              <div className="p-6">
-                                <h4 className="text-lg font-semibold text-primary mb-2">
+                            <div className="p-6">
+                              <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-lg font-semibold text-primary">
                                   {font.name}
                                 </h4>
-                                <p
-                                  style={{
-                                    fontFamily: `'${font.name}', sans-serif`,
-                                    fontSize: "1.5rem",
-                                  }}
-                                >
-                                  The quick brown fox jumps over the lazy dog
-                                </p>
-                                <span className="text-sm text-muted-foreground mt-2 block">
-                                  Weights: {font.weights.join(", ")}
-                                </span>
+                                <div className="flex space-x-1">
+                                  {weightOptions.map((option) => (
+                                    <button
+                                      key={option.value}
+                                      onClick={() =>
+                                        handleFontWeightChange(
+                                          font.name,
+                                          option.value
+                                        )
+                                      }
+                                      className={cn(
+                                        "px-2 py-1 text-xs rounded-md transition-colors",
+                                        fontWeights[font.name] === option.value
+                                          ? "bg-primary text-primary-foreground"
+                                          : "bg-secondary text-secondary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                                      )}
+                                    >
+                                      {option.label}
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                            </Label>
-                          </motion.div>
-                        ))}
+                              <p
+                                style={{
+                                  fontFamily: `'${font.name}', sans-serif`,
+                                  fontSize: "1.5rem",
+                                  fontWeight: fontWeights[font.name],
+                                }}
+                                className="mt-8"
+                              >
+                                The quick brown fox jumps over the lazy dog
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Font from Google Fonts
+                              </p>
+                            </div>
+                          </Label>
+                        </motion.div>
+                      ))}
                     </div>
                   </RadioGroup>
                 </div>

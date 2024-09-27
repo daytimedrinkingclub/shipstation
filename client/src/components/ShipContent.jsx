@@ -325,7 +325,7 @@ export default function ShipContent() {
 
           <div className="flex items-center space-x-2">
             <Input
-              placeholder="Enter social link URL"
+              placeholder="Enter another social URL"
               value={newSocialLink}
               onChange={(e) => setNewSocialLink(e.target.value)}
               className="flex-grow"

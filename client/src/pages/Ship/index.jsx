@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import ShipForm from "@/components/ShipForm";
 import ShipOnboarding from "@/components/ShipOnboarding";
 import AppLayout from "@/components/layout/AppLayout";
 import { useDispatch } from "react-redux";
@@ -26,11 +25,7 @@ const Ship = () => {
     navigate("/");
   };
 
-  return (
-    <AppLayout>
-      <ShipOnboarding type={selectedType} reset={handleReset} />
-    </AppLayout>
-  );
+  return <ShipOnboarding type={selectedType} reset={handleReset} />;
 };
 
 export default Ship;

@@ -1,10 +1,16 @@
 import { useEffect, useContext, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+  Loader2,
+  X,
+  ChevronLeft,
+} from "lucide-react";
 import { AuthContext } from "@/context/AuthContext";
 import ShipForm from "./ShipForm";
-import PortfolioContent from "./PortfolioContent";
 import Stepper from "./Stepper";
 import { motion, AnimatePresence } from "framer-motion";
 import ShipContent from "./ShipContent";
@@ -14,15 +20,15 @@ import {
   setSections,
   setSocials,
 } from "@/store/onboardingSlice";
-import { toast } from "sonner";
 import { useSocket } from "@/context/SocketProvider";
+import { useNavigate } from "react-router-dom";
+
 const steps = ["Prompt", "Content", "Design"];
 
-export default function ShipOnboarding({ type }) {
+export default function ShipOnboarding({ type, reset }) {
   const { socket } = useSocket();
   const dispatch = useDispatch();
-
-  const { availableShips } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const { currentStep } = useSelector((state) => state.onboarding);
   const userPrompt = useSelector((state) => state.onboarding.userPrompt);
@@ -61,128 +67,85 @@ export default function ShipOnboarding({ type }) {
     }
   };
 
+  const handleStepClick = (stepIndex) => {
+    dispatch(setCurrentStep(stepIndex));
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ShipForm
-              reset={() => dispatch(setCurrentStep(0))}
-              isGenerating={isGenerating}
-            />
-          </motion.div>
-        );
+        return <ShipForm isGenerating={isGenerating} />;
       case 1:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ShipContent />
-          </motion.div>
-        );
+        return <ShipContent />;
       case 2:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ShipDesign />
-          </motion.div>
-        );
+        return <ShipDesign />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
-      <motion.h1
-        className="text-4xl sm:text-5xl font-bold text-primary my-8 text-center"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        What would you like to create today?
-      </motion.h1>
-      <Stepper steps={steps} currentStep={currentStep} />
-      <motion.div
-        className="mt-8 bg-card p-8 rounded-lg border border-border"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <AnimatePresence mode="wait">{renderStepContent()}</AnimatePresence>
-      </motion.div>
-      <div className="flex justify-between mt-8">
-        {currentStep > 0 && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <Button
-              onClick={handleBack}
-              variant="outline"
-              className="flex items-center text-lg px-6 py-3"
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div className="w-64 bg-card border-r border-border p-4 flex flex-col">
+        <div className="flex gap-2 items-center mb-6">
+          <Button variant="icon" size="icon" onClick={() => navigate("/")}>
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <h2 className="text-xl font-bold">Ship Creation</h2>
+        </div>
+        <Stepper
+          steps={steps}
+          currentStep={currentStep}
+          onStepClick={handleStepClick}
+        />
+      </div>
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-6">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
             >
+              {renderStepContent()}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <div className="bg-card border-t border-border p-4 flex justify-between">
+          {currentStep > 0 && (
+            <Button onClick={handleBack} variant="outline">
               <ArrowLeft className="mr-2 h-5 w-5" />
               Back
             </Button>
-          </motion.div>
-        )}
-        <motion.div
-          className="ml-auto"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+          )}
           <Button
             onClick={handleNext}
             disabled={isGenerating}
-            className={`transition-all duration-300 bg-primary text-primary-foreground hover:bg-primary/90 group relative overflow-hidden text-lg px-6 py-3 ${
-              currentStep === steps.length - 1
-                ? "w-full sm:w-auto justify-center"
-                : ""
-            }`}
+            className="ml-auto"
           >
-            <motion.div
-              className="absolute inset-0 opacity-0 group-hover:opacity-30 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%,100%_100%]"
-              animate={{
-                backgroundPosition: ["0% 0%", "100% 100%"],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-            <span className="relative">
-              {currentStep === steps.length - 1
-                ? "Generate Project"
-                : isGenerating
-                ? "Generating Content..."
-                : "Next Step"}
-            </span>
-            {isGenerating ? (
-              <Loader2 className="ml-2 h-5 w-5 animate-spin" />
-            ) : currentStep === steps.length - 1 ? (
-              <Sparkles className="ml-2 h-5 w-5 group-hover:rotate-180 transition-transform" />
+            {currentStep === steps.length - 1 ? (
+              <>
+                Generate Project
+                <Sparkles className="ml-2 h-5 w-5" />
+              </>
+            ) : isGenerating ? (
+              <>
+                Generating Content...
+                <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+              </>
             ) : (
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <>
+                Next Step
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </>
             )}
           </Button>
-        </motion.div>
+        </div>
       </div>
     </div>
   );
