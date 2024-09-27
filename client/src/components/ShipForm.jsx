@@ -111,69 +111,47 @@ const ShipForm = ({ reset, isGenerating }) => {
     setIsCustomTypeConfirmed(false);
   };
 
-  // const startProject = () => {
-  //   try {
-  //     console.log("Starting project with images:", uploadedImages);
-  //     sendMessage("startProject", {
-  //       shipType: type,
-  //       apiKey: anthropicKey,
-  //       // message: requirements,
-  //       images: uploadedImages.map((img) => ({
-  //         file: img.file,
-  //         caption: img.caption,
-  //         mediaType: img.mediaType,
-  //       })),
-  //       portfolioType, // Add portfolioType to the message
-  //     });
-  //     onClose();
-  //     onLoaderOpen();
-  //   } catch (error) {
-  //     console.error("Error starting project:", error);
-  //     // Handle the error appropriately (e.g., show an error message to the user)
-  //   }
-  // };
-
   const handleSubmitAnthropicKey = (apiKey) => {
     sendMessage("anthropicKey", { anthropicKey: apiKey });
     setIsKeyValidating(true);
   };
 
-  // useEffect(() => {
-  //   if (socket) {
-  //     socket.on("apiKeyStatus", (response) => {
-  //       setIsKeyValidating(false);
-  //       if (response.success) {
-  //         startProject();
-  //         toast("Anthropic key is valid, starting generation!");
-  //       } else {
-  //         toast.error(response.message);
-  //       }
-  //     });
+  useEffect(() => {
+    if (socket) {
+      socket.on("apiKeyStatus", (response) => {
+        setIsKeyValidating(false);
+        if (response.success) {
+          // startProject();
+          toast("Anthropic key is valid, starting generation!");
+        } else {
+          toast.error(response.message);
+        }
+      });
 
-  //     socket.on("showPaymentOptions", ({ error }) => {
-  //       onOpen();
-  //     });
+      socket.on("showPaymentOptions", ({ error }) => {
+        onOpen();
+      });
 
-  //     socket.on("needMoreInfo", ({ message }) => {
-  //       toast("Please add more details regarding the website");
-  //       onLoaderClose();
-  //     });
+      socket.on("needMoreInfo", ({ message }) => {
+        toast("Please add more details regarding the website");
+        onLoaderClose();
+      });
 
-  //     socket.on("websiteDeployed", ({ slug }) => {
-  //       onSuccessOpen();
-  //       onLoaderClose();
-  //       setRequirements("");
-  //       setDeployedWebsiteSlug(slug);
-  //     });
+      socket.on("websiteDeployed", ({ slug }) => {
+        onSuccessOpen();
+        onLoaderClose();
+        // setRequirements("");
+        setDeployedWebsiteSlug(slug);
+      });
 
-  //     return () => {
-  //       socket.off("apiKeyStatus");
-  //       socket.off("showPaymentOptions");
-  //       socket.off("websiteDeployed");
-  //       socket.off("needMoreInfo");
-  //     };
-  //   }
-  // }, [socket, anthropicKey, requirements]);
+      return () => {
+        socket.off("apiKeyStatus");
+        socket.off("showPaymentOptions");
+        socket.off("websiteDeployed");
+        socket.off("needMoreInfo");
+      };
+    }
+  }, [socket, anthropicKey]);
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -183,6 +161,7 @@ const ShipForm = ({ reset, isGenerating }) => {
 
   return (
     <div className="w-full">
+      <h2 className="text-2xl font-bold mb-10">Ship Prompt</h2>
       {shipType === "portfolio" && (
         <div className="mb-6 w-full">
           <h3 className="text-lg font-medium mb-3">Choose Portfolio Type</h3>

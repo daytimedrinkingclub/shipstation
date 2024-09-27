@@ -17,22 +17,19 @@ import {
 import { useSelector } from "react-redux";
 import GoogleFontLoader from "react-google-font";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import { cn } from "@/lib/utils";
 
 export default function ShipDesign() {
+  const [isLoading, setIsLoading] = useState(true);
+
   const [designLanguages, setDesignLanguages] = useState([]);
   const [selectedDesign, setSelectedDesign] = useState(null);
-  const [selectedFont, setSelectedFont] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+
   const [colorPalette, setColorPalette] = useState({});
   const [activeColor, setActiveColor] = useState(null);
+
+  const [selectedFont, setSelectedFont] = useState(null);
   const [customFont, setCustomFont] = useState("");
   const [fonts, setFonts] = useState([]);
   const [fontWeights, setFontWeights] = useState({});
@@ -168,7 +165,7 @@ export default function ShipDesign() {
     >
       <GoogleFontLoader fonts={fontsToLoad} />
 
-      <h2 className="text-2xl font-bold">Website Design</h2>
+      <h2 className="text-2xl font-bold">Ship Design</h2>
 
       <div className="space-y-8">
         {isLoading ? (
@@ -187,7 +184,7 @@ export default function ShipDesign() {
                 value={selectedDesign?.id}
                 onValueChange={handleDesignChange}
               >
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {designLanguages.map((design) => (
                     <motion.div
                       key={design.id}
@@ -298,7 +295,7 @@ export default function ShipDesign() {
                     value={selectedFont?.name}
                     onValueChange={handleFontChange}
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {fonts.map((font, index) => (
                         <motion.div
                           key={index}
@@ -313,29 +310,34 @@ export default function ShipDesign() {
                           />
                           <Label
                             htmlFor={`font-${font.name}`}
-                            className={`block overflow-hidden rounded-xl border-2 bg-muted transition-all duration-300 ease-in-out ${
+                            className={`block overflow-hidden rounded-xl border-2 bg-muted transition-all duration-300 ease-in-out h-full ${
                               selectedFont?.name === font.name
                                 ? "border-primary shadow-md"
                                 : "border-transparent hover:border-primary hover:shadow-md"
                             }`}
                           >
-                            <div className="p-6">
-                              <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-lg font-semibold text-primary">
+                            <div className="p-6 flex flex-col h-full">
+                              <div className="flex flex-col mb-2 flex-grow">
+                                <h4
+                                  className="text-lg font-semibold text-primary truncate"
+                                  title={font.name}
+                                >
                                   {font.name}
                                 </h4>
-                                <div className="flex space-x-1">
+                                <div className="flex flex-wrap gap-1 mt-2">
                                   {weightOptions.map((option) => (
                                     <button
                                       key={option.value}
-                                      onClick={() =>
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
                                         handleFontWeightChange(
                                           font.name,
                                           option.value
-                                        )
-                                      }
+                                        );
+                                      }}
                                       className={cn(
-                                        "px-2 py-1 text-xs rounded-md transition-colors",
+                                        "weight-button px-2 py-1 text-xs rounded-md transition-colors",
                                         fontWeights[font.name] === option.value
                                           ? "bg-primary text-primary-foreground"
                                           : "bg-secondary text-secondary-foreground hover:bg-primary/90 hover:text-primary-foreground"
@@ -349,10 +351,11 @@ export default function ShipDesign() {
                               <p
                                 style={{
                                   fontFamily: `'${font.name}', sans-serif`,
-                                  fontSize: "1.5rem",
+                                  fontSize: "1.25rem",
                                   fontWeight: fontWeights[font.name],
+                                  lineHeight: 1.2,
                                 }}
-                                className="mt-8"
+                                className="mt-4 overflow-hidden text-ellipsis"
                               >
                                 The quick brown fox jumps over the lazy dog
                               </p>

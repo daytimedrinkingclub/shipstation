@@ -3,7 +3,7 @@ import { Check } from "lucide-react";
 
 export default function Stepper({ steps, currentStep, onStepClick }) {
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col space-y-4 mx-4">
       {steps.map((step, index) => (
         <motion.div
           key={step}

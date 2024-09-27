@@ -125,6 +125,7 @@ export default function ShipContent() {
         transition={{ duration: 0.5 }}
         className="space-y-8"
       >
+        <h2 className="text-2xl font-bold">Ship Content</h2>
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="text-xl font-semibold">Sections</h3>
