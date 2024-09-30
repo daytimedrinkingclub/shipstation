@@ -7,6 +7,8 @@ const initialState = {
   portfolioType: "",
   sections: [{ id: "1", title: "", content: "", isOpen: true }],
   socialLinks: [],
+  imagesForAI: [],
+  websiteAssets: [],
   error: null,
 };
 
@@ -20,14 +22,6 @@ const onboardingSlice = createSlice({
     setCurrentStep: (state, action) => {
       state.currentStep = action.payload;
     },
-    addSection: (state) => {
-      state.sections.push({
-        id: Date.now().toString(),
-        title: "",
-        content: "",
-        isOpen: true,
-      });
-    },
     setSections: (state, action) => {
       state.sections = action.payload;
     },
@@ -40,10 +34,24 @@ const onboardingSlice = createSlice({
     setPortfolioType: (state, action) => {
       state.portfolioType = action.payload;
     },
+    setImagesForAI: (state, action) => {
+      state.imagesForAI = action.payload;
+    },
+    setWebsiteAssets: (state, action) => {
+      state.websiteAssets = action.payload;
+    },
     removeSection: (state, action) => {
       state.sections = state.sections.filter(
         (section) => section.id !== action.payload
       );
+    },
+    addSection: (state) => {
+      state.sections.push({
+        id: Date.now().toString(),
+        title: "",
+        content: "",
+        isOpen: true,
+      });
     },
     updateSection: (state, action) => {
       const { id, field, value } = action.payload;
@@ -71,6 +79,8 @@ export const {
   setCurrentStep,
   setUserPrompt,
   setPortfolioType,
+  setImagesForAI,
+  setWebsiteAssets,
   addSection,
   removeSection,
   setSections,

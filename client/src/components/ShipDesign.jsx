@@ -190,7 +190,7 @@ export default function ShipDesign() {
                       key={design.id}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.98 }}
-                      className="relative"
+                      className="relative h-full"
                     >
                       <RadioGroupItem
                         value={design.id}
@@ -199,24 +199,24 @@ export default function ShipDesign() {
                       />
                       <Label
                         htmlFor={design.id}
-                        className={`block overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
+                        className={`block h-full overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
                           selectedDesign?.id === design.id
                             ? "border-primary shadow-md"
                             : "border-muted bg-background hover:border-primary hover:shadow-md"
                         }`}
                       >
-                        <div className="p-6">
+                        <div className="p-6 flex flex-col h-full">
                           <h3 className="text-xl font-semibold text-foreground mb-2">
                             {design.design_name}
                           </h3>
-                          <p className="text-sm text-muted-foreground mb-4">
+                          <p className="text-sm text-muted-foreground mb-4 flex-grow">
                             {design.design_description}
                           </p>
                           <a
                             href={design.sample_link}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center text-sm font-medium text-primary hover:underline"
+                            className="inline-flex items-center text-sm font-medium text-primary hover:underline mt-auto"
                           >
                             View Example Site
                             <ExternalLink className="ml-1 h-4 w-4" />

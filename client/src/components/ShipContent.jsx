@@ -289,7 +289,7 @@ export default function ShipContent() {
 
         <div className="space-y-4">
           <h3 className="text-xl font-semibold">Social Links</h3>
-          <div className="space-y-2">
+          <div className="space-y-2 max-w-md">
             <AnimatePresence>
               {socialLinks.map((link, index) => (
                 <motion.div
@@ -324,7 +324,7 @@ export default function ShipContent() {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 max-w-md">
             <Input
               placeholder="Enter another social URL"
               value={newSocialLink}

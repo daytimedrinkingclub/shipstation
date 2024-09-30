@@ -311,6 +311,40 @@ class SupabaseStorageStrategy {
       throw err;
     }
   }
+
+  async uploadTemporaryAssets(assets) {
+    try {
+      const uploadedAssets = [];
+      for (const asset of assets) {
+        const fileName = `${Date.now()}-${asset.file.originalname}`;
+        const fullPath = this._getFullPath(`temporary-assets/${fileName}`);
+
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fullPath, asset.file.buffer, {
+            contentType: asset.file.mimetype,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fullPath);
+
+        uploadedAssets.push({
+          url: publicUrlData.publicUrl,
+          comment: asset.comment,
+          fileName: asset.file.originalname,
+        });
+      }
+
+      return uploadedAssets;
+    } catch (err) {
+      console.error("Error uploading temporary assets:", err);
+      throw err;
+    }
+  }
 }
 
 module.exports = SupabaseStorageStrategy;

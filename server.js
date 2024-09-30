@@ -386,6 +386,36 @@ app.post("/upload-assets", upload.array("assets"), async (req, res) => {
   }
 });
 
+app.post(
+  "/upload-temporary-assets",
+  upload.array("assets"),
+  async (req, res) => {
+    const files = req.files;
+    const comments = req.body.comments || [];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "Missing assets" });
+    }
+
+    try {
+      const assets = files.map((file, index) => ({
+        file: file,
+        comment: comments[index] || "",
+      }));
+
+      const uploadedAssets = await fileService.uploadTemporaryAssets(assets);
+
+      res.status(200).json({
+        message: "Temporary assets uploaded successfully",
+        assets: uploadedAssets,
+      });
+    } catch (error) {
+      console.error("Error uploading temporary assets:", error);
+      res.status(500).json({ error: "Failed to upload temporary assets" });
+    }
+  }
+);
+
 handleOnboardingSocketEvents(io);
 
 server.listen(PORT, () => {

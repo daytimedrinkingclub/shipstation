@@ -54,6 +54,10 @@ class FileService {
   async uploadAssets(shipId, assets) {
     return this.strategy.uploadAssets(shipId, assets);
   }
+
+  async uploadTemporaryAssets(assets) {
+    return this.strategy.uploadTemporaryAssets(assets);
+  }
 }
 
 module.exports = FileService;

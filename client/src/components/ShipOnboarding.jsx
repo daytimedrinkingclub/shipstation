@@ -1,4 +1,4 @@
-import { useEffect, useContext, useState } from "react";
+import { useEffect, useContext, useState, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +34,7 @@ import LoadingGameOverlay from "./LoadingGameOverlay";
 import SuccessOverlay from "./SuccessOverlay";
 import useDisclosure from "@/hooks/useDisclosure";
 import { toast } from "sonner";
+import { useProject } from "../hooks/useProject";
 
 const steps = ["Prompt", "Content", "Design"];
 
@@ -41,17 +42,28 @@ export default function ShipOnboarding({ type, reset }) {
   const { socket } = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { uploadTemporaryAssets } = useProject();
 
-  const { currentStep } = useSelector((state) => state.onboarding);
-  const userPrompt = useSelector((state) => state.onboarding.userPrompt);
-  const portfolioType = useSelector((state) => state.onboarding.portfolioType);
-  const shipType = useSelector((state) => state.onboarding.shipType);
+  const state = useSelector((state) => state.onboarding);
+  const {
+    imagesForAI,
+    websiteAssets,
+    currentStep,
+    userPrompt,
+    portfolioType,
+    shipType,
+    sections,
+    socials,
+    designLanguage,
+  } = state;
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [isPaymentRequired, setIsPaymentRequired] = useState(false);
+
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const { user, availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
@@ -70,6 +82,10 @@ export default function ShipOnboarding({ type, reset }) {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  const handleFileUpload = useCallback((files) => {
+    setUploadedFiles(files);
+  }, []);
 
   const handleNext = () => {
     if (currentStep === 0) {
@@ -112,12 +128,43 @@ export default function ShipOnboarding({ type, reset }) {
     }
   };
 
-  const startProject = () => {
+  const startProject = useCallback(async () => {
     try {
+      // Process imagesForAI
+      const processedImagesForAI = await Promise.all(
+        imagesForAI.map(async (image) => {
+          const uploadedFile = uploadedFiles.find(
+            (f) => f.file.name === image.fileName
+          );
+          if (!uploadedFile) return null;
+          const base64 = await fileToBase64(uploadedFile.file);
+          return {
+            ...image,
+            base64,
+            comment: uploadedFile.comment,
+          };
+        })
+      );
+
+      // Upload website assets and get public URLs
+      const uploadedAssets = await Promise.all(
+        websiteAssets.map(async (asset) => {
+          const uploadedFile = uploadedFiles.find(
+            (f) => f.file.name === asset.fileName
+          );
+          if (!uploadedFile) return null;
+          const { url } = await uploadAsset(uploadedFile.file);
+          return { ...asset, url, comment: uploadedFile.comment };
+        })
+      );
+
       socket.emit("startProject", {
         shipType: shipType,
         apiKey: anthropicKey,
         userPrompt: userPrompt,
+        portfolioType: portfolioType,
+        imagesForAI: processedImagesForAI.filter(Boolean),
+        websiteAssets: uploadedAssets.filter(Boolean),
         // Add other necessary data from the state
       });
       onClose();
@@ -125,6 +172,41 @@ export default function ShipOnboarding({ type, reset }) {
     } catch (error) {
       console.error("Error starting project:", error);
       toast.error("Failed to start the project. Please try again.");
+    }
+  }, [
+    uploadedFiles,
+    shipType,
+    anthropicKey,
+    userPrompt,
+    portfolioType,
+    
+    onClose,
+    onLoaderOpen,
+  ]);
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const uploadAsset = async (file) => {
+    try {
+      const assets = [{ file, comment: "" }];
+      const uploadedAssets = await uploadTemporaryAssets(assets);
+
+      if (uploadedAssets && uploadedAssets.length > 0) {
+        // Return the public URL of the uploaded file
+        return uploadedAssets[0].url;
+      } else {
+        throw new Error("Failed to upload asset");
+      }
+    } catch (error) {
+      console.error("Error uploading asset:", error);
+      throw error;
     }
   };
 
@@ -189,18 +271,30 @@ export default function ShipOnboarding({ type, reset }) {
     return steps[stepIndex] || "";
   };
 
-  const renderStepContent = () => {
+  const renderStepContent = useCallback(() => {
     switch (currentStep) {
       case 0:
-        return <ShipForm isGenerating={isGenerating} reset={reset} />;
+        return (
+          <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
+            <ShipForm
+              isGenerating={isGenerating}
+              reset={reset}
+              onFileUpload={handleFileUpload}
+            />
+          </div>
+        );
       case 1:
         return <ShipContent />;
       case 2:
-        return <ShipDesign />;
+        return (
+          <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
+            <ShipDesign />
+          </div>
+        );
       default:
         return null;
     }
-  };
+  }, [currentStep, isGenerating, reset, handleFileUpload]);
 
   return (
     <div className="flex h-screen bg-background relative">
