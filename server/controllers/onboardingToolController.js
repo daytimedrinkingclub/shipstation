@@ -26,6 +26,11 @@ async function handleOnboardingToolUse({
   client,
   shipType,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   console.log("onboradingToolController recieved images:", images.length);
 
@@ -173,8 +178,6 @@ async function handleOnboardingToolUse({
       `${generatedFolderName}/readme.md`
     );
 
-    console.log("onboardingToolController readme fileContent", fileContent);
-
     const { message, slug } = await ctoService.ctoService({
       query: fileContent,
       projectFolderName: generatedFolderName,
@@ -182,6 +185,11 @@ async function handleOnboardingToolUse({
       client,
       shipType,
       images,
+      portfolioType,
+      websiteAssets,
+      sections,
+      socials,
+      designLanguage,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";

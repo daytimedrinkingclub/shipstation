@@ -21,6 +21,7 @@ const {
   redoCodeChange,
   refineCode,
 } = require("./codeRefinementService");
+const { generateSiteContent } = require("./siteContentService");
 
 async function processConversation({
   client,
@@ -31,6 +32,11 @@ async function processConversation({
   shipType,
   message,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   console.log("processConversation received images:", images.length);
 
@@ -73,14 +79,14 @@ async function processConversation({
         content.push(
           {
             type: "text",
-            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
+            text: `Image ${index + 1}: ${img.comment || "No caption provided"}`,
           },
           {
             type: "image",
             source: {
               type: "base64",
               media_type: img.mediaType,
-              data: img.file,
+              data: img.base64,
             },
           }
         );
@@ -154,6 +160,11 @@ async function processConversation({
           client,
           shipType,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -207,13 +218,28 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      const { roomId, userId, apiKey, shipType, message, images } = data;
+      const {
+        roomId,
+        userId,
+        apiKey,
+        shipType,
+        message,
+        images,
+        portfolioType,
+        websiteAssets,
+        sections,
+        socials,
+        designLanguage,
+      } = data;
       console.log("startProject", roomId, userId, apiKey, shipType, message);
-      images.forEach((img, index) => {
-        console.log(`Image ${index + 1}:`);
-        console.log("Image file data available:", !!img.file);
-        console.log(`File type: ${img.mediaType || "Unknown"}`);
-        console.log(`Caption: ${img.caption}`);
+
+      console.log("Project Details:", {
+        Images: images.length,
+        "Portfolio Type": portfolioType,
+        "Website Assets": websiteAssets,
+        Sections: sections,
+        Socials: socials,
+        "Design Language": designLanguage,
       });
 
       const clientParams = { userId };
@@ -251,6 +277,11 @@ function handleOnboardingSocketEvents(io) {
           socket,
           message,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         return;
       } catch (error) {
@@ -338,6 +369,30 @@ function handleOnboardingSocketEvents(io) {
         socket.emit("redoResult", {
           success: false,
           message: "An error occurred while processing your redo request.",
+        });
+      }
+    });
+
+    socket.on("generateSiteContent", async (data) => {
+      const { userMessage, type, portfolioType } = data;
+      console.log("Received generateSiteContent request");
+
+      try {
+        const result = await generateSiteContent(
+          socket.userId,
+          userMessage,
+          type,
+          portfolioType
+        );
+
+        socket.emit("siteContentGenerated", {
+          sections: result.sections,
+          socials: result.socials,
+        });
+      } catch (error) {
+        console.error("Error generating site content:", error);
+        socket.emit("siteContentGenerationError", {
+          message: "An error occurred while generating site content.",
         });
       }
     });

@@ -5,7 +5,6 @@ const cors = require("cors");
 const path = require("path");
 const { JSDOM } = require("jsdom");
 
-const { createClient } = require("@supabase/supabase-js");
 const multer = require("multer");
 
 const {
@@ -17,6 +16,7 @@ const {
   insertPayment,
   getUserProfile,
   updateUserProfile,
+  getShipPrompt,
 } = require("./server/services/dbService");
 const {
   handleOnboardingSocketEvents,
@@ -47,14 +47,23 @@ app.use(express.static("public"));
 app.use(cors());
 
 app.get("/all", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(path.join(__dirname, "public", "all.html"));
 });
 
 app.get("/all-websites", async (req, res) => {
   try {
-    const { websites } = await fileService.listFolders("");
+    const websites = await fileService.listFolders("");
     console.log(websites);
-    res.json({ websites });
+    const websitesWithPrompts = await Promise.all(
+      websites.map(async (website) => {
+        const prompt = await getShipPrompt(website);
+        return { website, prompt };
+      })
+    );
+    res.json({ websites: websitesWithPrompts });
   } catch (err) {
     console.error("Error listing websites:", err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -378,6 +387,36 @@ app.post("/upload-assets", upload.array("assets"), async (req, res) => {
   }
 });
 
+app.post(
+  "/upload-temporary-assets",
+  upload.array("assets"),
+  async (req, res) => {
+    const files = req.files;
+    const comments = req.body.comments || [];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "Missing assets" });
+    }
+
+    try {
+      const assets = files.map((file, index) => ({
+        file: file,
+        comment: comments[index] || "",
+      }));
+
+      const uploadedAssets = await fileService.uploadTemporaryAssets(assets);
+
+      res.status(200).json({
+        message: "Temporary assets uploaded successfully",
+        assets: uploadedAssets,
+      });
+    } catch (error) {
+      console.error("Error uploading temporary assets:", error);
+      res.status(500).json({ error: "Failed to upload temporary assets" });
+    }
+  }
+);
+
 app.post("/add-custom-domain", async (req, res) => {
   const { domain, shipId, shipSlug } = req.body;
   if (!domain || !shipId || !shipSlug) {
@@ -394,6 +433,7 @@ app.post("/add-custom-domain", async (req, res) => {
     res.status(500).json({ error: "Failed to add custom domain" });
   }
 });
+
 
 handleOnboardingSocketEvents(io);
 

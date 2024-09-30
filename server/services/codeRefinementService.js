@@ -5,6 +5,7 @@ const dbService = require("../services/dbService");
 const {
   handleCodeRefinementToolUse,
 } = require("../controllers/codeRefinementToolController");
+const { getCurrentDate } = require("../utils/date");
 const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
@@ -156,6 +157,8 @@ async function saveNewVersion(shipId, currentCode) {
 
 function getSystemPrompt(assets, assetInfo) {
   let prompt = `
+    Current date: ${getCurrentDate()}
+
     You are an AI assistant specialized in refining HTML code. Analyze the current HTML code and the user's request, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
 
     Important rules:

@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 import ThreeDotLoader from "@/components/random/ThreeDotLoader";
 import ChatSuggestions from "@/components/ChatSuggestions";
@@ -28,9 +31,11 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import FilePreview from "@/components/FilePreview";
 import { useProject } from "@/hooks/useProject";
 
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
+import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
 
 const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const { socket } = useSocket();
@@ -65,7 +70,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
-      (file) => fileDescriptions[file.name]?.trim() !== ""
+      (file) => file.description?.trim() !== ""
     );
     setIsUploadDisabled(!allDescriptionsFilled);
   }, [fileDescriptions, tempFiles]);
@@ -189,8 +194,10 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         let uploadedAssets = [];
         if (filesToUpload.length > 0) {
           const assetsToUpload = filesToUpload.map((file) => ({
-            file,
-            comment: fileDescriptions[file.name] || "",
+            file: file.file,
+            comment: file.description || "",
+            forAI: file.forAI,
+            forWebsite: file.forWebsite,
           }));
           uploadedAssets = await uploadAssets(assetsToUpload);
         }
@@ -248,19 +255,35 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   };
 
   const handleFiles = (files) => {
-    const newFiles = Array.from(files);
+    const newFiles = Array.from(files).map((file) => {
+      const sanitizedName = sanitizeFileName(file.name);
+      const renamedFile = new File([file], sanitizedName, { type: file.type });
+      return {
+        file: renamedFile,
+        forAI: false,
+        forWebsite: true,
+        preview: URL.createObjectURL(file),
+        description: "",
+      };
+    });
     setTempFiles(newFiles);
-    setFileDescriptions(
-      newFiles.reduce((acc, file) => ({ ...acc, [file.name]: "" }), {})
-    );
     setIsDialogOpen(true);
   };
 
   const handleDescriptionChange = (fileName, description) => {
-    setFileDescriptions((prev) => ({
-      ...prev,
-      [fileName]: description,
-    }));
+    setTempFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        file.file.name === fileName ? { ...file, description } : file
+      )
+    );
+  };
+
+  const toggleUse = (fileName, use) => {
+    setTempFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        file.file.name === fileName ? { ...file, [use]: !file[use] } : file
+      )
+    );
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -397,7 +420,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                 className="flex items-center px-6 h-10"
                 variant={"secondary"}
               >
-                {file.name}
+                {file.file.name}
               </Badge>
               <Button
                 onClick={() => {
@@ -430,34 +453,90 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         </div>
       )}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-5xl">
           <DialogHeader>
-            <DialogTitle className="mb-2">Enter asset descriptions</DialogTitle>
+            <DialogTitle className="mb-2">Enter asset details</DialogTitle>
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
               <Info className="mx-2 h-5 w-5 text-primary flex-shrink-0" />
               <p className="px-2">
-                Describe your assets to help our AI understand and use them
-                effectively in your project. All descriptions are required.
+                Describe your assets and set their usage to help our AI
+                understand and use them effectively in your project. All
+                descriptions are required.
               </p>
             </div>
           </DialogHeader>
-          {tempFiles.map((file, index) => (
-            <div key={index} className="mb-4">
-              <p className="mb-2">{file.name}</p>
-              <Input
-                placeholder="Enter description (required)"
-                value={fileDescriptions[file.name] || ""}
-                onChange={(e) =>
-                  handleDescriptionChange(file.name, e.target.value)
-                }
-              />
-            </div>
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
+            {tempFiles.map((file, index) => (
+              <Card key={index} className="bg-gray-50">
+                <CardContent className="p-4 space-y-4">
+                  <div className="aspect-video bg-gray-200 rounded-md overflow-hidden">
+                    <FilePreview file={file.file} />
+                  </div>
+                  <div>
+                    <p
+                      className="font-semibold truncate"
+                      title={file.file.name}
+                    >
+                      {file.file.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(file.file.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor={`description-${index}`}
+                      className="text-xs mb-1 block"
+                    >
+                      Description (required)
+                    </Label>
+                    <Input
+                      id={`description-${index}`}
+                      placeholder="Enter description"
+                      value={file.description}
+                      onChange={(e) =>
+                        handleDescriptionChange(file.file.name, e.target.value)
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={`forAI-${index}`} className="text-xs">
+                        Show to AI for ideas
+                      </Label>
+                      <Switch
+                        id={`forAI-${index}`}
+                        checked={file.forAI}
+                        onCheckedChange={() =>
+                          toggleUse(file.file.name, "forAI")
+                        }
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label
+                        htmlFor={`forWebsite-${index}`}
+                        className="text-xs"
+                      >
+                        Add to my website
+                      </Label>
+                      <Switch
+                        id={`forWebsite-${index}`}
+                        checked={file.forWebsite}
+                        onCheckedChange={() =>
+                          toggleUse(file.file.name, "forWebsite")
+                        }
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
           <DialogFooter className="flex flex-col md:flex-row gap-2">
             <Button
               onClick={handleDialogConfirm}
-              disabled={isUploadDisabled || isLoading}
-              className={`${isUploadDisabled ? "cursor-not-allowed" : ""}`}
+              disabled={tempFiles.some((file) => !file.description.trim())}
+              className="w-full md:w-auto"
             >
               <CheckCheck className="w-4 h-4 mr-2" />
               Done

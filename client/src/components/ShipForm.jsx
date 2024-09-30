@@ -1,8 +1,18 @@
+import React, { useCallback } from "react";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Fuel, Sparkles } from "lucide-react";
+import {
+  Code2,
+  Paintbrush,
+  Camera,
+  Palette,
+  Music,
+  Briefcase,
+  Fuel,
+  Check,
+  Edit2,
+} from "lucide-react";
 import { useSocket } from "@/context/SocketProvider";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
@@ -16,120 +26,86 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { pluralize } from "@/lib/utils";
 import { PROMPT_PLACEHOLDERS } from "@/constants";
 import LoadingGameOverlay from "./LoadingGameOverlay";
-import ImageUpload from "./ImageUpload";
+import FileUpload from "./FileUpload";
 
-const ShipForm = ({ type, reset }) => {
-  const [requirements, setRequirements] = useLocalStorage("requirements", "");
+import { useDispatch, useSelector } from "react-redux";
+import { setPortfolioType, setUserPrompt } from "@/store/onboardingSlice";
+
+const portfolioTypes = [
+  { id: "Developer", icon: Code2 },
+  { id: "Designer", icon: Paintbrush },
+  { id: "Photographer", icon: Camera },
+  { id: "Artist", icon: Palette },
+  { id: "Musician", icon: Music },
+];
+
+const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
   const { sendMessage, socket } = useSocket();
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [isKeyValidating, setIsKeyValidating] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState([]);
 
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const userPrompt = useSelector((state) => state.onboarding.userPrompt);
+  const portfolioType = useSelector((state) => state.onboarding.portfolioType);
+  const shipType = useSelector((state) => state.onboarding.shipType);
+
+  const [customType, setCustomType] = useState("");
+  const [isCustomTypeConfirmed, setIsCustomTypeConfirmed] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
   const { user, userLoading, availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
 
-  const {
-    isOpen: isLoaderOpen,
-    onOpen: onLoaderOpen,
-    onClose: onLoaderClose,
-  } = useDisclosure();
-  const {
-    isOpen: isSuccessOpen,
-    onOpen: onSuccessOpen,
-    onClose: onSuccessClose,
-  } = useDisclosure();
-
-  const handleImageUpload = (imageData) => {
-    setUploadedImages(
-      imageData.map((img) => ({
-        file: img.file,
-        caption: img.caption,
-        mediaType: img.mediaType,
-      }))
-    );
-  };
-
-  const startProject = () => {
-    try {
-      console.log("Starting project with images:", uploadedImages);
-      sendMessage("startProject", {
-        shipType: type,
-        apiKey: anthropicKey,
-        message: requirements,
-        images: uploadedImages.map((img) => ({
-          file: img.file,
-          caption: img.caption,
-          mediaType: img.mediaType,
-        })),
-      });
-      onClose();
-      onLoaderOpen();
-    } catch (error) {
-      console.error("Error starting project:", error);
-      // Handle the error appropriately (e.g., show an error message to the user)
-    }
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!requirements.trim()) {
-      toast.info("Easy there, what do you want to make?");
-      return;
-    }
-    if (availableShips <= 0) {
-      onOpen();
+  const handlePortfolioTypeChange = (value) => {
+    if (value === "Other") {
+      dispatch(setPortfolioType("Other"));
+      setCustomType("");
+      setIsCustomTypeConfirmed(false);
+      setIsEditing(true);
     } else {
-      startProject();
+      dispatch(setPortfolioType(value));
+      setCustomType("");
+      setIsCustomTypeConfirmed(false);
+      setIsEditing(false);
     }
   };
 
-  const handleSubmitAnthropicKey = (apiKey) => {
-    sendMessage("anthropicKey", { anthropicKey: apiKey });
-    setIsKeyValidating(true);
+  const handleCustomTypeChange = (e) => {
+    setCustomType(e.target.value);
+    setIsCustomTypeConfirmed(false);
   };
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("apiKeyStatus", (response) => {
-        setIsKeyValidating(false);
-        if (response.success) {
-          startProject();
-          toast("Anthropic key is valid, starting generation!");
-        } else {
-          toast.error(response.message);
-        }
-      });
-
-      socket.on("showPaymentOptions", ({ error }) => {
-        onOpen();
-      });
-
-      socket.on("needMoreInfo", ({ message }) => {
-        toast("Please add more details regarding the website");
-        onLoaderClose();
-      });
-
-      socket.on("websiteDeployed", ({ slug }) => {
-        onSuccessOpen();
-        onLoaderClose();
-        setRequirements("");
-        setDeployedWebsiteSlug(slug);
-      });
-
-      return () => {
-        socket.off("apiKeyStatus");
-        socket.off("showPaymentOptions");
-        socket.off("websiteDeployed");
-        socket.off("needMoreInfo");
-      };
+  const confirmCustomType = () => {
+    if (customType.trim() !== "") {
+      dispatch(setPortfolioType(customType.trim()));
+      setIsCustomTypeConfirmed(true);
+      setIsEditing(false);
     }
-  }, [socket, anthropicKey, requirements]);
+  };
+
+  const startEditing = () => {
+    setIsEditing(true);
+    setIsCustomTypeConfirmed(false);
+  };
+
+  const handleFileUpload = useCallback(
+    (files) => {
+      onFileUpload(files);
+    },
+    [onFileUpload]
+  );
 
   useEffect(() => {
     if (!userLoading && !user) {
@@ -138,65 +114,152 @@ const ShipForm = ({ type, reset }) => {
   }, [user, userLoading, navigate]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <h1 className="sm:text-4xl font-bold text-foreground my-8 text-2xl">
-        What would you like to create today?
-      </h1>
-      <form onSubmit={handleSubmit} className="flex flex-col items-center">
-        <Textarea
-          className="w-full h-60 bg-background text-foreground border-input mb-8"
-          placeholder={PROMPT_PLACEHOLDERS[type]}
-          value={requirements}
-          onChange={(e) => setRequirements(e.target.value)}
-        />
-        <ImageUpload onImageUpload={handleImageUpload} />
-        <div className="flex flex-col sm:flex-row w-full justify-between items-center space-y-4 sm:space-y-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <p
-                  className={`text-sm ${
-                    availableShips < 1 ? "text-destructive" : "text-foreground"
-                  }`}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <Fuel className="inline-block mr-2" height={18} width={18} />
-                  {availableShips} {pluralize(availableShips, "container")}{" "}
-                  available
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>
-                Your balance is {availableShips}{" "}
-                {pluralize(availableShips, "container")}. <br />1 container is
-                equal to 1 individual project.
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button
-            type="submit"
-            className="w-full sm:w-auto transition-all duration-300 bg-primary text-primary-foreground hover:bg-primary/90 group relative overflow-hidden"
+    <div className="w-full flex flex-col h-full">
+      <h2 className="text-2xl font-bold mb-6">Ship Prompt</h2>
+      {shipType === "portfolio" && (
+        <div className="mb-6">
+          <h3 className="text-lg font-medium mb-3">Choose Portfolio Type</h3>
+          <RadioGroup
+            value={portfolioType === customType ? "Other" : portfolioType}
+            onValueChange={handlePortfolioTypeChange}
           >
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ease-in-out bg-shimmer-gradient bg-[length:200%_100%] animate-shimmer" />
-            <span className="relative">Start generating website</span>
-            <Sparkles className="ml-2 h-4 w-4 group-hover:rotate-180 transition-transform" />
-          </Button>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {portfolioTypes.map(({ id, icon }) => {
+                const IconComponent = icon;
+                return (
+                  <div key={id} className="relative">
+                    <RadioGroupItem
+                      value={id}
+                      id={id}
+                      className="peer sr-only"
+                    />
+                    <Label
+                      htmlFor={id}
+                      className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer ${
+                        portfolioType === id
+                          ? "border-primary bg-primary/5"
+                          : "hover:bg-muted/50"
+                      }`}
+                    >
+                      <IconComponent className="h-5 w-5 mr-2" />
+                      <span className="text-sm font-medium">{id}</span>
+                    </Label>
+                  </div>
+                );
+              })}
+              <div className="relative">
+                <RadioGroupItem
+                  value="Other"
+                  id="Other"
+                  className="peer sr-only"
+                />
+                <Label
+                  htmlFor="Other"
+                  className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer ${
+                    portfolioType === "Other" || customType !== ""
+                      ? "border-primary bg-primary/5"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  {portfolioType === "Other" || customType !== "" ? (
+                    isCustomTypeConfirmed && !isEditing ? (
+                      <div className="flex items-center justify-center w-full">
+                        <Briefcase className="h-5 w-5 mr-2" />
+                        <span className="text-sm font-medium text-center">
+                          {customType}
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="p-1 ml-2 hover:bg-transparent"
+                          onClick={startEditing}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center w-full">
+                        <Briefcase className="h-5 w-5 mr-2" />
+                        <Input
+                          type="text"
+                          className="p-2 h-8 flex-grow text-sm font-medium bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0 border-none"
+                          placeholder="Enter your profession"
+                          value={customType}
+                          onChange={handleCustomTypeChange}
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter") {
+                              confirmCustomType();
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="p-1 hover:bg-transparent"
+                          onClick={confirmCustomType}
+                        >
+                          <Check className="h-4 w-4 ml-2" />
+                        </Button>
+                      </div>
+                    )
+                  ) : (
+                    <>
+                      <Briefcase className="h-5 w-5 mr-2" />
+                      <span className="text-sm font-medium">Other</span>
+                    </>
+                  )}
+                </Label>
+              </div>
+            </div>
+          </RadioGroup>
         </div>
-      </form>
-      <ChoosePaymentOptionDialog
-        isOpen={isOpen}
-        onClose={onClose}
-        onSubmitKey={handleSubmitAnthropicKey}
-        anthropicKey={anthropicKey}
-        setAnthropicKey={setAnthropicKey}
-        type={type}
-        isKeyValidating={isKeyValidating}
-      />
-      {isLoaderOpen && <LoadingGameOverlay isOpen={isLoaderOpen} type={type} />}
-      <SuccessOverlay
-        isOpen={isSuccessOpen}
-        onClose={reset}
-        slug={deployedWebsiteSlug}
-      />
+      )}
+      <div className="flex flex-col flex-grow">
+        <Textarea
+          className="flex-grow bg-background text-foreground border-input mb-4 h-40"
+          placeholder={PROMPT_PLACEHOLDERS[shipType]}
+          value={userPrompt}
+          disabled={isGenerating}
+          onChange={(e) => {
+            dispatch(setUserPrompt(e.target.value));
+          }}
+        />
+        <div className="mt-auto">
+          <FileUpload onFileUpload={handleFileUpload} type={shipType} />
+          <div className="flex justify-between items-center mt-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <p
+                    className={`text-sm ${
+                      availableShips < 1
+                        ? "text-destructive"
+                        : "text-foreground"
+                    }`}
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <Fuel
+                      className="inline-block mr-2"
+                      height={18}
+                      width={18}
+                    />
+                    {availableShips} {pluralize(availableShips, "container")}{" "}
+                    available
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Your balance is {availableShips}{" "}
+                  {pluralize(availableShips, "container")}. <br />1 container is
+                  equal to 1 individual project.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

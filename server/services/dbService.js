@@ -361,6 +361,47 @@ async function fetchAssets(shipId) {
   }
 }
 
+async function getShipPrompt(shipId) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("ships")
+      .select("prompt")
+      .eq("slug", shipId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching prompt from database: ${error.message}`);
+      throw error;
+    }
+
+    if (!data || !data.prompt) {
+      console.log(`No prompt found for shipId: ${shipId}`);
+      return null;
+    }
+
+    return data.prompt;
+  } catch (error) {
+    console.error("Error fetching ship prompt:", error);
+    throw error;
+  }
+}
+
+async function getDesignPreset(shipType, designName) {
+  const { data, error } = await supabaseClient
+    .from("design_presets")
+    .select("additive_prompt, color_palette, fonts")
+    .eq("site_type", shipType)
+    .eq("design_name", designName)
+    .single();
+
+  if (error) {
+    console.error("Error fetching design preset:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -382,4 +423,6 @@ module.exports = {
   deleteCodeVersion,
   updateShipAssets,
   fetchAssets,
+  getShipPrompt,
+  getDesignPreset,
 };

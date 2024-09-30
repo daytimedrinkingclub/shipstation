@@ -81,15 +81,13 @@ class SupabaseStorageStrategy {
       if (error) throw error;
 
       // Extract only the names from the data
-      const websiteNames = data.map((item) => item.name);
-
-      console.log(`Processed data:`, JSON.stringify(websiteNames, null, 2));
+      const folders = data.map((item) => item.name);
 
       // Return the data in the expected format
-      return { websites: websiteNames };
+      return folders;
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
-      return { websites: [] };
+      return [];
     }
   }
 
@@ -310,6 +308,40 @@ class SupabaseStorageStrategy {
       return uploadedAssets;
     } catch (err) {
       console.error(`Error uploading assets for ship ${shipId}:`, err);
+      throw err;
+    }
+  }
+
+  async uploadTemporaryAssets(assets) {
+    try {
+      const uploadedAssets = [];
+      for (const asset of assets) {
+        const fileName = `${Date.now()}-${asset.file.originalname}`;
+        const fullPath = `temporary-assets/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fullPath, asset.file.buffer, {
+            contentType: asset.file.mimetype,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fullPath);
+
+        uploadedAssets.push({
+          url: publicUrlData.publicUrl,
+          comment: asset.comment,
+          fileName: asset.file.originalname,
+        });
+      }
+
+      return uploadedAssets;
+    } catch (err) {
+      console.error("Error uploading temporary assets:", err);
       throw err;
     }
   }
