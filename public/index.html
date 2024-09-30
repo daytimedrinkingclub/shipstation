@@ -14,7 +14,7 @@
   <meta name="twitter:title" content="ShipStation - Create stunning websites" />
   <meta name="twitter:description" content="Create stunning websites with ease using our AI-powered platform." />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-2ZEXC0QVN6"></script>
-  <!-- <link rel="icon" href="/assets/logo.png" type="image/png"> -->
+  <link rel="icon" href="/assets/logo.png" type="image/png">
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
@@ -53,12 +53,58 @@
       "image": "https://shipstation.ai/assets/logo.png",
       "keywords": "Create stunning websites with ease using our AI-powered platform."
     }</script>
-  <script type="module" crossorigin src="/assets/index-Dk02hiW1.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script type="module" crossorigin src="/assets/index-oD0wf9fe.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-Crv6rQIk.css">
 </head>
 
 <body class="flex flex-col min-h-screen">
   <div id="root"></div>
+  <div id="g_id_onload"
+     data-client_id="746372795020-ofe85viuq3aphk14e6abftss8fdnf7gn.apps.googleusercontent.com"
+     data-context="signin"
+     data-ux_mode="popup"
+     data-callback="handleCredentialResponse"
+     data-auto_prompt="false"
+     data-use_fedcm_for_prompt="true">
+  </div>
+
+  <div class="g_id_signin"
+     data-type="standard"
+     data-shape="rectangular"
+     data-theme="outline"
+     data-text="signin_with"
+     data-size="large"
+     data-logo_alignment="left">
+  </div>
+
+  <script>
+    function handleCredentialResponse(response) {
+      // Send the credential to your server
+      fetch('/auth/google-one-tap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ credential: response.credential }),
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          console.error('Authentication error:', data.error);
+        } else {
+          // Handle successful authentication
+          console.log('Authenticated user:', data.user);
+          // You can store the session in localStorage or a state management solution
+          localStorage.setItem('supabase_session', JSON.stringify(data.session));
+          // Redirect or update UI as needed
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    }
+  </script>
 </body>
 
 </html>

@@ -4,9 +4,11 @@ const socketIo = require("socket.io");
 const cors = require("cors");
 const path = require("path");
 const { JSDOM } = require("jsdom");
-
-const { createClient } = require("@supabase/supabase-js");
+const { OAuth2Client } = require('google-auth-library');
 const multer = require("multer");
+const helmet = require("helmet");
+
+const { createOrLoginUser } = require('./server/services/supabaseService');
 
 const {
   validateRazorpayWebhook,
@@ -44,7 +46,24 @@ const PORT = process.env.PORT || 5001;
 app.use(express.json());
 app.use(express.static("websites"));
 app.use(express.static("public"));
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173, http://localhost:3000', // or whatever your client's origin is
+  credentials: true
+}));
+
+app.use(
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "https://accounts.google.com/gsi/client", "'unsafe-inline'", "http://localhost:5173", "http://localhost:3000"],
+      frameSrc: ["'self'", "https://accounts.google.com/gsi/"],
+      connectSrc: ["'self'", "https://accounts.google.com/gsi/", "http://localhost:5173", "http://localhost:3000"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:", "http://localhost:3000", "http://localhost:5173"],
+      fontSrc: ["'self'", "https:", "data:"],
+    },
+  })
+);
 
 app.get("/all", async (req, res) => {
   res.sendFile(path.join(__dirname, "public", "all.html"));
@@ -392,6 +411,34 @@ app.post("/add-custom-domain", async (req, res) => {
   } catch (error) {
     console.error("Error adding custom domain:", error);
     res.status(500).json({ error: "Failed to add custom domain" });
+  }
+});
+
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+app.post('/auth/google-one-tap', async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, picture } = payload;
+
+    const { user, session, error } = await createOrLoginUser(email, name, picture);
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    res.json({ user, session });
+  } catch (error) {
+    console.error('Error verifying Google One Tap token:', error);
+    res.status(400).json({ error: 'Invalid token' });
   }
 });
 
