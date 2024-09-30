@@ -86,7 +86,7 @@ async function processConversation({
             source: {
               type: "base64",
               media_type: img.mediaType,
-              data: img.file,
+              data: img.base64,
             },
           }
         );
@@ -232,17 +232,14 @@ function handleOnboardingSocketEvents(io) {
         designLanguage,
       } = data;
       console.log("startProject", roomId, userId, apiKey, shipType, message);
-      images.forEach((img, index) => {
-        console.log(`Image ${index + 1}:`);
-        console.log("Image file data available:", !!img.file);
-        console.log(`File type: ${img.mediaType || "Unknown"}`);
-        console.log(`Caption: ${img.comment}`);
-      });
 
-      websiteAssets.forEach((asset, index) => {
-        console.log(`Website Asset ${index + 1}:`);
-        console.log("Asset url available:", !!asset.url);
-        console.log(`Caption: ${asset.comment}`);
+      console.log("Project Details:", {
+        Images: images.length,
+        "Portfolio Type": portfolioType,
+        "Website Assets": websiteAssets,
+        Sections: sections,
+        Socials: socials,
+        "Design Language": designLanguage,
       });
 
       const clientParams = { userId };

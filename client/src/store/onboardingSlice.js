@@ -75,6 +75,7 @@ const onboardingSlice = createSlice({
         (_, index) => index !== action.payload
       );
     },
+    resetOnboarding: () => initialState,
   },
 });
 
@@ -94,6 +95,7 @@ export const {
   removeSocialLink,
   setSocials,
   setDesignLanguage,
+  resetOnboarding,
 } = onboardingSlice.actions;
 
 export default onboardingSlice.reducer;

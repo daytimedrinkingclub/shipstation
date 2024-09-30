@@ -55,6 +55,11 @@ async function ctoService({
           client,
           shipType,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
 
         messages.push({ role: "user", content: toolResult });

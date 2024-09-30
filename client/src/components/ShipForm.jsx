@@ -68,17 +68,6 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
   const { user, userLoading, availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
 
-  const {
-    isOpen: isLoaderOpen,
-    onOpen: onLoaderOpen,
-    onClose: onLoaderClose,
-  } = useDisclosure();
-  const {
-    isOpen: isSuccessOpen,
-    onOpen: onSuccessOpen,
-    onClose: onSuccessClose,
-  } = useDisclosure();
-
   const handlePortfolioTypeChange = (value) => {
     if (value === "Other") {
       dispatch(setPortfolioType("Other"));
@@ -117,43 +106,6 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
     },
     [onFileUpload]
   );
-
-  useEffect(() => {
-    if (socket) {
-      socket.on("apiKeyStatus", (response) => {
-        setIsKeyValidating(false);
-        if (response.success) {
-          // startProject();
-          toast("Anthropic key is valid, starting generation!");
-        } else {
-          toast.error(response.message);
-        }
-      });
-
-      socket.on("showPaymentOptions", ({ error }) => {
-        onOpen();
-      });
-
-      socket.on("needMoreInfo", ({ message }) => {
-        toast("Please add more details regarding the website");
-        onLoaderClose();
-      });
-
-      socket.on("websiteDeployed", ({ slug }) => {
-        onSuccessOpen();
-        onLoaderClose();
-        // setRequirements("");
-        setDeployedWebsiteSlug(slug);
-      });
-
-      return () => {
-        socket.off("apiKeyStatus");
-        socket.off("showPaymentOptions");
-        socket.off("websiteDeployed");
-        socket.off("needMoreInfo");
-      };
-    }
-  }, [socket, anthropicKey]);
 
   useEffect(() => {
     if (!userLoading && !user) {

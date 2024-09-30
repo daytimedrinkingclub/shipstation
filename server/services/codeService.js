@@ -29,7 +29,7 @@ async function codeAssistant({
     websiteAssets: websiteAssets?.length,
     sections: sections?.length,
     socials: socials?.length,
-    designLanguage: designLanguage?.length,
+    designLanguage: designLanguage ? "present" : "undefined",
   });
 
   try {
@@ -80,6 +80,7 @@ async function codeAssistant({
       shipType,
       analysisResult?.analysis || null,
       portfolioType,
+      websiteAssets,
       sections,
       socials,
       designLanguage

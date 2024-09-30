@@ -17,6 +17,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ShipContent from "./ShipContent";
 import ShipDesign from "./ShipDesign";
 import {
+  resetOnboarding,
   setCurrentStep,
   setSections,
   setSocials,
@@ -39,10 +40,14 @@ import { useProject } from "../hooks/useProject";
 const steps = ["Prompt", "Content", "Design"];
 
 export default function ShipOnboarding({ type, reset }) {
-  const { socket } = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { uploadTemporaryAssets } = useProject();
+
+  const { socket, roomId } = useSocket();
+  const { user, availableShips, anthropicKey, setAnthropicKey } =
+    useContext(AuthContext);
+  const userId = user?.id;
 
   const state = useSelector((state) => state.onboarding);
   const {
@@ -53,7 +58,7 @@ export default function ShipOnboarding({ type, reset }) {
     portfolioType,
     shipType,
     sections,
-    socials,
+    socialLinks,
     designLanguage,
   } = state;
 
@@ -65,8 +70,6 @@ export default function ShipOnboarding({ type, reset }) {
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
 
-  const { user, availableShips, anthropicKey, setAnthropicKey } =
-    useContext(AuthContext);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isLoaderOpen,
@@ -131,8 +134,8 @@ export default function ShipOnboarding({ type, reset }) {
   const startProject = useCallback(async () => {
     try {
       console.log("startProject request received");
-      // Process imagesForAI
 
+      // Process imagesForAI
       console.log("processing imagesForAI...", imagesForAI.length);
       const processedImagesForAI = await Promise.all(
         imagesForAI.map(async (image) => {
@@ -158,8 +161,12 @@ export default function ShipOnboarding({ type, reset }) {
             (f) => f.file.name === asset.fileName
           );
           if (!uploadedFile) return null;
-          const { url } = await uploadAsset(uploadedFile.file);
-          return { ...asset, url, comment: uploadedFile.comment };
+          const uploadedAsset = await uploadAsset(uploadedFile.file);
+          return {
+            url: uploadedAsset.url,
+            comment: uploadedFile.comment,
+            fileName: uploadedAsset.fileName,
+          };
         })
       );
 
@@ -171,9 +178,11 @@ export default function ShipOnboarding({ type, reset }) {
         ...(shipType === "portfolio" ? { portfolioType } : {}),
         images: processedImagesForAI.filter(Boolean),
         websiteAssets: uploadedAssets.filter(Boolean),
+        socials: socialLinks,
         sections,
-        socials,
         designLanguage,
+        roomId,
+        userId,
       });
       onClose();
       onLoaderOpen();
@@ -188,12 +197,14 @@ export default function ShipOnboarding({ type, reset }) {
     userPrompt,
     portfolioType,
     sections,
-    socials,
+    socialLinks,
     designLanguage,
     imagesForAI,
     websiteAssets,
     onClose,
     onLoaderOpen,
+    roomId,
+    userId,
   ]);
 
   const fileToBase64 = (file) => {
@@ -211,8 +222,8 @@ export default function ShipOnboarding({ type, reset }) {
       const uploadedAssets = await uploadTemporaryAssets(assets);
 
       if (uploadedAssets && uploadedAssets.length > 0) {
-        // Return the public URL of the uploaded file
-        return uploadedAssets[0].url;
+        console.log("uploadedAssets", uploadedAssets[0]);
+        return uploadedAssets[0];
       } else {
         throw new Error("Failed to upload asset");
       }
@@ -258,6 +269,10 @@ export default function ShipOnboarding({ type, reset }) {
         onSuccessOpen();
         onLoaderClose();
         setDeployedWebsiteSlug(slug);
+
+        // Clear Redux state and localStorage
+        dispatch(resetOnboarding());
+        localStorage.removeItem("persist:onboarding");
       });
 
       return () => {

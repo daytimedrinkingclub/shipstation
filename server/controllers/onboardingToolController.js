@@ -178,8 +178,6 @@ async function handleOnboardingToolUse({
       `${generatedFolderName}/readme.md`
     );
 
-    console.log("onboardingToolController readme fileContent", fileContent);
-
     const { message, slug } = await ctoService.ctoService({
       query: fileContent,
       projectFolderName: generatedFolderName,
