@@ -18,6 +18,9 @@ import { useSelector } from "react-redux";
 import GoogleFontLoader from "react-google-font";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { useDispatch } from "react-redux";
+import { setDesignLanguage } from "@/store/onboardingSlice";
+
 import { cn } from "@/lib/utils";
 
 export default function ShipDesign() {
@@ -33,6 +36,8 @@ export default function ShipDesign() {
   const [customFont, setCustomFont] = useState("");
   const [fonts, setFonts] = useState([]);
   const [fontWeights, setFontWeights] = useState({});
+
+  const dispatch = useDispatch();
 
   const shipType = useSelector((state) => state.onboarding.shipType);
 
@@ -83,6 +88,9 @@ export default function ShipDesign() {
       initialWeights[font.name] = font.weights[0].toString();
     });
     setFontWeights(initialWeights);
+
+    // Dispatch the selected design language to Redux
+    dispatch(setDesignLanguage(selectedPreset));
   };
 
   const handleFontChange = (fontName) => {

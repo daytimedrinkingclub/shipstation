@@ -9,6 +9,7 @@ const initialState = {
   socialLinks: [],
   imagesForAI: [],
   websiteAssets: [],
+  designLanguage: null,
   error: null,
 };
 
@@ -39,6 +40,9 @@ const onboardingSlice = createSlice({
     },
     setWebsiteAssets: (state, action) => {
       state.websiteAssets = action.payload;
+    },
+    setDesignLanguage: (state, action) => {
+      state.designLanguage = action.payload;
     },
     removeSection: (state, action) => {
       state.sections = state.sections.filter(
@@ -89,6 +93,7 @@ export const {
   addSocialLink,
   removeSocialLink,
   setSocials,
+  setDesignLanguage,
 } = onboardingSlice.actions;
 
 export default onboardingSlice.reducer;

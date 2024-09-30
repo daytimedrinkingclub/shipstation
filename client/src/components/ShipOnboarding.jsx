@@ -130,7 +130,10 @@ export default function ShipOnboarding({ type, reset }) {
 
   const startProject = useCallback(async () => {
     try {
+      console.log("startProject request received");
       // Process imagesForAI
+
+      console.log("processing imagesForAI...", imagesForAI.length);
       const processedImagesForAI = await Promise.all(
         imagesForAI.map(async (image) => {
           const uploadedFile = uploadedFiles.find(
@@ -146,6 +149,8 @@ export default function ShipOnboarding({ type, reset }) {
         })
       );
 
+      console.log("processing websiteAssets...", websiteAssets.length);
+
       // Upload website assets and get public URLs
       const uploadedAssets = await Promise.all(
         websiteAssets.map(async (asset) => {
@@ -158,6 +163,7 @@ export default function ShipOnboarding({ type, reset }) {
         })
       );
 
+      console.log("startProject request sent");
       socket.emit("startProject", {
         shipType: shipType,
         apiKey: anthropicKey,
@@ -165,6 +171,9 @@ export default function ShipOnboarding({ type, reset }) {
         portfolioType: portfolioType,
         imagesForAI: processedImagesForAI.filter(Boolean),
         websiteAssets: uploadedAssets.filter(Boolean),
+        sections,
+        socials,
+        designLanguage,
         // Add other necessary data from the state
       });
       onClose();
@@ -179,7 +188,11 @@ export default function ShipOnboarding({ type, reset }) {
     anthropicKey,
     userPrompt,
     portfolioType,
-    
+    sections,
+    socials,
+    designLanguage,
+    imagesForAI,
+    websiteAssets,
     onClose,
     onLoaderOpen,
   ]);
