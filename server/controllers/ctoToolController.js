@@ -16,6 +16,11 @@ async function handleCTOToolUse({
   client,
   shipType,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
@@ -204,6 +209,11 @@ async function handleCTOToolUse({
       client,
       shipType,
       images,
+      portfolioType,
+      websiteAssets,
+      sections,
+      socials,
+      designLanguage,
     });
 
     sendEvent("progress", {

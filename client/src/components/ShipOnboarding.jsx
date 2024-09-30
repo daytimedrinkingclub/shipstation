@@ -167,14 +167,13 @@ export default function ShipOnboarding({ type, reset }) {
       socket.emit("startProject", {
         shipType: shipType,
         apiKey: anthropicKey,
-        userPrompt: userPrompt,
-        portfolioType: portfolioType,
-        imagesForAI: processedImagesForAI.filter(Boolean),
+        message: userPrompt,
+        ...(shipType === "portfolio" ? { portfolioType } : {}),
+        images: processedImagesForAI.filter(Boolean),
         websiteAssets: uploadedAssets.filter(Boolean),
         sections,
         socials,
         designLanguage,
-        // Add other necessary data from the state
       });
       onClose();
       onLoaderOpen();

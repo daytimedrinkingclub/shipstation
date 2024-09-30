@@ -317,7 +317,7 @@ class SupabaseStorageStrategy {
       const uploadedAssets = [];
       for (const asset of assets) {
         const fileName = `${Date.now()}-${asset.file.originalname}`;
-        const fullPath = this._getFullPath(`temporary-assets/${fileName}`);
+        const fullPath = `temporary-assets/${fileName}`;
 
         const { data, error } = await supabase.storage
           .from(BUCKET_NAME)

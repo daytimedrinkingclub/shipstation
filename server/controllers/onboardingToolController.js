@@ -26,6 +26,11 @@ async function handleOnboardingToolUse({
   client,
   shipType,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   console.log("onboradingToolController recieved images:", images.length);
 
@@ -182,6 +187,11 @@ async function handleOnboardingToolUse({
       client,
       shipType,
       images,
+      portfolioType,
+      websiteAssets,
+      sections,
+      socials,
+      designLanguage,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";

@@ -32,6 +32,11 @@ async function processConversation({
   shipType,
   message,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   console.log("processConversation received images:", images.length);
 
@@ -74,7 +79,7 @@ async function processConversation({
         content.push(
           {
             type: "text",
-            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
+            text: `Image ${index + 1}: ${img.comment || "No caption provided"}`,
           },
           {
             type: "image",
@@ -155,6 +160,11 @@ async function processConversation({
           client,
           shipType,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -208,13 +218,31 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      const { roomId, userId, apiKey, shipType, message, images } = data;
+      const {
+        roomId,
+        userId,
+        apiKey,
+        shipType,
+        message,
+        images,
+        portfolioType,
+        websiteAssets,
+        sections,
+        socials,
+        designLanguage,
+      } = data;
       console.log("startProject", roomId, userId, apiKey, shipType, message);
       images.forEach((img, index) => {
         console.log(`Image ${index + 1}:`);
         console.log("Image file data available:", !!img.file);
         console.log(`File type: ${img.mediaType || "Unknown"}`);
-        console.log(`Caption: ${img.caption}`);
+        console.log(`Caption: ${img.comment}`);
+      });
+
+      websiteAssets.forEach((asset, index) => {
+        console.log(`Website Asset ${index + 1}:`);
+        console.log("Asset url available:", !!asset.url);
+        console.log(`Caption: ${asset.comment}`);
       });
 
       const clientParams = { userId };
@@ -252,6 +280,11 @@ function handleOnboardingSocketEvents(io) {
           socket,
           message,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         return;
       } catch (error) {

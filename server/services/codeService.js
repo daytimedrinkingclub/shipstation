@@ -8,11 +8,29 @@ const { WebDesignAnalysisService } = require("./webDesignAnalysisService");
 
 const FileService = require("../services/fileService");
 const buildSiteFromAnalysisPrompt = require("./prompts/buildSiteFromAnalysisPrompt");
+const { createUserBuildSitePrompt } = require("./prompts/userBuildSitePrompt");
 const fileService = new FileService();
 
-async function codeAssistant({ query, filePath, client, shipType, images }) {
-  console.log("codeAssistant received images:", images.length);
-  console.log("codeAssistant query:", query);
+async function codeAssistant({
+  query,
+  filePath,
+  client,
+  shipType,
+  images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
+}) {
+  console.log("codeAssistant received:", {
+    images: images?.length,
+    portfolioType,
+    websiteAssets: websiteAssets?.length,
+    sections: sections?.length,
+    socials: socials?.length,
+    designLanguage: designLanguage?.length,
+  });
 
   try {
     let finalResponse = null;
@@ -47,40 +65,30 @@ async function codeAssistant({ query, filePath, client, shipType, images }) {
     switch (shipType) {
       case SHIP_TYPES.LANDING_PAGE:
         systemPrompt = codePrompt.landingPagePrompt;
-        buildPrompt = buildSiteFromAnalysisPrompt.landingPagePrompt(
-          analysisResult?.analysis || "",
-          query
-        );
         break;
       case SHIP_TYPES.PORTFOLIO:
         systemPrompt = codePrompt.portfolioPrompt;
-        buildPrompt = buildSiteFromAnalysisPrompt.portfolioPrompt(
-          analysisResult?.analysis || "",
-          query
-        );
         break;
       case SHIP_TYPES.EMAIL_TEMPLATE:
         systemPrompt = codePrompt.emailTemplatePrompt;
-        buildPrompt = buildSiteFromAnalysisPrompt.mailTemplatePrompt(
-          analysisResult?.analysis || "",
-          query
-        );
         break;
       default:
         throw new Error(`Unsupported ship type: ${shipType}`);
     }
 
-    if (images && images.length > 0) {
-      messages.push({
-        role: "user",
-        content: [{ type: "text", text: buildPrompt }],
-      });
-    } else {
-      messages.push({
-        role: "user",
-        content: [{ type: "text", text: query }],
-      });
-    }
+    buildPrompt = await createUserBuildSitePrompt(
+      shipType,
+      analysisResult?.analysis || null,
+      portfolioType,
+      sections,
+      socials,
+      designLanguage
+    );
+
+    messages.push({
+      role: "user",
+      content: [{ type: "text", text: buildPrompt }],
+    });
 
     console.log("codeService messages content:", messages[0].content);
 

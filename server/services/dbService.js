@@ -386,6 +386,22 @@ async function getShipPrompt(shipId) {
   }
 }
 
+async function getDesignPreset(shipType, designName) {
+  const { data, error } = await supabaseClient
+    .from("design_presets")
+    .select("additive_prompt, color_palette, fonts")
+    .eq("site_type", shipType)
+    .eq("design_name", designName)
+    .single();
+
+  if (error) {
+    console.error("Error fetching design preset:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -408,4 +424,5 @@ module.exports = {
   updateShipAssets,
   fetchAssets,
   getShipPrompt,
+  getDesignPreset,
 };

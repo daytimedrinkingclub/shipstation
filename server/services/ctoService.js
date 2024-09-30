@@ -17,6 +17,11 @@ async function ctoService({
   client,
   shipType,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   const systemPrompt = [
     {
