@@ -398,6 +398,7 @@ function handleOnboardingSocketEvents(io) {
         socket.emit("siteContentGenerated", {
           sections: result.sections,
           socials: result.socials,
+          design: result.design,
         });
       } catch (error) {
         console.error("Error generating site content:", error);

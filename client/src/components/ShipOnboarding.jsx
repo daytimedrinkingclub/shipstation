@@ -21,6 +21,7 @@ import {
   setCurrentStep,
   setSections,
   setSocials,
+  setGeneratedDesign,
 } from "@/store/onboardingSlice";
 import { useSocket } from "@/context/SocketProvider";
 import { useNavigate } from "react-router-dom";
@@ -111,6 +112,9 @@ export default function ShipOnboarding({ type, reset }) {
       socket.on("siteContentGenerated", (response) => {
         dispatch(setSections(response.sections));
         dispatch(setSocials(response.socials));
+        if (shipType === "landing_page") {
+          dispatch(setGeneratedDesign(response.design));
+        }
         if (currentStep < steps.length - 1) {
           dispatch(setCurrentStep(currentStep + 1));
         }

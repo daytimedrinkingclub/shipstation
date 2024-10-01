@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import { ExternalLink, Plus, Info, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -14,12 +15,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import GoogleFontLoader from "react-google-font";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { useDispatch } from "react-redux";
-import { setDesignLanguage } from "@/store/onboardingSlice";
+import { setDesignLanguage, setGeneratedDesign } from "@/store/onboardingSlice";
 
 import { cn } from "@/lib/utils";
 
@@ -37,23 +37,42 @@ export default function ShipDesign() {
   const [fonts, setFonts] = useState([]);
   const [fontWeights, setFontWeights] = useState({});
 
+  const [designDescription, setDesignDescription] = useState("");
+
   const dispatch = useDispatch();
 
-  const shipType = useSelector((state) => state.onboarding.shipType);
+  const state = useSelector((state) => state);
+  const { shipType, generatedDesign } = state.onboarding;
 
   useEffect(() => {
-    fetchDesignPresets();
-  }, [shipType]);
+    if (shipType === "landing_page" && generatedDesign) {
+      setSelectedDesign(generatedDesign);
+      setFonts(generatedDesign.fonts);
+      setSelectedFont(generatedDesign.fonts[0]);
+      setColorPalette(generatedDesign.color_palette);
+      setDesignDescription(generatedDesign.design_description);
+      const initialWeights = {};
+      generatedDesign.fonts.forEach((font) => {
+        initialWeights[font.name] = font.weights[0].toString();
+      });
+      setFontWeights(initialWeights);
+      setIsLoading(false);
+
+      // Dispatch the generated design to Redux
+      dispatch(setDesignLanguage(generatedDesign));
+    } else {
+      fetchDesignPresets();
+    }
+  }, [shipType, generatedDesign, dispatch]);
 
   const fetchDesignPresets = async () => {
     setIsLoading(true);
-    const siteType = shipType === "portfolio" ? "portfolio" : "landing";
     const { data, error } = await supabase
       .from("design_presets")
       .select(
         "id, design_name, sample_link, color_palette, fonts, design_description"
       )
-      .eq("site_type", siteType);
+      .eq("site_type", shipType);
 
     if (error) {
       console.error("Error fetching design presets:", error);
@@ -64,7 +83,6 @@ export default function ShipDesign() {
         setFonts(data[0].fonts);
         setSelectedFont(data[0].fonts[0]);
         setColorPalette(data[0].color_palette);
-        // Initialize font weights
         const initialWeights = {};
         data[0].fonts.forEach((font) => {
           initialWeights[font.name] = font.weights[0].toString();
@@ -188,6 +206,22 @@ export default function ShipDesign() {
     }));
   };
 
+  const handleDescriptionChange = (e) => {
+    const newDescription = e.target.value;
+    setDesignDescription(newDescription);
+
+    const updatedDesign = {
+      ...selectedDesign,
+      design_description: newDescription,
+    };
+
+    setSelectedDesign(updatedDesign);
+
+    // Dispatch updates to both designLanguage and generatedDesign
+    dispatch(setDesignLanguage(updatedDesign));
+    dispatch(setGeneratedDesign(updatedDesign));
+  };
+
   const weightOptions = [
     { value: "400", label: "Regular" },
     { value: "500", label: "Medium" },
@@ -223,55 +257,71 @@ export default function ShipDesign() {
           <>
             <div>
               <h3 className="text-xl font-semibold mb-4">
-                Choose a Design Language
+                {shipType === "landing_page"
+                  ? "Generated Design Language"
+                  : "Choose a Design Language"}
               </h3>
-              <RadioGroup
-                value={selectedDesign?.id}
-                onValueChange={handleDesignChange}
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {designLanguages.map((design) => (
-                    <motion.div
-                      key={design.id}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="relative h-full"
-                    >
-                      <RadioGroupItem
-                        value={design.id}
-                        id={design.id}
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor={design.id}
-                        className={`block h-full overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
-                          selectedDesign?.id === design.id
-                            ? "border-primary shadow-md"
-                            : "border-muted bg-background hover:border-primary hover:shadow-md"
-                        }`}
-                      >
-                        <div className="p-6 flex flex-col h-full">
-                          <h3 className="text-xl font-semibold text-foreground mb-2">
-                            {design.design_name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground mb-4 flex-grow">
-                            {design.design_description}
-                          </p>
-                          <a
-                            href={design.sample_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-sm font-medium text-primary hover:underline mt-auto"
-                          >
-                            View Example Site
-                            <ExternalLink className="ml-1 h-4 w-4" />
-                          </a>
-                        </div>
-                      </Label>
-                    </motion.div>
-                  ))}
+              {shipType === "landing_page" ? (
+                <div className="bg-background rounded-xl border-2 border-primary shadow-md p-6">
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    {selectedDesign?.design_name}
+                  </h3>
+                  <Textarea
+                    value={designDescription}
+                    onChange={handleDescriptionChange}
+                    placeholder="Enter design description..."
+                    className="mt-2 h-32"
+                  />
                 </div>
-              </RadioGroup>
+              ) : (
+                <RadioGroup
+                  value={selectedDesign?.id}
+                  onValueChange={handleDesignChange}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {designLanguages.map((design) => (
+                      <motion.div
+                        key={design.id}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="relative h-full"
+                      >
+                        <RadioGroupItem
+                          value={design.id}
+                          id={design.id}
+                          className="peer sr-only"
+                        />
+                        <Label
+                          htmlFor={design.id}
+                          className={`block h-full overflow-hidden rounded-xl border-2 transition-all duration-300 ease-in-out ${
+                            selectedDesign?.id === design.id
+                              ? "border-primary shadow-md"
+                              : "border-muted bg-background hover:border-primary hover:shadow-md"
+                          }`}
+                        >
+                          <div className="p-6 flex flex-col h-full">
+                            <h3 className="text-xl font-semibold text-foreground mb-2">
+                              {design.design_name}
+                            </h3>
+                            <p className="text-sm text-muted-foreground mb-4 flex-grow">
+                              {design.design_description}
+                            </p>
+                            <a
+                              href={design.sample_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center text-sm font-medium text-primary hover:underline mt-auto"
+                            >
+                              View Example Site
+                              <ExternalLink className="ml-1 h-4 w-4" />
+                            </a>
+                          </div>
+                        </Label>
+                      </motion.div>
+                    ))}
+                  </div>
+                </RadioGroup>
+              )}
             </div>
 
             {selectedDesign && (
