@@ -47,12 +47,13 @@ export default function ShipDesign() {
 
   const fetchDesignPresets = async () => {
     setIsLoading(true);
+    const siteType = shipType === "portfolio" ? "portfolio" : "landing";
     const { data, error } = await supabase
       .from("design_presets")
       .select(
         "id, design_name, sample_link, color_palette, fonts, design_description"
       )
-      .eq("site_type", shipType);
+      .eq("site_type", siteType);
 
     if (error) {
       console.error("Error fetching design presets:", error);
