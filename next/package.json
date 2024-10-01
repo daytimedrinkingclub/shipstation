@@ -23,6 +23,7 @@
     "qss": "^3.0.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-element-to-jsx-string": "^15.0.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7"
   },

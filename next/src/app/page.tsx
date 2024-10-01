@@ -1,18 +1,18 @@
-import FeaturesSectionDemo2 from "@/components/blocks/features-section-demo-2";
-import FeaturesSectionDemo3 from "@/components/blocks/features-section-demo-3";
+import FeaturesSection from "@/components/blocks/features-section";
 import { HeroParallaxDemo } from "./landing";
 import { FloatingNavDemo } from "@/components/blocks/floating-navbar";
 import Pricing from "@/components/blocks/pricing";
-import { LinkPreviewSection } from "@/components/blocks/LinkPreviewSection";
+import { BottomHero } from "@/components/blocks/bottom-hero";
+import { LinkPreviewSection } from "@/components/blocks/link-previews";
 
 export default function Home() {
   return (
     <div className="landing dark">
       <FloatingNavDemo />
       <HeroParallaxDemo />
-      <FeaturesSectionDemo3 />
+      <FeaturesSection />
       <LinkPreviewSection />  
-      <FeaturesSectionDemo2 />
+      <BottomHero />
       {/* <Pricing /> */}
     </div>
   );

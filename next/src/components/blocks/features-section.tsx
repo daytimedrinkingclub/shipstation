@@ -17,23 +17,21 @@ import {
   IconWorldUpload,
 } from "@tabler/icons-react";
 
-export default function FeaturesSectionDemo() {
+export default function FeaturesSection() {
   const features = [
     {
       title: "Built for everyone",
-      description:
-        "Anyone can use it, no coding skills required.",
+      description: "Anyone can use it, no coding/design skills required.",
       icon: <IconMoodSmileBeam />,
     },
     {
       title: "AI powered Copywriting",
-      description:
-        "Bye Bye Lorem Ipsum, Hello intelligent copywriting.",
+      description: "Bye Bye Lorem Ipsum, Hello intelligent copywriting.",
       icon: <IconPencilHeart />,
     },
     {
-      title: "Talk to your website",
-      description: "Update your website content by chatting with your website.",
+      title: "Chat with your project",
+      description: "Update your website design by chatting with our project editor.",
       icon: <IconMessageChatbot />,
     },
     {
@@ -43,13 +41,13 @@ export default function FeaturesSectionDemo() {
     },
     {
       title: "Pricing like no other",
-      description:
-        "Try finding a cheaper alternative and then come back here!",
+      description: "Try finding a cheaper alternative and then come back here!",
       icon: <IconCurrencyDollar />,
     },
     {
       title: "Powered by Sonnet 3.5",
-      description: "We use only the best AI to help you create your landing page.",
+      description:
+        "We use only the best AI to help you create your landing page.",
       icon: <IconSparkles />,
     },
     {
@@ -66,11 +64,26 @@ export default function FeaturesSectionDemo() {
     },
   ];
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  relative z-10 py-10 max-w-7xl mx-auto">
-      {features.map((feature, index) => (
-        <Feature key={feature.title} {...feature} index={index} />
-      ))}
-    </div>
+    <>
+      <div className="relative z-20 pb-10 max-w-7xl mx-auto">
+        <div className="px-8">
+          <h4 className="text-3xl lg:text-5xl lg:leading-tight max-w-5xl mx-auto text-center tracking-tight font-medium text-black dark:text-white">
+            ShipStation is all you need to go live 🚀
+            <br />
+          </h4>
+
+          <p className="text-xl  max-w-4xl  my-4 mx-auto text-neutral-500 text-center font-normal dark:text-neutral-300">
+            You can spend hours digging the right template, hiring a developer,
+            paying for hosting! <br /> Or just use ShipStation 😍
+          </p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4  relative z-10 py-10 max-w-7xl mx-auto">
+        {features.map((feature, index) => (
+          <Feature key={feature.title} {...feature} index={index} />
+        ))}
+      </div>
+    </>
   );
 }
 
