@@ -14,7 +14,7 @@ export const EditorScroll = () => {
   const opacity = useTransform(scrollYProgress, [0, 1], [0.3, 1]);
 
   return (
-    <div className="bg-black text-white py-[72px] sm:py-24">
+    <div className="bg-black text-white py-[72px] sm:py-24" id="how-it-works">
       <div className="container">
         <h2 className="text-center text-5xl font-bold tracking-tighter">
           Intituve interface

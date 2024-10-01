@@ -6,7 +6,10 @@ import { IconSquareRoundedCheck } from "@tabler/icons-react";
 
 export function BottomHero() {
   return (
-    <div className="h-[50rem] w-full rounded-md bg-neutral-950 relative flex flex-col items-center justify-center antialiased z-1000" id="pricing">
+    <div
+      className="h-[50rem] w-full rounded-md bg-neutral-950 relative flex flex-col items-center justify-center antialiased z-1000"
+      id="pricing"
+    >
       <div className="p-4">
         <section>
           <div className="mx-auto w-full max-w-7xl">
@@ -77,6 +80,17 @@ export function BottomHero() {
             </div>
           </div>
         </section>
+
+        <div className="text-center text-neutral-500">
+          <p>
+            <a
+              href="https://github.com/daytimedrinkingclub/shipstation"
+              target="_blank"
+            >
+              P.S. We are open source! Feel free to fork and improve. ❤️
+            </a>
+          </p>
+        </div>
       </div>
       <BackgroundBeams />
     </div>

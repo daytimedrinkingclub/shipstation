@@ -25,11 +25,6 @@ export const products = [
     thumbnail: "/sites/woodcraft.png",
   },
   {
-    title: "Claud Tap Challenege Landing Page",
-    link: "https://shipstation.ai/site/claud-tap-challenge-SHV9EATY/",
-    thumbnail: "/sites/claud-tap-challenge.png",
-  },
-  {
     title: "Babai Tiffins HSR",
     link: "https://shipstation.ai/site/babai-tiffins-hsr-layout-cK4SpD2c/",
     thumbnail: "/sites/babai-tiffins.png",
@@ -43,5 +38,10 @@ export const products = [
     title: "Product Manager Portfolio",
     link: "https://shipstation.ai/site/neel-seth-E-hEzMQ7/",
     thumbnail: "/sites/product-manager-portfolio.png",
+  },
+  {
+    title: "Claud Tap Challenege Landing Page",
+    link: "https://shipstation.ai/site/claud-tap-challenge-SHV9EATY/",
+    thumbnail: "/sites/claud-tap-challenge.png",
   },
 ];
