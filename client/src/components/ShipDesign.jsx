@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
-import { ExternalLink, Plus, Info } from "lucide-react";
+import { ExternalLink, Plus, Info, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import {
   Tooltip,
@@ -277,14 +277,14 @@ export default function ShipDesign() {
               <>
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Color Palette</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {Object.entries(colorPalette).map(([key, color], index) => (
                       <div
                         key={index}
                         className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
                       >
                         <div
-                          className="h-24 w-full cursor-pointer"
+                          className="h-16 w-full cursor-pointer"
                           style={{ backgroundColor: color.value }}
                           onClick={() => setActiveColor(key)}
                         />
@@ -323,7 +323,7 @@ export default function ShipDesign() {
                   <h3 className="text-xl font-semibold mb-4">Typography</h3>
                   <div className="flex items-center space-x-2 mb-4">
                     <Input
-                      placeholder="Add custom Google Font"
+                      placeholder="Add a Google Font name like Luna"
                       value={customFont}
                       onChange={(e) => setCustomFont(e.target.value)}
                       onKeyDown={handleCustomFontKeyDown}
@@ -332,16 +332,14 @@ export default function ShipDesign() {
                     <Button onClick={handleAddCustomFont} size="sm">
                       <Plus className="mr-2 h-4 w-4" /> Add Font
                     </Button>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <Info className="h-5 w-5 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>We only use Google Fonts for custom fonts</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Button
+                      onClick={() => {
+                        window.open("https://fonts.google.com/", "_blank");
+                      }}
+                      variant="outline"
+                    >
+                      Browse Fonts <ArrowUpRight className="ml-2 h-4 w-4" />
+                    </Button>
                   </div>
                   <RadioGroup
                     value={selectedFont?.name}
