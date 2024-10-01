@@ -5,8 +5,9 @@ const nextConfig = {
       { hostname: "aceternity.com" },
       { hostname: "assets.aceternity.com" },
       { hostname: "images.unsplash.com" },
+      { hostname: "assets.website-files.com" },
     ],
-    domains: ["api.microlink.io"],
+    domains: ["api.microlink.io", "assets.website-files.com"],
   },
 };
 

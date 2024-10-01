@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /site
+Disallow: /all.html
+
+Sitemap: https://shipstation.ai/sitemap.xml

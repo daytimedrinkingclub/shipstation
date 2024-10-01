@@ -65,7 +65,7 @@ export default function FeaturesSection() {
   ];
   return (
     <>
-      <div className="relative z-20 pb-10 max-w-7xl mx-auto">
+      <div className="relative z-20 py-10 max-w-7xl mx-auto">
         <div className="px-8">
           <h4 className="text-3xl lg:text-5xl lg:leading-tight max-w-5xl mx-auto text-center tracking-tight font-medium text-black dark:text-white">
             ShipStation is all you need to go live 🚀

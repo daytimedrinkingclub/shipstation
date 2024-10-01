@@ -1,11 +1,10 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 import { LinkPreview } from "@/components/ui/link-preview";
 
 export function LinkPreviewSection() {
   return (
-    <div className="flex justify-center items-center h-[30rem] flex-col px-4">
+    <div className="flex justify-center items-center h-[20rem] sm:h-[30rem] flex-col px-4">
       <p className="text-neutral-500 dark:text-neutral-400 text-xl md:text-3xl max-w-3xl mx-auto mb-10">
         <LinkPreview
           url="https://shipstation.ai/site/seedhe-maut-HVSdZ58o/"
@@ -20,7 +19,7 @@ export function LinkPreviewSection() {
         >
           KR$NA
         </LinkPreview>{" "}
-        have already used ShipStation. (We guess)
+        have already used ShipStation (I guess)
       </p>
       <p className="text-neutral-500 dark:text-neutral-400 text-xl md:text-3xl max-w-3xl mx-auto">
         We create landing pages for our own{" "}
