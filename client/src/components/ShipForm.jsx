@@ -122,6 +122,7 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
           <RadioGroup
             value={portfolioType === customType ? "Other" : portfolioType}
             onValueChange={handlePortfolioTypeChange}
+            disabled={isGenerating}
           >
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {portfolioTypes.map(({ id, icon }) => {
@@ -132,10 +133,15 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
                       value={id}
                       id={id}
                       className="peer sr-only"
+                      disabled={isGenerating}
                     />
                     <Label
                       htmlFor={id}
-                      className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer ${
+                      className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
+                        isGenerating
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer"
+                      } ${
                         portfolioType === id
                           ? "border-primary bg-primary/5"
                           : "hover:bg-muted/50"
@@ -155,7 +161,11 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
                 />
                 <Label
                   htmlFor="Other"
-                  className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer ${
+                  className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
+                    isGenerating
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
+                  } ${
                     portfolioType === "Other" || customType !== ""
                       ? "border-primary bg-primary/5"
                       : "hover:bg-muted/50"
