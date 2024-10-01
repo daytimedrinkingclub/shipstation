@@ -1,4 +1,10 @@
+const { getCurrentDate } = require("../../utils/date");
+
+const currentDate = getCurrentDate();
+
 const landingPagePrompt = `
+Current Date: ${currentDate}
+
 Create a Modern, Responsive Landing Page
 
 You are a web developer tasked with creating a modern, visually appealing, and fully responsive landing page based on a detailed design analysis. Your primary goal is to accurately recreate the webpage described in the analysis while incorporating the specific design language, trends, and elements identified.
@@ -78,6 +84,8 @@ Remember, while the visual design is inspired by the analysis, the actual conten
 `;
 
 const portfolioPrompt = `
+Current Date: ${currentDate}
+
 You are a web developer tasked with creating a modern, visually appealing, and fully responsive portfolio website based on a detailed design analysis. Your primary goal is to accurately recreate the webpage described in the analysis while incorporating the specific design language, trends, and elements identified.
 
 Important: The implementation should be a faithful recreation of the analyzed design. Use the detailed analysis provided to guide your implementation, matching the style, layout, and design language as closely as possible across all device sizes.
@@ -163,6 +171,8 @@ Remember, while the visual design is inspired by the analysis, the actual conten
 `;
 
 const mailTemplatePrompt = `
+Current Date: ${currentDate}
+
 You are an email developer tasked with creating a visually appealing and widely compatible email template based on a detailed design analysis. Your primary goal is to accurately recreate the email template described in the analysis while ensuring compatibility across various email clients.
 
 Important: The implementation should be a faithful recreation of the analyzed design. Use the detailed analysis provided to guide your implementation, matching the style, layout, and design elements as closely as possible while adhering to email development best practices.

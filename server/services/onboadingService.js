@@ -16,6 +16,12 @@ const {
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
+const {
+  undoCodeChange,
+  redoCodeChange,
+  refineCode,
+} = require("./codeRefinementService");
+const { generateSiteContent } = require("./siteContentService");
 
 async function processConversation({
   client,
@@ -26,6 +32,11 @@ async function processConversation({
   shipType,
   message,
   images,
+  portfolioType,
+  websiteAssets,
+  sections,
+  socials,
+  designLanguage,
 }) {
   console.log("processConversation received images:", images.length);
 
@@ -62,20 +73,30 @@ async function processConversation({
 
     let content = [{ type: "text", text: message }];
 
+    if (sections && sections.length > 0) {
+      content.push({ type: "text", text: "User-suggested sections:" });
+      sections.forEach((section, index) => {
+        content.push({
+          type: "text",
+          text: `${index + 1}. ${section.title}: ${section.content}`,
+        });
+      });
+    }
+
     // Add images to the content if available
     if (images && images.length > 0) {
       images.forEach((img, index) => {
         content.push(
           {
             type: "text",
-            text: `Image ${index + 1}: ${img.caption || "No caption provided"}`,
+            text: `Image ${index + 1}: ${img.comment || "No caption provided"}`,
           },
           {
             type: "image",
             source: {
               type: "base64",
               media_type: img.mediaType,
-              data: img.file,
+              data: img.base64,
             },
           }
         );
@@ -149,6 +170,11 @@ async function processConversation({
           client,
           shipType,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -202,13 +228,28 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("startProject", async (data) => {
-      const { roomId, userId, apiKey, shipType, message, images } = data;
+      const {
+        roomId,
+        userId,
+        apiKey,
+        shipType,
+        message,
+        images,
+        portfolioType,
+        websiteAssets,
+        sections,
+        socials,
+        designLanguage,
+      } = data;
       console.log("startProject", roomId, userId, apiKey, shipType, message);
-      images.forEach((img, index) => {
-        console.log(`Image ${index + 1}:`);
-        console.log("Image file data available:", !!img.file);
-        console.log(`File type: ${img.mediaType || "Unknown"}`);
-        console.log(`Caption: ${img.caption}`);
+
+      console.log("Project Details:", {
+        Images: images.length,
+        "Portfolio Type": portfolioType,
+        "Website Assets": websiteAssets,
+        Sections: sections,
+        Socials: socials,
+        "Design Language": designLanguage,
       });
 
       const clientParams = { userId };
@@ -246,6 +287,11 @@ function handleOnboardingSocketEvents(io) {
           socket,
           message,
           images,
+          portfolioType,
+          websiteAssets,
+          sections,
+          socials,
+          designLanguage,
         });
         return;
       } catch (error) {
@@ -260,12 +306,19 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message } = data;
-      console.log("Received chat message:", message, "for ship:", shipId);
+      const { shipId, message, assets, assetInfo } = data;
+      console.log("Received chat message:", message, "\nfor ship:", shipId);
+      console.log("Message:", message);
+      console.log("Assets:", assets.length, assetInfo);
 
       try {
-        const { refineCode } = require("./codeRefinementService");
-        const result = await refineCode(shipId, message, socket.userId);
+        const result = await refineCode(
+          shipId,
+          message,
+          socket.userId,
+          assets,
+          assetInfo
+        );
 
         socket.emit("chatResponse", { message: result.updatedMessage });
 
@@ -285,12 +338,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received undo request for ship:", shipId);
 
       try {
-        const { undoCodeChange } = require("./codeRefinementService");
         const result = await undoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("undoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("undoResult", {
             success: false,
@@ -311,12 +363,11 @@ function handleOnboardingSocketEvents(io) {
       console.log("Received redo request for ship:", shipId);
 
       try {
-        const { redoCodeChange } = require("./codeRefinementService");
         const result = await redoCodeChange(shipId);
 
         if (result.success) {
           socket.emit("redoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.updatedCode);
+          socket.emit("codeUpdate", result.code);
         } else {
           socket.emit("redoResult", {
             success: false,
@@ -328,6 +379,31 @@ function handleOnboardingSocketEvents(io) {
         socket.emit("redoResult", {
           success: false,
           message: "An error occurred while processing your redo request.",
+        });
+      }
+    });
+
+    socket.on("generateSiteContent", async (data) => {
+      const { userMessage, type, portfolioType } = data;
+      console.log("Received generateSiteContent request");
+
+      try {
+        const result = await generateSiteContent(
+          socket.userId,
+          userMessage,
+          type,
+          portfolioType
+        );
+
+        socket.emit("siteContentGenerated", {
+          sections: result.sections,
+          socials: result.socials,
+          design: result.design,
+        });
+      } catch (error) {
+        console.error("Error generating site content:", error);
+        socket.emit("siteContentGenerationError", {
+          message: "An error occurred while generating site content.",
         });
       }
     });

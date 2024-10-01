@@ -69,6 +69,73 @@ export function useProject(slug) {
     window.open(zipLink, "_blank");
   };
 
+  const uploadAssets = async (assets) => {
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      assets.forEach((asset, index) => {
+        formData.append("assets", asset.file);
+        formData.append(`comments[${index}]`, asset.comment);
+      });
+      formData.append("shipId", slug);
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/upload-assets`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        return response.data.assets;
+      } else {
+        throw new Error("Failed to upload assets");
+      }
+    } catch (err) {
+      setError("Failed to upload assets");
+      console.error(err);
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const uploadTemporaryAssets = async (assets) => {
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      assets.forEach((asset, index) => {
+        formData.append("assets", asset.file);
+        formData.append(`comments[${index}]`, asset.comment);
+      });
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/upload-temporary-assets`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        return response.data.assets;
+      } else {
+        throw new Error("Failed to upload temporary assets");
+      }
+    } catch (err) {
+      setError("Failed to upload temporary assets");
+      console.error(err);
+      throw err;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     fetchDirectoryStructure();
   }, [slug]);
@@ -83,5 +150,7 @@ export function useProject(slug) {
     error,
     submitting,
     handledownloadzip,
+    uploadAssets,
+    uploadTemporaryAssets,
   };
 }

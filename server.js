@@ -5,6 +5,8 @@ const cors = require("cors");
 const path = require("path");
 const { JSDOM } = require("jsdom");
 
+const multer = require("multer");
+
 const {
   validateRazorpayWebhook,
   validatePaypalWebhook,
@@ -14,6 +16,7 @@ const {
   insertPayment,
   getUserProfile,
   updateUserProfile,
+  getShipPrompt,
 } = require("./server/services/dbService");
 const {
   handleOnboardingSocketEvents,
@@ -21,6 +24,7 @@ const {
 const { postToDiscordWebhook } = require("./server/services/webhookService");
 
 const FileService = require("./server/services/fileService");
+const { addDomainMapping } = require("./server/services/domainService");
 const fileService = new FileService();
 
 require("dotenv").config();
@@ -43,7 +47,27 @@ app.use(express.static("public"));
 app.use(cors());
 
 app.get("/all", async (req, res) => {
+  res.set("Cache-Control", "no-store");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
   res.sendFile(path.join(__dirname, "public", "all.html"));
+});
+
+app.get("/all-websites", async (req, res) => {
+  try {
+    const websites = await fileService.listFolders("");
+    console.log(websites);
+    const websitesWithPrompts = await Promise.all(
+      websites.map(async (website) => {
+        const prompt = await getShipPrompt(website);
+        return { website, prompt };
+      })
+    );
+    res.json({ websites: websitesWithPrompts });
+  } catch (err) {
+    console.error("Error listing websites:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 // Serve React app for all other routes (including 404)
@@ -184,18 +208,6 @@ app.post("/paypal-webhook", async (req, res) => {
   } catch (error) {
     console.error("Error processing PayPal webhook:", error);
     res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-app.get("/all-websites", async (req, res) => {
-  try {
-    const websites = await fileService.listFolders("");
-    res.json({
-      websites: websites.filter((website) => !website.startsWith(".")),
-    });
-  } catch (err) {
-    console.error("Error listing websites:", err);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -345,6 +357,83 @@ app.use("/site/:siteId", async (req, res, next) => {
     res.status(500).send("An error occurred");
   }
 });
+
+const upload = multer({ storage: multer.memoryStorage() });
+
+app.post("/upload-assets", upload.array("assets"), async (req, res) => {
+  const { shipId } = req.body;
+  const files = req.files;
+  const comments = req.body.comments || [];
+
+  if (!shipId || !files || files.length === 0) {
+    return res.status(400).json({ error: "Missing shipId or assets" });
+  }
+
+  try {
+    const assets = files.map((file, index) => ({
+      file: file,
+      comment: comments[index] || "",
+    }));
+
+    const uploadedAssets = await fileService.uploadAssets(shipId, assets);
+
+    res.status(200).json({
+      message: "Assets uploaded successfully",
+      assets: uploadedAssets,
+    });
+  } catch (error) {
+    console.error("Error uploading assets:", error);
+    res.status(500).json({ error: "Failed to upload assets" });
+  }
+});
+
+app.post(
+  "/upload-temporary-assets",
+  upload.array("assets"),
+  async (req, res) => {
+    const files = req.files;
+    const comments = req.body.comments || [];
+
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "Missing assets" });
+    }
+
+    try {
+      const assets = files.map((file, index) => ({
+        file: file,
+        comment: comments[index] || "",
+      }));
+
+      const uploadedAssets = await fileService.uploadTemporaryAssets(assets);
+
+      res.status(200).json({
+        message: "Temporary assets uploaded successfully",
+        assets: uploadedAssets,
+      });
+    } catch (error) {
+      console.error("Error uploading temporary assets:", error);
+      res.status(500).json({ error: "Failed to upload temporary assets" });
+    }
+  }
+);
+
+app.post("/add-custom-domain", async (req, res) => {
+  const { domain, shipId, shipSlug } = req.body;
+  if (!domain || !shipId || !shipSlug) {
+    return res
+      .status(400)
+      .json({ error: "Missing domain, shipId or shipSlug" });
+  }
+
+  try {
+    await addDomainMapping(domain, shipId, shipSlug);
+    res.status(200).json({ message: "Custom domain added successfully" });
+  } catch (error) {
+    console.error("Error adding custom domain:", error);
+    res.status(500).json({ error: "Failed to add custom domain" });
+  }
+});
+
 
 handleOnboardingSocketEvents(io);
 

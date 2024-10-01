@@ -5,6 +5,8 @@ const mime = require("mime-types");
 const path = require("path");
 require("dotenv").config();
 
+const { updateShipAssets } = require("../dbService");
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_KEY
@@ -49,27 +51,39 @@ class SupabaseStorageStrategy {
     }
   }
 
-  async listFolders(prefix, sortBy = "name", sortOrder = "asc") {
+  async listFolders(prefix, sortBy = "created_at", sortOrder = "desc") {
     try {
+      console.log(
+        `listFolders called with prefix: "${prefix}", sortBy: ${sortBy}, sortOrder: ${sortOrder}`
+      );
+
       const fullPrefix = this._getFullPath(prefix);
+      console.log(`Full prefix: ${fullPrefix}`);
+
+      const options = {
+        limit: 1000,
+        offset: 0,
+      };
+
+      // Only add sortBy if it's a valid option
+      if (["name", "created_at", "updated_at"].includes(sortBy)) {
+        options.sortBy = { column: sortBy, order: sortOrder };
+      } else {
+        console.warn(
+          `Invalid sortBy value: ${sortBy}. Falling back to default sorting.`
+        );
+      }
+
       const { data, error } = await supabase.storage
         .from(BUCKET_NAME)
-        .list(fullPrefix, {
-          limit: 1000,
-          offset: 0,
-          sortBy: { column: sortBy, order: sortOrder },
-        });
+        .list(fullPrefix, options);
 
       if (error) throw error;
 
-      const folders = data
-        .filter(
-          (item) =>
-            item.metadata &&
-            item.metadata.mimetype === "application/x-directory"
-        )
-        .map((item) => item.name);
+      // Extract only the names from the data
+      const folders = data.map((item) => item.name);
 
+      // Return the data in the expected format
       return folders;
     } catch (err) {
       console.error(`Error listing folders in '${prefix}':`, err);
@@ -104,31 +118,7 @@ class SupabaseStorageStrategy {
 
       try {
         const fullPath = this._getFullPath(directoryPath);
-        const { data, error } = await supabase.storage
-          .from(BUCKET_NAME)
-          .list(fullPath, {
-            limit: 1000,
-            offset: 0,
-          });
-
-        if (error) throw error;
-
-        for (const item of data) {
-          try {
-            const { data: fileData, error: fileError } = await supabase.storage
-              .from(BUCKET_NAME)
-              .download(`${fullPath}/${item.name}`);
-
-            if (fileError) throw fileError;
-
-            // Convert Blob to Buffer
-            const buffer = Buffer.from(await fileData.arrayBuffer());
-            archive.append(buffer, { name: item.name });
-          } catch (fileErr) {
-            console.warn(`Skipping file ${item.name}: ${fileErr.message}`);
-            // Continue with the next file instead of throwing an error
-          }
-        }
+        await this.addToArchive(archive, fullPath, "");
 
         archive.finalize();
       } catch (err) {
@@ -138,6 +128,58 @@ class SupabaseStorageStrategy {
       archive.on("error", (err) => reject(err));
       archive.on("end", () => resolve(streamPassThrough));
     });
+  }
+
+  async addToArchive(archive, fullPath, relativePath) {
+    try {
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .list(fullPath, {
+          limit: 1000,
+          offset: 0,
+        });
+
+      if (error) {
+        console.warn(`Error listing ${fullPath}: ${error.message}`);
+        return;
+      }
+
+      for (const item of data) {
+        const itemFullPath = `${fullPath}/${item.name}`;
+        const itemRelativePath = path
+          .join(relativePath, item.name)
+          .replace(/\\/g, "/");
+
+        if (
+          item.metadata &&
+          item.metadata.mimetype === "application/x-directory"
+        ) {
+          // It's a directory, recurse into it
+          await this.addToArchive(archive, itemFullPath, itemRelativePath);
+        } else {
+          // It's a file, try to add it to the archive
+          try {
+            const { data: fileData, error: fileError } = await supabase.storage
+              .from(BUCKET_NAME)
+              .download(itemFullPath);
+
+            if (fileError) {
+              console.warn(`Skipping file ${item.name}: ${fileError.message}`);
+              continue;
+            }
+
+            const buffer = Buffer.from(await fileData.arrayBuffer());
+            archive.append(buffer, { name: itemRelativePath });
+          } catch (fileErr) {
+            console.warn(
+              `Error processing file ${item.name}: ${fileErr.message}`
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.error(`Error processing directory ${fullPath}: ${err.message}`);
+    }
   }
 
   async getProjectDirectoryStructure(projectPath) {
@@ -171,7 +213,6 @@ class SupabaseStorageStrategy {
             name: item.name,
             type: "file",
             path: itemPath,
-            lastModified: new Date(item.metadata.lastModified),
           });
         }
       }
@@ -215,6 +256,93 @@ class SupabaseStorageStrategy {
         message: `Error accessing file: ${filePath}`,
         error,
       };
+    }
+  }
+
+  async deleteFile(filePath) {
+    try {
+      const fullPath = this._getFullPath(filePath);
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .remove([fullPath]);
+
+      if (error) throw error;
+      console.log(`File successfully deleted from Supabase: ${fullPath}`);
+      return true;
+    } catch (err) {
+      console.error(`Error deleting file ${filePath}:`, err);
+      throw err;
+    }
+  }
+
+  async uploadAssets(shipId, assets) {
+    try {
+      const uploadedAssets = [];
+      for (const asset of assets) {
+        const fileName = `${Date.now()}-${asset.file.originalname}`;
+        const fullPath = this._getFullPath(`${shipId}/assets/${fileName}`);
+
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fullPath, asset.file.buffer, {
+            contentType: asset.file.mimetype,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fullPath);
+
+        uploadedAssets.push({
+          url: publicUrlData.publicUrl,
+          comment: asset.comment,
+          fileName: asset.file.originalname,
+        });
+      }
+
+      // Update the ships table with the new assets
+      await updateShipAssets(shipId, uploadedAssets);
+
+      return uploadedAssets;
+    } catch (err) {
+      console.error(`Error uploading assets for ship ${shipId}:`, err);
+      throw err;
+    }
+  }
+
+  async uploadTemporaryAssets(assets) {
+    try {
+      const uploadedAssets = [];
+      for (const asset of assets) {
+        const fileName = `${Date.now()}-${asset.file.originalname}`;
+        const fullPath = `temporary-assets/${fileName}`;
+
+        const { data, error } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fullPath, asset.file.buffer, {
+            contentType: asset.file.mimetype,
+            upsert: true,
+          });
+
+        if (error) throw error;
+
+        const { data: publicUrlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fullPath);
+
+        uploadedAssets.push({
+          url: publicUrlData.publicUrl,
+          comment: asset.comment,
+          fileName: asset.file.originalname,
+        });
+      }
+
+      return uploadedAssets;
+    } catch (err) {
+      console.error("Error uploading temporary assets:", err);
+      throw err;
     }
   }
 }

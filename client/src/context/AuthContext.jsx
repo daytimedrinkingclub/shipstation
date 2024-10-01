@@ -69,6 +69,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setAvailableShips(0);
     setRecentlyShipped([]);
+    // Clear local storage
+    localStorage.clear();
     // Redirect to the home page
     window.location.href = "/";
   };

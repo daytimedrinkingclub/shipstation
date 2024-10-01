@@ -1,4 +1,10 @@
+const { getCurrentDate } = require("../../utils/date");
+
+const currentDate = getCurrentDate();
+
 const landingAnalysisPrompt = `
+Current Date: ${currentDate}
+
 You are an expert web designer and developer tasked with analyzing a design image for a landing page. Your goal is to provide an extremely detailed analysis that will enable another AI to accurately recreate the webpage based solely on your description. The analysis should be comprehensive, covering every aspect of the design, regardless of its specific style or layout approach.
 
 Key Focus Areas
@@ -101,6 +107,8 @@ Your analysis should be detailed enough that another AI could use it to recreate
 `;
 
 const portfolioAnalysisPrompt = `
+Current Date: ${currentDate}
+
 You are an expert web designer and developer tasked with analyzing a design image for a portfolio website. Your goal is to provide an extremely detailed analysis that will enable another AI to accurately recreate the webpage based solely on your description. The analysis should be comprehensive, covering every aspect of the design, regardless of its specific style or layout approach.
 
 Key Focus Areas
@@ -206,6 +214,8 @@ Your analysis should be detailed enough that another AI could use it to recreate
 `;
 
 const emailTemplateAnalysisPrompt = `
+Current Date: ${currentDate}
+
 You are an expert email designer and developer tasked with analyzing a design image for an email template. Your goal is to provide an extremely detailed analysis that will enable another AI to accurately recreate the email template based solely on your description. The analysis should be comprehensive, covering every aspect of the design, regardless of its specific style or layout approach.
 
 Key Focus Areas

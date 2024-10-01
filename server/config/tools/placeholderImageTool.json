@@ -6,7 +6,7 @@
     "properties": {
       "placeholder_image_requirements": {
         "type": "string",
-        "description": "The details of the placeholder that needs to found and added, is it banner / image / icon / suitable style colors / dimensions"
+        "description": "The details of the placeholder that needs to found and added, is it banner / image / icon / dimensions"
       }
     },
     "required": ["placeholder_image_requirements"]
