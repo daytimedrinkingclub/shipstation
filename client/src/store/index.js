@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 import onboardingReducer from "./onboardingSlice";
+import fileUploadReducer from "./fileUploadSlice";
 
 const persistConfig = {
   key: "root",
@@ -16,6 +17,7 @@ const persistedReducer = persistReducer(persistConfig, onboardingReducer);
 export const store = configureStore({
   reducer: {
     onboarding: persistedReducer,
+    fileUpload: fileUploadReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

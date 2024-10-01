@@ -16,7 +16,7 @@ import {
   Send,
   Paperclip,
   X,
-  File,
+  File as FileIcon,
   Image,
   LoaderCircle,
   Info,
@@ -33,6 +33,13 @@ import {
 import { Input } from "@/components/ui/input";
 import FilePreview from "@/components/FilePreview";
 import { useProject } from "@/hooks/useProject";
+
+import { useSelector, useDispatch } from "react-redux";
+import {
+  setFilesToUpload,
+  addFilesToUpload,
+  removeFileToUpload,
+} from "@/store/fileUploadSlice";
 
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
 import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
@@ -54,7 +61,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
   const [tempFiles, setTempFiles] = useState([]);
-  const [filesToUpload, setFilesToUpload] = useState([]);
+  const dispatch = useDispatch();
+  const filesToUpload = useSelector((state) => state.fileUpload.filesToUpload);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -226,7 +234,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         });
 
         setInput("");
-        setFilesToUpload([]);
+        dispatch(setFilesToUpload([]));
         setFileDescriptions({});
       } catch (error) {
         console.error("Error uploading assets or sending message:", error);
@@ -291,7 +299,8 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   };
 
   const handleDialogConfirm = () => {
-    setFilesToUpload((prevFiles) => [...prevFiles, ...tempFiles]);
+    dispatch(addFilesToUpload(tempFiles));
+    console.log("Updated filesToUpload:", filesToUpload);
     setTempFiles([]);
     setIsDialogOpen(false);
   };
@@ -423,11 +432,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                 {file.file.name}
               </Badge>
               <Button
-                onClick={() => {
-                  setFilesToUpload((prev) =>
-                    prev.filter((_, i) => i !== index)
-                  );
-                }}
+                onClick={() => dispatch(removeFileToUpload(index))}
                 variant="destructive"
                 size="icon"
                 className="absolute -top-1 -right-1 p-0 h-6 w-6 rounded-full"
@@ -440,7 +445,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       )}
       {dragActive && (
         <div className="absolute inset-0 bg-blue-100 bg-opacity-90 border-2 border-blue-500 rounded-md flex items-center justify-center z-10 backdrop-blur-sm px-4">
-          <File className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
+          <FileIcon className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
           <p className="text-blue-700 text-center">
             Drop files here to add as assets to your website
             <br />
