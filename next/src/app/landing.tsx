@@ -5,71 +5,43 @@ export function HeroParallaxDemo() {
 }
 export const products = [
   {
-    title: "Moonbeam",
-    link: "https://gomoonbeam.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/moonbeam.png",
+    title: "AI Powered Portfolio Builder Landing Page",
+    link: "https://shipstation.ai/site/ai-powered-portfolio-builder-haG1sGry/",
+    thumbnail: "/sites/portfolio-builder.png",
   },
   {
-    title: "Cursor",
-    link: "https://cursor.so",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/cursor.png",
+    title: "Lornstays Hospitality Landing Page",
+    link: "https://www.lornstays.in/",
+    thumbnail: "/sites/lornstays.png",
   },
   {
-    title: "Rogue",
-    link: "https://userogue.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/rogue.png",
-  },
-
-  {
-    title: "Editorially",
-    link: "https://editorially.org",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/editorially.png",
+    title: "Developer Portfolio",
+    link: "https://shipstation.ai/site/anuj-sharma-GUR2UCaE/",
+    thumbnail: "/sites/anuj-portfolio.png",
   },
   {
-    title: "Editrix AI",
-    link: "https://editrix.ai",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/editrix.png",
+    title: "Woodcraft Landing Page",
+    link: "https://shipstation.ai/site/artisan-woodcraft--DSARbg1/",
+    thumbnail: "/sites/woodcraft.png",
   },
   {
-    title: "Pixel Perfect",
-    link: "https://app.pixelperfect.quest",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/pixelperfect.png",
-  },
-
-  {
-    title: "Algochurn",
-    link: "https://algochurn.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/algochurn.png",
+    title: "Claud Tap Challenege Landing Page",
+    link: "https://shipstation.ai/site/claud-tap-challenge-SHV9EATY/",
+    thumbnail: "/sites/claud-tap-challenge.png",
   },
   {
-    title: "Aceternity UI",
-    link: "https://ui.aceternity.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/aceternityui.png",
+    title: "Babai Tiffins HSR",
+    link: "https://shipstation.ai/site/babai-tiffins-hsr-layout-cK4SpD2c/",
+    thumbnail: "/sites/babai-tiffins.png",
   },
   {
-    title: "Tailwind Master Kit",
-    link: "https://tailwindmasterkit.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/tailwindmasterkit.png",
+    title: "Seedhe Maut",
+    link: "https://shipstation.ai/site/seedhe-maut-HVSdZ58o/",
+    thumbnail: "/sites/seedhe-maut.png",
   },
   {
-    title: "SmartBridge",
-    link: "https://smartbridgetech.com",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/smartbridge.png",
+    title: "Product Manager Portfolio",
+    link: "https://shipstation.ai/site/neel-seth-E-hEzMQ7/",
+    thumbnail: "/sites/product-manager-portfolio.png",
   },
-  {
-    title: "Renderwork Studio",
-    link: "https://renderwork.studio",
-    thumbnail:
-      "https://aceternity.com/images/products/thumbnails/new/renderwork.png",
-  }
 ];

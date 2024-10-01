@@ -10,11 +10,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { Cover } from "./cover";
-import {
-  IconArrowUpRight,
-  IconChevronRight,
-  IconSquareRoundedArrowRight,
-} from "@tabler/icons-react";
+import { IconArrowUpRight, IconChevronRight } from "@tabler/icons-react";
 
 export const HeroParallax = ({
   products,
