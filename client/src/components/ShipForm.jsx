@@ -13,13 +13,9 @@ import {
   Check,
   Edit2,
 } from "lucide-react";
-import { useSocket } from "@/context/SocketProvider";
-import useDisclosure from "@/hooks/useDisclosure";
-import ChoosePaymentOptionDialog from "./ChoosePaymentOptionDialog";
+
 import { AuthContext } from "@/context/AuthContext";
-import LoaderOverlay from "./LoaderOverlay";
-import SuccessOverlay from "./SuccessOverlay";
-import useLocalStorage from "@/hooks/useLocalStorage";
+
 import {
   Tooltip,
   TooltipContent,
@@ -48,12 +44,6 @@ const portfolioTypes = [
 ];
 
 const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
-  const { sendMessage, socket } = useSocket();
-  const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isKeyValidating, setIsKeyValidating] = useState(false);
-
-  const [uploadedImages, setUploadedImages] = useState([]);
   const userPrompt = useSelector((state) => state.onboarding.userPrompt);
   const portfolioType = useSelector((state) => state.onboarding.portfolioType);
   const shipType = useSelector((state) => state.onboarding.shipType);
