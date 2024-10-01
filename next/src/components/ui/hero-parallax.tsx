@@ -111,14 +111,17 @@ export const Header = () => {
       {/* <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
         Build Stunning Landing Pages
       </h1> */}
-      <div className="text-2xl md:text-7xl font-bold dark:text-white">
+      <h1 className="text-4xl md:text-4xl lg:text-6xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
+        Ship amazing websites <br /> at <Cover>warp speed</Cover>
+      </h1>
+      {/* <div className="text-2xl md:text-7xl font-bold dark:text-white">
         Ship your
         <FlipWords words={words} className="text-gray-300" /> <br />
         live in lightspeed
-      </div>
-      <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
+      </div> */}
+      {/* <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
         Transform Your Ideas into High-Converting Landing Pages in Minutes
-      </p>
+      </p> */}
       <div className="h-[40rem] max-w-7xl relative mx-auto py-20 md:py-40 w-ful flex items-center px-4">
     </div>
     </div>
