@@ -305,7 +305,7 @@ export default function ShipContent() {
                     alt="favicon"
                     className="w-5 h-5"
                   />
-                  <Input value={link} readOnly className="flex-grow" />
+                  <Input value={link} className="flex-grow" />
 
                   <Tooltip>
                     <TooltipTrigger asChild>

@@ -16,7 +16,7 @@ import {
   Send,
   Paperclip,
   X,
-  File,
+  File as FileIcon,
   Image,
   LoaderCircle,
   Info,
@@ -192,14 +192,29 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       setIsLoading(true);
       try {
         let uploadedAssets = [];
+        let forAIAssets = [];
+
         if (filesToUpload.length > 0) {
-          const assetsToUpload = filesToUpload.map((file) => ({
-            file: file.file,
-            comment: file.description || "",
-            forAI: file.forAI,
-            forWebsite: file.forWebsite,
-          }));
+          const assetsToUpload = filesToUpload
+            .filter((file) => file.forWebsite)
+            .map((file) => ({
+              file: file.file,
+              comment: file.description || "",
+              forWebsite: file.forWebsite,
+            }));
           uploadedAssets = await uploadAssets(assetsToUpload);
+
+          // Process forAI assets
+          for (const file of filesToUpload) {
+            if (!file.forWebsite) {
+              const base64 = await fileToBase64(file.file);
+              forAIAssets.push({
+                fileName: file.file.name,
+                base64: base64,
+                comment: file.description || "",
+              });
+            }
+          }
         }
 
         onAssetsUpdate(uploadedAssets);
@@ -223,16 +238,26 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
           message: input,
           assetInfo: assetInfo,
           assets: uploadedAssets,
+          forAIAssets: forAIAssets,
         });
 
         setInput("");
         setFilesToUpload([]);
-        setFileDescriptions({});
       } catch (error) {
         console.error("Error uploading assets or sending message:", error);
         toast.error("Failed to send message with assets");
       }
+      setIsLoading(false);
     }
+  };
+
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(",")[1]);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const handleDrag = (e) => {
@@ -260,8 +285,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       const renamedFile = new File([file], sanitizedName, { type: file.type });
       return {
         file: renamedFile,
-        forAI: false,
-        forWebsite: true,
+        forWebsite: false,
         preview: URL.createObjectURL(file),
         description: "",
       };
@@ -278,10 +302,12 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
     );
   };
 
-  const toggleUse = (fileName, use) => {
+  const toggleUse = (fileName) => {
     setTempFiles((prevFiles) =>
       prevFiles.map((file) =>
-        file.file.name === fileName ? { ...file, [use]: !file[use] } : file
+        file.file.name === fileName
+          ? { ...file, forWebsite: !file.forWebsite }
+          : file
       )
     );
   };
@@ -440,7 +466,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       )}
       {dragActive && (
         <div className="absolute inset-0 bg-blue-100 bg-opacity-90 border-2 border-blue-500 rounded-md flex items-center justify-center z-10 backdrop-blur-sm px-4">
-          <File className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
+          <FileIcon className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
           <p className="text-blue-700 text-center">
             Drop files here to add as assets to your website
             <br />
@@ -499,34 +525,15 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor={`forAI-${index}`} className="text-xs">
-                        Show to AI for ideas
-                      </Label>
-                      <Switch
-                        id={`forAI-${index}`}
-                        checked={file.forAI}
-                        onCheckedChange={() =>
-                          toggleUse(file.file.name, "forAI")
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor={`forWebsite-${index}`}
-                        className="text-xs"
-                      >
-                        Add to my website
-                      </Label>
-                      <Switch
-                        id={`forWebsite-${index}`}
-                        checked={file.forWebsite}
-                        onCheckedChange={() =>
-                          toggleUse(file.file.name, "forWebsite")
-                        }
-                      />
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={`forWebsite-${index}`} className="text-xs">
+                      Add to my website
+                    </Label>
+                    <Switch
+                      id={`forWebsite-${index}`}
+                      checked={file.forWebsite}
+                      onCheckedChange={() => toggleUse(file.file.name)}
+                    />
                   </div>
                 </CardContent>
               </Card>
