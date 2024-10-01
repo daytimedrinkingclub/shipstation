@@ -135,7 +135,7 @@ export default function ShipContent() {
         transition={{ duration: 0.5 }}
         className="flex flex-col h-full"
       >
-        <h2 className="text-2xl font-bold mb-4">Ship Content</h2>
+        <h2 className="text-2xl font-bold mb-4">Website Content and Social Links</h2>
         <Tabs defaultValue="content" className="flex-grow flex flex-col">
           <TabsList className="justify-start">
             <TabsTrigger value="content">Content Sections</TabsTrigger>

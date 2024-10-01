@@ -37,8 +37,9 @@ import SuccessOverlay from "./SuccessOverlay";
 import useDisclosure from "@/hooks/useDisclosure";
 import { toast } from "sonner";
 import { useProject } from "../hooks/useProject";
+import { SHIP_TYPES } from "@/constants";
 
-const steps = ["Prompt", "Content", "Design"];
+const steps = ["Prompt", "Content & Social Links", "Design"];
 
 export default function ShipOnboarding({ type, reset }) {
   const dispatch = useDispatch();
@@ -356,7 +357,7 @@ export default function ShipOnboarding({ type, reset }) {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <h2 className="text-xl font-bold">Ship Creation</h2>
+                <h2 className="text-xl font-bold">New {SHIP_TYPES[shipType]}</h2>
                 <Button
                   variant="ghost"
                   size="icon"

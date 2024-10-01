@@ -115,7 +115,7 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
 
   return (
     <div className="w-full flex flex-col h-full">
-      <h2 className="text-2xl font-bold mb-6">Ship Prompt</h2>
+      <h2 className="text-2xl font-bold mb-6">Tell us about your new website</h2>
       {shipType === "portfolio" && (
         <div className="mb-6">
           <h3 className="text-lg font-medium mb-3">Choose Portfolio Type</h3>
