@@ -108,20 +108,20 @@ export const Header = () => {
 
   return (
     <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full left-0 top-0">
-      <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
-        Your next website <br /> live in Warp Speed
-      </h1>
+      {/* <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
+        Build Stunning Landing Pages
+      </h1> */}
+      <div className="text-2xl md:text-7xl font-bold dark:text-white">
+        Ship your
+        <FlipWords words={words} className="text-gray-300" /> <br />
+        live in lightspeed
+      </div>
       <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
-        Still browsing templates? LOL
+        Transform Your Ideas into High-Converting Landing Pages in Minutes
       </p>
+      <div className="h-[40rem] max-w-7xl relative mx-auto py-20 md:py-40 w-ful flex items-center px-4">
     </div>
-    // <div className="h-[40rem] max-w-7xl relative mx-auto py-20 md:py-40 w-ful flex items-center px-4">
-    //   <div className="text-2xl md:text-7xl font-bold dark:text-white">
-    //     Ship your
-    //     <FlipWords words={words} className="text-gray-300" /> <br />
-    //     live in lightspeed
-    //   </div>
-    // </div>
+    </div>
   );
 };
 
