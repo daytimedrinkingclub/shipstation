@@ -96,16 +96,40 @@ export default function ShipDesign() {
   const handleFontChange = (fontName) => {
     const newSelectedFont = fonts.find((font) => font.name === fontName);
     setSelectedFont(newSelectedFont);
+
+    const updatedDesign = {
+      ...selectedDesign,
+      fonts: fonts.map((font) =>
+        font.name === fontName
+          ? { ...font, selected: true }
+          : { ...font, selected: false }
+      ),
+    };
+
+    setSelectedDesign(updatedDesign);
+    dispatch(setDesignLanguage(updatedDesign));
   };
 
   const handleColorChange = (newColor, colorKey) => {
-    setColorPalette((prevPalette) => ({
-      ...prevPalette,
-      [colorKey]: {
-        ...prevPalette[colorKey],
-        value: newColor,
-      },
-    }));
+    setColorPalette((prevPalette) => {
+      const updatedPalette = {
+        ...prevPalette,
+        [colorKey]: {
+          ...prevPalette[colorKey],
+          value: newColor,
+        },
+      };
+
+      const updatedDesign = {
+        ...selectedDesign,
+        color_palette: updatedPalette,
+      };
+
+      setSelectedDesign(updatedDesign);
+      dispatch(setDesignLanguage(updatedDesign));
+
+      return updatedPalette;
+    });
   };
 
   const handleAddCustomFont = () => {
@@ -126,13 +150,25 @@ export default function ShipDesign() {
       const newFont = {
         name: capitalizedFontName,
         weights: [400, 500, 600, 700],
+        selected: true,
       };
-      setFonts((prevFonts) => [...prevFonts, newFont]);
+
+      const updatedFonts = [...fonts, newFont];
+      setFonts(updatedFonts);
       setSelectedFont(newFont);
       setFontWeights((prevWeights) => ({
         ...prevWeights,
         [capitalizedFontName]: "400",
       }));
+
+      const updatedDesign = {
+        ...selectedDesign,
+        fonts: updatedFonts,
+      };
+
+      setSelectedDesign(updatedDesign);
+      dispatch(setDesignLanguage(updatedDesign));
+
       setCustomFont("");
     }
   };
@@ -241,36 +277,44 @@ export default function ShipDesign() {
               <>
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Color Palette</h3>
-                  <div className="flex inline-flex rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                     {Object.entries(colorPalette).map(([key, color], index) => (
-                      <TooltipProvider key={index}>
-                        <Tooltip delayDuration={0}>
-                          <TooltipTrigger>
-                            <div
-                              className="w-8 h-16 relative"
-                              style={{ backgroundColor: color.value }}
-                              onClick={() => setActiveColor(key)}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{color.label}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <div
+                        key={index}
+                        className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                      >
+                        <div
+                          className="h-24 w-full cursor-pointer"
+                          style={{ backgroundColor: color.value }}
+                          onClick={() => setActiveColor(key)}
+                        />
+                        <div className="p-3 bg-background">
+                          <p className="font-medium text-sm mb-1">
+                            {color.label}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {color.value}
+                          </p>
+                        </div>
+                      </div>
                     ))}
                   </div>
                   {activeColor && (
-                    <div className="absolute z-10 mt-2">
-                      <div
-                        className="fixed inset-0"
-                        onClick={() => setActiveColor(null)}
-                      />
-                      <Sketch
-                        color={colorPalette[activeColor].value}
-                        onChange={(color) =>
-                          handleColorChange(color.hex, activeColor)
-                        }
-                      />
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                      <div className="bg-background p-4 rounded-lg shadow-xl">
+                        <Sketch
+                          color={colorPalette[activeColor].value}
+                          onChange={(color) =>
+                            handleColorChange(color.hex, activeColor)
+                          }
+                        />
+                        <Button
+                          className="mt-4 w-full"
+                          onClick={() => setActiveColor(null)}
+                        >
+                          Close
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </div>

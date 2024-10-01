@@ -73,6 +73,16 @@ async function processConversation({
 
     let content = [{ type: "text", text: message }];
 
+    if (sections && sections.length > 0) {
+      content.push({ type: "text", text: "User-suggested sections:" });
+      sections.forEach((section, index) => {
+        content.push({
+          type: "text",
+          text: `${index + 1}. ${section.title}: ${section.content}`,
+        });
+      });
+    }
+
     // Add images to the content if available
     if (images && images.length > 0) {
       images.forEach((img, index) => {

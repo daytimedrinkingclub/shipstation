@@ -47,7 +47,7 @@ async function handleCTOToolUse({
         try {
           const response = await axios.get(image.url, {
             responseType: "arraybuffer",
-            timeout: 5000, // Add a timeout to prevent hanging
+            timeout: 5000,
           });
 
           const contentType = response.headers["content-type"];
@@ -65,14 +65,19 @@ async function handleCTOToolUse({
             if (imageData.length > 0) {
               const base64Data = imageData.toString("base64");
 
-              messageContent.push({
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: contentType,
-                  data: base64Data,
-                },
-              });
+              // Verify the base64 data
+              if (base64Data && base64Data.length > 0) {
+                messageContent.push({
+                  type: "image",
+                  source: {
+                    type: "base64",
+                    media_type: contentType,
+                    data: base64Data,
+                  },
+                });
+              } else {
+                console.error(`Invalid base64 data for ${image.url}`);
+              }
             } else {
               console.error(`Empty image data for ${image.url}`);
             }

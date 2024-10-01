@@ -1,5 +1,5 @@
 const { getCurrentDate } = require("../../utils/date");
-const { getDesignPreset } = require("../dbService");
+const { getDesignPresetPrompt } = require("../dbService");
 
 const createUserBuildSitePrompt = async (
   shipType,
@@ -10,16 +10,16 @@ const createUserBuildSitePrompt = async (
   socials,
   designLanguage
 ) => {
-  let designPreset = {};
+  let designPresetPrompt = "";
   try {
-    designPreset = await getDesignPreset(shipType, designLanguage?.design_name);
+    const designPresetData = await getDesignPresetPrompt(
+      shipType,
+      designLanguage?.design_name
+    );
+    designPresetPrompt = designPresetData.additive_prompt;
   } catch (error) {
-    console.error("Error fetching design preset:", error);
-    designPreset = {
-      additive_prompt: "Default design guidelines",
-      color_palette: {},
-      fonts: [],
-    };
+    console.error("Error fetching design preset prompt:", error);
+    designPresetPrompt = "Default design guidelines";
   }
 
   const formatSections = (sections) => {
@@ -46,9 +46,20 @@ const createUserBuildSitePrompt = async (
   };
 
   const formatFonts = (fonts) => {
-    return fonts
+    const selectedFont = fonts.find((font) => font.selected);
+    const otherFonts = fonts.filter((font) => !font.selected);
+
+    let fontString = "";
+    if (selectedFont) {
+      fontString += `Primary Font (User Selected): ${
+        selectedFont.name
+      }\nWeights: ${selectedFont.weights.join(", ")}\n\n`;
+    }
+    fontString += "Additional Fonts:\n";
+    fontString += otherFonts
       .map((font) => `Name: ${font.name}\nWeights: ${font.weights.join(", ")}`)
-      .join("\n");
+      .join("\n\n");
+    return fontString;
   };
 
   const basePrompt = `
@@ -74,14 +85,14 @@ const createUserBuildSitePrompt = async (
   Description: ${designLanguage.design_description}
   
   Design Guidelines:
-  ${designPreset.additive_prompt}
+  ${designPresetPrompt}
   
   Color Palette:
-  ${formatColorPalette(designPreset.color_palette)}
+  ${formatColorPalette(designLanguage.color_palette)}
   
   Fonts:
-  ${formatFonts(designPreset.fonts)}
-  IMPORTANT: Use Google Fonts for all specified fonts.
+  ${formatFonts(designLanguage.fonts)}
+  IMPORTANT: Use Google Fonts for all specified fonts. Prioritize the use of the user-selected primary font in the design.
   
   Website Assets:
   ${formatWebsiteAssets(websiteAssets)}
@@ -91,7 +102,8 @@ const createUserBuildSitePrompt = async (
   - Implement the exact design language specified (${
     designLanguage.design_name
   }).
-  - Use the provided color palette and fonts strictly.
+  - Use the provided color palette strictly.
+  - Prioritize the use of the user-selected primary font, complementing it with the additional fonts as needed.
   - Create only the sections specified by the user, in the exact order provided.
   - Incorporate the provided website assets as described in their comments.
   - Include the specified social media links in appropriate locations (e.g., footer, contact section).

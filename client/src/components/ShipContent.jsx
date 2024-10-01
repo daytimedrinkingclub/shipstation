@@ -7,6 +7,7 @@ import {
   updateSectionsOrder,
   addSocialLink,
   removeSocialLink,
+  setSocials,
 } from "@/store/onboardingSlice";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
@@ -58,15 +59,23 @@ export default function ShipContent() {
     dispatch(updateSection({ id, field, value }));
   };
 
+  const handleUpdateSocialLink = (index, newValue) => {
+    const updatedLinks = socialLinks.map((link, i) =>
+      i === index ? newValue : link
+    );
+    dispatch(setSocials(updatedLinks));
+  };
+
   const handleAddSocialLink = () => {
     if (newSocialLink.trim() !== "") {
-      dispatch(addSocialLink(newSocialLink));
+      dispatch(setSocials([...socialLinks, newSocialLink]));
       setNewSocialLink(""); // Clear the input after adding
     }
   };
 
   const handleRemoveSocialLink = (index) => {
-    dispatch(removeSocialLink(index));
+    const updatedLinks = socialLinks.filter((_, i) => i !== index);
+    dispatch(setSocials(updatedLinks));
   };
 
   const handleUpdateSectionsOrder = (sections) => {
@@ -305,7 +314,13 @@ export default function ShipContent() {
                     alt="favicon"
                     className="w-5 h-5"
                   />
-                  <Input value={link} readOnly className="flex-grow" />
+                  <Input
+                    value={link}
+                    onChange={(e) =>
+                      handleUpdateSocialLink(index, e.target.value)
+                    }
+                    className="flex-grow"
+                  />
 
                   <Tooltip>
                     <TooltipTrigger asChild>
