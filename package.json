@@ -53,6 +53,7 @@
     "ignore": [
       "websites/",
       "client/",
+      "next/",
       "public/"
     ]
   },
