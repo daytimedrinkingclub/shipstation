@@ -9,8 +9,7 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { Cover } from "@/components/ui/cover";
-import { FlipWords } from "@/components/ui/flip-words";
+import { Cover } from "./cover";
 
 export const HeroParallax = ({
   products,
@@ -104,26 +103,11 @@ export const HeroParallax = ({
 };
 
 export const Header = () => {
-  const words = ["landing page", "portfolio", "agent", "email template"];
-
   return (
-    <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full left-0 top-0">
-      {/* <h1 className="text-2xl md:text-7xl font-bold dark:text-white">
-        Build Stunning Landing Pages
-      </h1> */}
-      <h1 className="text-4xl md:text-4xl lg:text-6xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white">
+    <div className="max-w-7xl relative mx-auto py-20 md:py-40 px-4 w-full  left-0 top-0">
+      <h1 className="text-4xl md:text-4xl lg:text-6xl font-semibold max-w-7xl mx-auto text-center mt-6 relative z-20 py-6 bg-clip-text text-transparent bg-gradient-to-b from-neutral-800 via-neutral-700 to-neutral-700 dark:from-neutral-800 dark:via-white dark:to-white leading-tight md:leading-tight lg:leading-tight">
         Ship amazing websites <br /> at <Cover>warp speed</Cover>
       </h1>
-      {/* <div className="text-2xl md:text-7xl font-bold dark:text-white">
-        Ship your
-        <FlipWords words={words} className="text-gray-300" /> <br />
-        live in lightspeed
-      </div> */}
-      {/* <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
-        Transform Your Ideas into High-Converting Landing Pages in Minutes
-      </p> */}
-      <div className="h-[40rem] max-w-7xl relative mx-auto py-20 md:py-40 w-ful flex items-center px-4">
-    </div>
     </div>
   );
 };

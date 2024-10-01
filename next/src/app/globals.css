@@ -68,6 +68,6 @@
   }
 
   .landing {
-    @apply bg-black text-white;
+    @apply bg-black text-white dark;
   }
 }
