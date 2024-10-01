@@ -75,6 +75,7 @@ async function generateSiteContent(userId, prompt, type, portfolioType = null) {
 
   const sections = extractSections(finalResponse);
   const socials = extractSocials(finalResponse);
+  const design = type === "landing_page" ? extractDesign(finalResponse) : null;
 
   // Add isOpen property to each section
   const sectionsWithIsOpen = sections.map((section, index) => ({
@@ -86,7 +87,11 @@ async function generateSiteContent(userId, prompt, type, portfolioType = null) {
 
   console.log(`Content generation completed for user: ${userId}`);
 
-  return { sections: sectionsWithIsOpen, socials: socials };
+  return {
+    sections: sectionsWithIsOpen,
+    socials: socials,
+    design: design,
+  };
 }
 
 function getSystemPrompt(type, portfolioType) {
@@ -95,7 +100,7 @@ function getSystemPrompt(type, portfolioType) {
 
     You are an AI assistant specialized in generating website content. Based on the user's prompt and the specified type of website, create appropriate content sections.
 
-     Important rules:
+    Important rules:
     1. Generate content in sections, each with a title and content.
     2. Each section should be substantial and relevant to the website type.
     3. Use a tone and style appropriate for the website type.
@@ -139,6 +144,75 @@ function getSystemPrompt(type, portfolioType) {
     </socials>
   `;
 
+  // Add design prompt for landing pages
+  if (type === "landing_page") {
+    prompt += `
+    After generating the content sections and social links, please also generate a design scheme for the landing page.
+    The design should be based on the content and overall theme of the landing page.
+    
+    Provide the design information in the following JSON format, enclosed in <design></design> tags:
+
+    Here is an example of the design JSON:
+    <design>
+    {
+      "design_name": "A descriptive name for the design",
+      "sample_link": "https://shipstation.ai/site/example-site/",
+      "color_palette": {
+        "primary": {
+          "value": "#HEXCODE",
+          "label": "Primary Color"
+        },
+        "secondary": {
+          "value": "#HEXCODE",
+          "label": "Secondary Color"
+        },
+        "accent": {
+          "value": "#HEXCODE",
+          "label": "Accent Color"
+        },
+        "background": {
+          "value": "#HEXCODE",
+          "label": "Background Color"
+        },
+        "text": {
+          "value": "#HEXCODE",
+          "label": "Text Color"
+        }
+      },
+      "fonts": [
+        {
+          "name": "Roboto",
+          "weights": ["400", "500", "600", "700"]
+        },
+        {
+          "name": "Open Sans",
+          "weights": ["400", "500", "600", "700"]
+        },
+        {
+          "name": "Lato",
+          "weights": ["400", "500", "600", "700"]
+        },
+        {
+          "name": "Montserrat",
+          "weights": ["400", "500", "600", "700"]
+        },
+        {
+          "name": "Noto Sans",
+          "weights": ["400", "500", "600", "700"]
+        }
+      ],
+      "design_description": "A brief description of the design style and its suitability for the landing page."
+    }
+    </design>
+
+    Ensure that the colors and fonts are appropriate for the landing page described in the content.
+    Generate exactly 5 colors for the color palette.
+    Generate at least 5 fonts, each with appropriate weights.
+    Use Google Fonts for the font selections.
+    The sample_link should be a placeholder URL.
+    `;
+  }
+
   return prompt;
 }
 
@@ -168,6 +242,21 @@ function extractSocials(text) {
     return null;
   } catch (e) {
     console.error(`Failed to parse JSON for socials:`, e);
+    return null;
+  }
+}
+
+function extractDesign(text) {
+  try {
+    const regex = /<design>([\s\S]*?)<\/design>/g;
+    const match = regex.exec(text);
+    if (match && match[1]) {
+      const jsonContent = match[1].trim();
+      return JSON.parse(jsonContent);
+    }
+    return null;
+  } catch (e) {
+    console.error(`Failed to parse JSON for design:`, e);
     return null;
   }
 }

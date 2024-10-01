@@ -11,15 +11,20 @@ const createUserBuildSitePrompt = async (
   designLanguage
 ) => {
   let designPresetPrompt = "";
-  try {
-    const designPresetData = await getDesignPresetPrompt(
-      shipType,
-      designLanguage?.design_name
-    );
-    designPresetPrompt = designPresetData.additive_prompt;
-  } catch (error) {
-    console.error("Error fetching design preset prompt:", error);
-    designPresetPrompt = "Default design guidelines";
+  if (shipType !== "landing_page") {
+    try {
+      const designPresetData = await getDesignPresetPrompt(
+        shipType,
+        designLanguage?.design_name
+      );
+      designPresetPrompt = designPresetData.additive_prompt;
+    } catch (error) {
+      console.error("Error fetching design preset prompt:", error);
+      designPresetPrompt = "Default design guidelines";
+    }
+  } else {
+    designPresetPrompt =
+      "Follow the provided design language strictly without additional preset guidelines.";
   }
 
   const formatSections = (sections) => {
@@ -71,6 +76,7 @@ const createUserBuildSitePrompt = async (
   
   User-Specific Requirements:
   ${shipType === "portfolio" ? `Portfolio Type: ${portfolioType}` : ""}
+  ${shipType === "landing_page" ? "Website Type: Landing Page" : ""}
   
   Sections:
   ${formatSections(sections)}
@@ -118,6 +124,7 @@ const createUserBuildSitePrompt = async (
   - Include meta viewport tag for proper responsive behavior.
   - Use Font Awesome CDN for icons throughout the website.
   - Use Google Fonts for all specified fonts, including the necessary links in the HTML.
+  - IMPORTANT: Do not include a contact form section under any circumstances, irrelevant of the type of the website.
   
   Output:
   Provide only the full HTML code for the website, including:
