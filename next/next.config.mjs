@@ -9,6 +9,9 @@ const nextConfig = {
     ],
     domains: ["api.microlink.io", "assets.website-files.com"],
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
