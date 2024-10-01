@@ -197,6 +197,8 @@ function getSystemPrompt(assets, assetInfo) {
     1. **search_tool**: Use this to find relevant information for refining the code.
     2. **placeholder_image_tool**: Use this to find and update placeholder images in the code.
 
+    IMPORTANT: Only use these tools if absolutely necessary. If you have sufficient information to make the requested changes without using any tools, proceed directly with the code refinement. Do not use tools for routine updates or when the existing information is adequate.
+
     Your response should be structured using XML tags as follows:
 
     <explanation>
