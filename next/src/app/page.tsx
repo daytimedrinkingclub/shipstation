@@ -3,6 +3,7 @@ import FeaturesSectionDemo3 from "@/components/blocks/features-section-demo-3";
 import { HeroParallaxDemo } from "./landing";
 import { FloatingNavDemo } from "@/components/blocks/floating-navbar";
 import Pricing from "@/components/blocks/pricing";
+import { LinkPreviewSection } from "@/components/blocks/LinkPreviewSection";
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <FloatingNavDemo />
       <HeroParallaxDemo />
       <FeaturesSectionDemo3 />
+      <LinkPreviewSection />  
       <FeaturesSectionDemo2 />
       {/* <Pricing /> */}
     </div>

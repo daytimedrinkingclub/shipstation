@@ -2,13 +2,19 @@ import { cn } from "@/lib/utils";
 import {
   IconAdjustmentsBolt,
   IconCloud,
+  IconCreditCardRefund,
   IconCurrencyDollar,
   IconEaseInOut,
   IconHeart,
   IconHelp,
+  IconMessageChatbot,
+  IconMoodSmileBeam,
+  IconPencil,
+  IconPencilHeart,
   IconRouteAltLeft,
   IconSparkles,
   IconTerminal2,
+  IconWorldUpload,
 } from "@tabler/icons-react";
 
 export default function FeaturesSectionDemo() {
@@ -17,24 +23,29 @@ export default function FeaturesSectionDemo() {
       title: "Built for everyone",
       description:
         "Anyone can use it, no coding skills required.",
-      icon: <IconTerminal2 />,
+      icon: <IconMoodSmileBeam />,
     },
     {
-      title: "Ease of use",
+      title: "AI powered Copywriting",
       description:
-        "It's as easy as using an Apple, but still as cheap as buying an 🍎 .",
-      icon: <IconEaseInOut />,
+        "Bye Bye Lorem Ipsum, Hello intelligent copywriting.",
+      icon: <IconPencilHeart />,
+    },
+    {
+      title: "Talk to your website",
+      description: "Update your website content by chatting with your website.",
+      icon: <IconMessageChatbot />,
+    },
+    {
+      title: "Connect your domain",
+      description: "Connect with your domain. Free SSL included.",
+      icon: <IconWorldUpload />,
     },
     {
       title: "Pricing like no other",
       description:
-        "Try finding a cheaper alternative and then come back and sign up here!",
+        "Try finding a cheaper alternative and then come back here!",
       icon: <IconCurrencyDollar />,
-    },
-    {
-      title: "Connect your domain",
-      description: "Use your own domain to connect your landing page.",
-      icon: <IconCloud />,
     },
     {
       title: "Powered by Sonnet 3.5",
@@ -50,13 +61,8 @@ export default function FeaturesSectionDemo() {
     {
       title: "Money back guarantee",
       description:
-        "If you donot like EveryAI, we will convince you to like us.",
-      icon: <IconAdjustmentsBolt />,
-    },
-    {
-      title: "And everything else",
-      description: "I just ran out of copy ideas. Accept my sincere apologies",
-      icon: <IconHeart />,
+        "If you do not get a 5 star experience, we will give you a full refund.",
+      icon: <IconCreditCardRefund />,
     },
   ];
   return (
