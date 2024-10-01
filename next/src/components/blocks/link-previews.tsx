@@ -4,7 +4,7 @@ import { LinkPreview } from "@/components/ui/link-preview";
 
 export function LinkPreviewSection() {
   return (
-    <div className="flex justify-center items-center h-[20rem] sm:h-[30rem] flex-col px-4">
+    <div className="flex justify-center items-center h-[20rem] sm:h-[30rem] flex-col px-12">
       <p className="text-neutral-500 dark:text-neutral-400 text-xl md:text-3xl max-w-3xl mx-auto mb-10">
         <LinkPreview
           url="https://shipstation.ai/site/seedhe-maut-HVSdZ58o/"
