@@ -346,7 +346,7 @@ export default function ShipOnboarding({ type, reset }) {
                       <Button
                         variant="icon"
                         size="icon"
-                        onClick={() => navigate("/")}
+                        onClick={() => navigate("/app")}
                         className="mr-2 hidden md:flex"
                       >
                         <ChevronLeft className="h-6 w-6" />
@@ -370,7 +370,7 @@ export default function ShipOnboarding({ type, reset }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/app")}
                 className="mb-6 md:hidden"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />

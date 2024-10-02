@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import { Toaster } from "sonner";
 import Ship from "./pages/Ship";
 import Edit from "./pages/Edit";
+import Landing from "./pages/Landing";
+import AppHome from "./pages/AppHome";
 
 function App() {
   return (
@@ -13,7 +15,8 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <Router>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/app" element={<AppHome />} />
             <Route path="/ship" element={<Ship />} />
             <Route path="/project/:shipId" element={<Edit />} />
           </Routes>

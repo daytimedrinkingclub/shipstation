@@ -46,11 +46,26 @@ app.use(express.static("websites"));
 app.use(express.static("public"));
 app.use(cors());
 
+// Serve static files
+app.use(express.static("public"));
+
+// Serve index.html (landing page) for the root route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Serve the React app for /app and its subroutes
+app.get("/app*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "app.html"));
+});
+
+// Keep your existing routes
 app.get("/all", async (req, res) => {
-  res.set("Cache-Control", "no-store");
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
   res.sendFile(path.join(__dirname, "public", "all.html"));
+});
+
+app.get("/ship", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "app.html"));
 });
 
 app.get("/all-websites", async (req, res) => {
@@ -68,11 +83,6 @@ app.get("/all-websites", async (req, res) => {
     console.error("Error listing websites:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
-});
-
-// Serve React app for all other routes (including 404)
-app.get("/ship", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("/taaft.txt", async (req, res) => {
