@@ -84,6 +84,8 @@ export default function ShipOnboarding({ type, reset }) {
     onClose: onSuccessClose,
   } = useDisclosure();
 
+  const [contentStep, setContentStep] = useState("content");
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -116,11 +118,16 @@ export default function ShipOnboarding({ type, reset }) {
         if (shipType === "landing_page") {
           dispatch(setGeneratedDesign(response.design));
         }
-        if (currentStep < steps.length - 1) {
-          dispatch(setCurrentStep(currentStep + 1));
-        }
+        dispatch(setCurrentStep(currentStep + 1));
         setIsGenerating(false);
       });
+    } else if (currentStep === 1) {
+      if (contentStep === "content") {
+        setContentStep("social");
+      } else {
+        setContentStep("content");
+        dispatch(setCurrentStep(currentStep + 1));
+      }
     } else if (currentStep === steps.length - 1) {
       // This is the final step, start the project
       if (availableShips <= 0) {
@@ -128,10 +135,6 @@ export default function ShipOnboarding({ type, reset }) {
         onOpen(); // Show payment options
       } else {
         startProject();
-      }
-    } else {
-      if (currentStep < steps.length - 1) {
-        dispatch(setCurrentStep(currentStep + 1));
       }
     }
   };
@@ -290,7 +293,13 @@ export default function ShipOnboarding({ type, reset }) {
   }, [socket, anthropicKey, isPaymentRequired]);
 
   const handleBack = () => {
-    if (currentStep > 0) {
+    if (currentStep === 1) {
+      if (contentStep === "social") {
+        setContentStep("content");
+      } else {
+        dispatch(setCurrentStep(currentStep - 1));
+      }
+    } else if (currentStep > 1) {
       dispatch(setCurrentStep(currentStep - 1));
     }
   };
@@ -316,7 +325,12 @@ export default function ShipOnboarding({ type, reset }) {
           </div>
         );
       case 1:
-        return <ShipContent />;
+        return (
+          <ShipContent
+            activeTab={contentStep}
+            setContentStep={setContentStep}
+          />
+        );
       case 2:
         return (
           <div className="w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl mx-auto">
@@ -326,7 +340,7 @@ export default function ShipOnboarding({ type, reset }) {
       default:
         return null;
     }
-  }, [currentStep, isGenerating, reset, handleFileUpload]);
+  }, [currentStep, isGenerating, reset, handleFileUpload, contentStep]);
 
   return (
     <div className="flex h-screen bg-background relative">
@@ -344,10 +358,10 @@ export default function ShipOnboarding({ type, reset }) {
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="icon"
+                        variant="outline"
                         size="icon"
                         onClick={() => navigate("/")}
-                        className="mr-2 hidden md:flex"
+                        className="mr-2 hidden md:flex text-foreground border-border hover:bg-accent hover:text-accent-foreground"
                       >
                         <ChevronLeft className="h-6 w-6" />
                       </Button>
@@ -357,7 +371,9 @@ export default function ShipOnboarding({ type, reset }) {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <h2 className="text-xl font-bold">New {SHIP_TYPES[shipType]}</h2>
+                <h2 className="text-xl font-bold text-foreground">
+                  New {SHIP_TYPES[shipType]}
+                </h2>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -371,7 +387,7 @@ export default function ShipOnboarding({ type, reset }) {
                 variant="outline"
                 size="sm"
                 onClick={() => navigate("/")}
-                className="mb-6 md:hidden"
+                className="mb-6 md:hidden text-foreground border-border hover:bg-accent hover:text-accent-foreground"
               >
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Back to Home
@@ -415,9 +431,15 @@ export default function ShipOnboarding({ type, reset }) {
         </div>
         <div className="bg-card border-t border-border p-4 flex justify-between">
           {currentStep > 0 && (
-            <Button onClick={handleBack} variant="outline">
+            <Button
+              onClick={handleBack}
+              variant="outline"
+              className="text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+            >
               <ArrowLeft className="mr-2 h-5 w-5" />
-              {getStepName(currentStep - 1)}
+              {currentStep === 1 && contentStep === "social"
+                ? "Content Sections"
+                : getStepName(currentStep - 1)}
             </Button>
           )}
           <Button
@@ -434,6 +456,11 @@ export default function ShipOnboarding({ type, reset }) {
               <>
                 Generating Content...
                 <Loader2 className="ml-2 h-5 w-5 animate-spin" />
+              </>
+            ) : currentStep === 1 && contentStep === "content" ? (
+              <>
+                Social Links
+                <ArrowRight className="ml-2 h-5 w-5" />
               </>
             ) : (
               <>
