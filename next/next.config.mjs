@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.js",
     remotePatterns: [
       { hostname: "aceternity.com" },
       { hostname: "assets.aceternity.com" },
@@ -12,6 +14,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: "export",
 };
 
 export default nextConfig;
