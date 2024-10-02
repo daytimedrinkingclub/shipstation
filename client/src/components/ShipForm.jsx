@@ -115,10 +115,14 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
 
   return (
     <div className="w-full flex flex-col h-full">
-      <h2 className="text-2xl font-bold mb-6">Tell us about your new website</h2>
+      <h2 className="text-2xl font-bold mb-6 text-foreground">
+        Tell us about your new website
+      </h2>
       {shipType === "portfolio" && (
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-3">Choose Portfolio Type</h3>
+          <h3 className="text-lg font-medium mb-3 text-foreground">
+            Choose Portfolio Type
+          </h3>
           <RadioGroup
             value={portfolioType === customType ? "Other" : portfolioType}
             onValueChange={handlePortfolioTypeChange}
@@ -143,8 +147,8 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
                           : "cursor-pointer"
                       } ${
                         portfolioType === id
-                          ? "border-primary bg-primary/5"
-                          : "hover:bg-muted/50"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
                       }`}
                     >
                       <IconComponent className="h-5 w-5 mr-2" />
@@ -167,8 +171,8 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
                       : "cursor-pointer"
                   } ${
                     portfolioType === "Other" || customType !== ""
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-muted/50"
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
                   }`}
                 >
                   {portfolioType === "Other" || customType !== "" ? (

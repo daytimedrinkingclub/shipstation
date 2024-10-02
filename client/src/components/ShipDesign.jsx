@@ -244,7 +244,7 @@ export default function ShipDesign() {
     >
       <GoogleFontLoader fonts={fontsToLoad} />
 
-      <h2 className="text-2xl font-bold">Ship Design</h2>
+      <h2 className="text-2xl font-bold text-foreground">Ship Design</h2>
 
       <div className="space-y-8">
         {isLoading ? (
@@ -256,7 +256,7 @@ export default function ShipDesign() {
         ) : (
           <>
             <div>
-              <h3 className="text-xl font-semibold mb-4">
+              <h3 className="text-xl font-semibold mb-4 text-foreground">
                 {shipType === "landing_page"
                   ? "Generated Design Language"
                   : "Choose a Design Language"}
@@ -327,20 +327,22 @@ export default function ShipDesign() {
             {selectedDesign && (
               <>
                 <div>
-                  <h3 className="text-xl font-semibold mb-4">Color Palette</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-foreground">
+                    Color Palette
+                  </h3>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {Object.entries(colorPalette).map(([key, color], index) => (
                       <div
                         key={index}
-                        className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+                        className="rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 border border-border"
                       >
                         <div
                           className="h-16 w-full cursor-pointer"
                           style={{ backgroundColor: color.value }}
                           onClick={() => setActiveColor(key)}
                         />
-                        <div className="p-3 bg-background">
-                          <p className="font-medium text-sm mb-1">
+                        <div className="p-3 bg-card">
+                          <p className="font-medium text-sm mb-1 text-card-foreground">
                             {color.label}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -371,14 +373,16 @@ export default function ShipDesign() {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-semibold mb-4">Typography</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-foreground">
+                    Typography
+                  </h3>
                   <div className="flex items-center space-x-2 mb-4">
                     <Input
                       placeholder="Add a Google Font name like Luna"
                       value={customFont}
                       onChange={(e) => setCustomFont(e.target.value)}
                       onKeyDown={handleCustomFontKeyDown}
-                      className="w-64"
+                      className="w-64 text-foreground placeholder:text-muted-foreground"
                     />
                     <Button onClick={handleAddCustomFont} size="sm">
                       <Plus className="mr-2 h-4 w-4" /> Add Font
@@ -388,6 +392,7 @@ export default function ShipDesign() {
                         window.open("https://fonts.google.com/", "_blank");
                       }}
                       variant="outline"
+                      className="bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
                     >
                       Browse Fonts <ArrowUpRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -411,10 +416,10 @@ export default function ShipDesign() {
                           />
                           <Label
                             htmlFor={`font-${font.name}`}
-                            className={`block overflow-hidden rounded-xl border-2 bg-muted transition-all duration-300 ease-in-out h-full ${
+                            className={`block overflow-hidden rounded-xl border-2 bg-card transition-all duration-300 ease-in-out h-full ${
                               selectedFont?.name === font.name
                                 ? "border-primary shadow-md"
-                                : "border-transparent hover:border-primary hover:shadow-md"
+                                : "border-muted hover:border-primary hover:shadow-md"
                             }`}
                           >
                             <div className="p-6 flex flex-col h-full">
@@ -456,7 +461,7 @@ export default function ShipDesign() {
                                   fontWeight: fontWeights[font.name],
                                   lineHeight: 1.2,
                                 }}
-                                className="mt-4 overflow-hidden text-ellipsis"
+                                className="mt-4 overflow-hidden text-ellipsis text-card-foreground"
                               >
                                 The quick brown fox jumps over the lazy dog
                               </p>

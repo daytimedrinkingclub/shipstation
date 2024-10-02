@@ -38,7 +38,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { StrictModeDroppable } from "@/components/StrictModeDroppable";
 import { AuthContext } from "@/context/AuthContext";
 
-export default function ShipContent() {
+export default function ShipContent({ activeTab, setContentStep }) {
   const dispatch = useDispatch();
   const sections = useSelector((state) => state.onboarding.sections);
   const socialLinks = useSelector((state) => state.onboarding.socialLinks);
@@ -135,21 +135,31 @@ export default function ShipContent() {
         transition={{ duration: 0.5 }}
         className="flex flex-col h-full"
       >
-        <h2 className="text-2xl font-bold mb-4">Website Content and Social Links</h2>
-        <Tabs defaultValue="content" className="flex-grow flex flex-col">
-          <TabsList className="justify-start">
-            <TabsTrigger value="content">Content Sections</TabsTrigger>
-            <TabsTrigger value="social">Social Links</TabsTrigger>
-          </TabsList>
+        <h2 className="text-2xl font-bold mb-4 text-foreground">
+          Website Content and Social Links
+        </h2>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setContentStep(value)}
+          className="flex-grow flex flex-col"
+        >
+          <div className="flex mb-4">
+            <TabsList className="inline-flex">
+              <TabsTrigger value="content">Content Sections</TabsTrigger>
+              <TabsTrigger value="social">Social Links</TabsTrigger>
+            </TabsList>
+          </div>
           <TabsContent value="content" className="flex-grow flex flex-col">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold">Sections</h3>
+              <h3 className="text-xl font-semibold text-foreground">
+                Sections
+              </h3>
               <div className="flex items-center space-x-2">
                 <Button
                   onClick={toggleFullscreen}
                   size="sm"
                   variant="outline"
-                  className="flex items-center"
+                  className="flex items-center text-foreground border-border hover:bg-accent hover:text-accent-foreground"
                 >
                   {isFullscreen ? (
                     <Minimize2 className="h-4 w-4" />
@@ -171,15 +181,17 @@ export default function ShipContent() {
             </div>
             <div
               ref={sectionsRef}
-              className={`flex-grow overflow-y-auto border border-gray-300 rounded-lg shadow-sm scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 ${
+              className={`flex-grow overflow-y-auto border border-border rounded-lg shadow-sm scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 ${
                 isFullscreen
                   ? "fixed inset-0 z-50 bg-background flex flex-col"
                   : ""
               }`}
             >
               {isFullscreen && (
-                <div className="sticky top-0 bg-background z-10 p-4 border-b border-gray-300 flex justify-between items-center">
-                  <h3 className="text-xl font-semibold">Sections</h3>
+                <div className="sticky top-0 bg-background z-10 p-4 border-b border-border flex justify-between items-center">
+                  <h3 className="text-xl font-semibold text-foreground">
+                    Sections
+                  </h3>
                   <div className="flex items-center space-x-2">
                     <Button
                       onClick={handleAddSection}
@@ -239,7 +251,7 @@ export default function ShipContent() {
                                           e.target.value
                                         )
                                       }
-                                      className="flex-grow"
+                                      className="flex-grow bg-background text-foreground"
                                     />
                                     <CollapsibleTrigger asChild>
                                       <Button
@@ -286,7 +298,7 @@ export default function ShipContent() {
                                           e.target.value
                                         )
                                       }
-                                      className="mt-2"
+                                      className="mt-2 bg-background text-foreground"
                                       rows={5}
                                     />
                                   </CollapsibleContent>
@@ -305,7 +317,9 @@ export default function ShipContent() {
           </TabsContent>
           <TabsContent value="social">
             <div className="space-y-4">
-              <h3 className="text-xl font-semibold">Social Links</h3>
+              <h3 className="text-xl font-semibold text-foreground">
+                Social Links
+              </h3>
               <div className="space-y-2 max-w-md">
                 <AnimatePresence>
                   {socialLinks.map((link, index) => (
@@ -327,9 +341,8 @@ export default function ShipContent() {
                         onChange={(e) =>
                           handleUpdateSocialLink(index, e.target.value)
                         }
-                        className="flex-grow"
+                        className="flex-grow bg-background text-foreground"
                       />
-
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button
@@ -351,7 +364,7 @@ export default function ShipContent() {
                   placeholder="Enter another social URL"
                   value={newSocialLink}
                   onChange={(e) => setNewSocialLink(e.target.value)}
-                  className="flex-grow"
+                  className="flex-grow bg-background text-foreground"
                 />
                 <Button
                   onClick={handleAddSocialLink}
