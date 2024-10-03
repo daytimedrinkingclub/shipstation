@@ -91,6 +91,7 @@ async function handleOnboardingToolUse({
     );
     sendEvent("project_started", {
       slug: generatedFolderName,
+      prompt: customDesignPrompt,
     });
     return [
       {
@@ -194,15 +195,11 @@ async function handleOnboardingToolUse({
     const endTimestamp = Date.now();
     const duration = (endTimestamp - client.startTimestamp) / 1000; // Convert to seconds
     console.log("Time taken for CTO tool (in seconds):", duration);
-    const promptText =
-      designChoice === "custom"
-        ? `${name} - ${portfolioType}: ${customDesignPrompt}`
-        : `${name} - ${portfolioType}: ${selectedDesign?.design_name || ""}`;
 
     const ship = {
       user_id: userId,
       status: "completed",
-      prompt: promptText,
+      prompt: customDesignPrompt,
       mode,
       slug,
       execution_time: duration,

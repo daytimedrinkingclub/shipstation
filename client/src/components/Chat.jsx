@@ -44,7 +44,13 @@ import {
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
 import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
 
-const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
+const Chat = ({
+  shipId,
+  onCodeUpdate,
+  onAssetsUpdate,
+  initialPrompt,
+  isDeploying,
+}) => {
   const { socket } = useSocket();
   const { uploadAssets } = useProject(shipId);
 
@@ -102,6 +108,22 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
       };
     }
   }, [socket, onCodeUpdate, shipId]);
+
+  useEffect(() => {
+    if (initialPrompt) {
+      setMessages([
+        { text: initialPrompt, sender: "user" },
+        { text: "", sender: "assistant", isLoading: true },
+      ]);
+    }
+  }, [initialPrompt]);
+
+  useEffect(() => {
+    if (!isDeploying) {
+      setMessages([]);
+      fetchInitialUserMessage();
+    }
+  }, [isDeploying]);
 
   const fetchConversationHistory = async () => {
     try {
@@ -348,7 +370,11 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {convertUrlsToLinks(message.text || "")}
+                  {message.isLoading ? (
+                    <ThreeDotLoader />
+                  ) : (
+                    convertUrlsToLinks(message.text || "")
+                  )}
                 </span>
                 {message.assetInfo && (
                   <span className="text-sm text-muted-foreground mt-1">
@@ -389,6 +415,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
               className="hidden"
               onChange={(e) => handleFiles(e.target.files)}
               multiple
+              disabled={isLoading || isDeploying}
             />
           </div>
           <span className="text-xs text-gray-500 hidden md:block">
@@ -401,7 +428,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe changes or attach files/images for your website..."
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            disabled={isLoading}
+            disabled={isLoading || isDeploying}
             rows={3}
             className="pr-12"
           />

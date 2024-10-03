@@ -291,9 +291,9 @@ export default function PortfolioBuilder() {
         onLoaderClose();
       });
 
-      socket.on("project_started", ({ slug }) => {
+      socket.on("project_started", ({ slug, prompt }) => {
         dispatch(setIsDeploying(true));
-        navigate(`/project/${slug}`);
+        navigate(`/project/${slug}`, { state: { initialPrompt: prompt } });
       });
 
       socket.on("websiteDeployed", ({ slug }) => {
