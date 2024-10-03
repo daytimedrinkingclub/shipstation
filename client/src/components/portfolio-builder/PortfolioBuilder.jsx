@@ -12,7 +12,7 @@ import ChoosePaymentOptionDialog from "../ChoosePaymentOptionDialog";
 import LoadingGameOverlay from "../LoadingGameOverlay";
 import SuccessOverlay from "../SuccessOverlay";
 import GoogleFontLoader from "react-google-font";
-import { Fuel, Sparkles } from "lucide-react";
+import { Fuel, Loader2, Sparkles } from "lucide-react";
 import { pluralize } from "@/lib/utils";
 import {
   Tooltip,
@@ -21,6 +21,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { useDispatch } from "react-redux";
+import { setIsDeploying } from "@/store/deploymentSlice";
 import DesignApproachSelector from "./DesignApproachSelector";
 import CustomDesignPrompt from "./CustomDesignPrompt";
 import PresetDesignSelector from "./PresetDesignSelector";
@@ -34,6 +36,8 @@ export default function PortfolioBuilder() {
   const { user, availableShips, anthropicKey, setAnthropicKey } =
     useContext(AuthContext);
   const userId = user?.id;
+
+  const dispatch = useDispatch();
 
   const [name, setName] = useState("");
   const [designChoice, setDesignChoice] = useState("custom");
@@ -287,6 +291,11 @@ export default function PortfolioBuilder() {
         onLoaderClose();
       });
 
+      socket.on("project_started", ({ slug }) => {
+        dispatch(setIsDeploying(true));
+        navigate(`/project/${slug}`);
+      });
+
       socket.on("websiteDeployed", ({ slug }) => {
         onSuccessOpen();
         onLoaderClose();
@@ -300,7 +309,7 @@ export default function PortfolioBuilder() {
         socket.off("needMoreInfo");
       };
     }
-  }, [socket, isPaymentRequired]);
+  }, [socket, isPaymentRequired, navigate]);
 
   const handleSubmitAnthropicKey = (apiKey) => {
     socket.emit("anthropicKey", { anthropicKey: apiKey });
@@ -414,10 +423,15 @@ export default function PortfolioBuilder() {
           </TooltipProvider>
           <Button
             onClick={handleSubmit}
-            disabled={availableShips <= 0}
+            disabled={availableShips <= 0 || isGenerating}
             className="relative"
           >
-            {availableShips > 0 ? (
+            {isGenerating ? (
+              <>
+                Generating...
+                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+              </>
+            ) : availableShips > 0 ? (
               <>
                 Generate Portfolio
                 <Sparkles className="ml-2 h-4 w-4" />
@@ -425,7 +439,7 @@ export default function PortfolioBuilder() {
             ) : (
               "No ships available"
             )}
-            {availableShips <= 0 && (
+            {availableShips <= 0 && !isGenerating && (
               <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
                 Get more ships
               </span>
@@ -445,14 +459,6 @@ export default function PortfolioBuilder() {
         setAnthropicKey={setAnthropicKey}
         type="portfolio"
         isKeyValidating={isKeyValidating}
-      />
-      {isLoaderOpen && (
-        <LoadingGameOverlay isOpen={isLoaderOpen} type="portfolio" />
-      )}
-      <SuccessOverlay
-        isOpen={isSuccessOpen}
-        onClose={() => navigate("/")}
-        slug={deployedWebsiteSlug}
       />
     </motion.div>
   );

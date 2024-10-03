@@ -42,6 +42,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Loader } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import Lottie from "react-lottie-player";
+import lottieAnimation from "@/assets/lottie/ship.json";
+import Confetti from "react-confetti";
+import { useSelector, useDispatch } from "react-redux";
+import { setIsDeploying } from "@/store/deploymentSlice";
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -97,7 +102,7 @@ const Edit = () => {
     useProject(shipId);
 
   const [fileContent, setFileContent] = useState("");
-  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(true);
   const iframeRef = useRef(null);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
 
@@ -115,6 +120,12 @@ const Edit = () => {
   const [assetCount, setAssetCount] = useState(0);
 
   const [showMobilePreview, setShowMobilePreview] = useState(false);
+
+  const [isWebsiteDeployed, setIsWebsiteDeployed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const dispatch = useDispatch();
+  const isDeploying = useSelector((state) => state.deployment.isDeploying);
 
   const fetchAssets = useCallback(async () => {
     try {
@@ -160,11 +171,11 @@ const Edit = () => {
   useEffect(() => {
     if (!userLoading && (!user || !shipId)) {
       navigate("/");
-    } else {
-      // Load index.html content when the component mounts
+    } else if (!isDeploying) {
+      // Load index.html content when the component mounts and not deploying
       loadIndexHtml();
     }
-  }, [user, shipId, navigate, userLoading]);
+  }, [user, shipId, navigate, userLoading, isDeploying]);
 
   useEffect(() => {
     const preventScroll = (e) => {
@@ -281,14 +292,18 @@ const Edit = () => {
       socket.on("undoResult", handleUndoResult);
       socket.on("redoResult", handleRedoResult);
       socket.on("codeUpdate", handleCodeUpdate);
+      socket.on("websiteDeployed", handleWebsiteDeployed);
+      socket.on("project_started", () => dispatch(setIsDeploying(true)));
 
       return () => {
         socket.off("undoResult", handleUndoResult);
         socket.off("redoResult", handleRedoResult);
         socket.off("codeUpdate", handleCodeUpdate);
+        socket.off("websiteDeployed", handleWebsiteDeployed);
+        socket.off("project_started");
       };
     }
-  }, [socket]);
+  }, [socket, dispatch]);
 
   const shuffleDevice = () => {
     const newDevice =
@@ -306,6 +321,16 @@ const Edit = () => {
     setAssetCount((prevCount) => prevCount + newAssets.length);
   };
 
+  const handleWebsiteDeployed = useCallback(() => {
+    setIsWebsiteDeployed(true);
+    dispatch(setIsDeploying(false));
+    setShowConfetti(true);
+    toast.success("Your website has been deployed!");
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
+  }, [dispatch]);
+
   if (!user || !shipId) {
     return null;
   }
@@ -313,6 +338,7 @@ const Edit = () => {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
+        {showConfetti && <Confetti />}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
           <div className="flex items-center space-x-4 w-full md:w-auto">
             <Tooltip>
@@ -515,6 +541,7 @@ const Edit = () => {
                 ref={iframeRef}
                 slug={shipId}
                 isLoading={isFileLoading}
+                isDeploying={isDeploying}
               />
               {(isUndoing || isRedoing || isCodeUpdating || isChatUpdating) && (
                 <LoaderCircle />
@@ -661,6 +688,7 @@ const Edit = () => {
                   slug={shipId}
                   currentView={currentView}
                   isLoading={isFileLoading}
+                  isDeploying={isDeploying}
                 />
                 {(isUndoing ||
                   isRedoing ||

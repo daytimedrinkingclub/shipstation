@@ -13,10 +13,10 @@ function App() {
       <PersistGate loading={null} persistor={persistor}>
         <Router>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/" element={<Portfolio />} />
             <Route path="/ship" element={<Ship />} />
             <Route path="/project/:shipId" element={<Edit />} />
-            <Route path="/portfolio" element={<Portfolio />} />
           </Routes>
           <Toaster richColors position="bottom-center" invert />
         </Router>
