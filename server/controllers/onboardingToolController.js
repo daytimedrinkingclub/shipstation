@@ -25,15 +25,13 @@ async function handleOnboardingToolUse({
   userId,
   client,
   shipType,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
-  console.log("onboradingToolController recieved images:", images.length);
-
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
@@ -184,12 +182,12 @@ async function handleOnboardingToolUse({
       sendEvent,
       client,
       shipType,
-      images,
+      name,
       portfolioType,
-      websiteAssets,
-      sections,
-      socials,
-      designLanguage,
+      designChoice,
+      selectedDesign,
+      customDesignPrompt,
+      images,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";
@@ -199,7 +197,7 @@ async function handleOnboardingToolUse({
     const ship = {
       user_id: userId,
       status: "completed",
-      prompt: messages[0].content[0].text,
+      prompt: name,
       mode,
       slug,
       execution_time: duration,

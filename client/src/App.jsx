@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 import { Toaster } from "sonner";
 import Ship from "./pages/Ship";
 import Edit from "./pages/Edit";
-
+import Portfolio from "./pages/Portfolio";
 function App() {
   return (
     <Provider store={store}>
@@ -16,6 +16,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/ship" element={<Ship />} />
             <Route path="/project/:shipId" element={<Edit />} />
+            <Route path="/portfolio" element={<Portfolio />} />
           </Routes>
           <Toaster richColors position="bottom-center" invert />
         </Router>

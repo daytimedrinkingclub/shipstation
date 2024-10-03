@@ -15,12 +15,12 @@ async function handleCTOToolUse({
   sendEvent,
   client,
   shipType,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
@@ -213,12 +213,12 @@ async function handleCTOToolUse({
       filePath: `${projectFolderName}/${file_name}`,
       client,
       shipType,
-      images,
+      name,
       portfolioType,
-      websiteAssets,
-      sections,
-      socials,
-      designLanguage,
+      designChoice,
+      selectedDesign,
+      customDesignPrompt,
+      images,
     });
 
     sendEvent("progress", {

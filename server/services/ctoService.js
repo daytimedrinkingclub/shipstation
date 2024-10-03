@@ -16,12 +16,12 @@ async function ctoService({
   sendEvent,
   client,
   shipType,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
   const systemPrompt = [
     {
@@ -54,12 +54,12 @@ async function ctoService({
           sendEvent,
           client,
           shipType,
-          images,
+          name,
           portfolioType,
-          websiteAssets,
-          sections,
-          socials,
-          designLanguage,
+          designChoice,
+          selectedDesign,
+          customDesignPrompt,
+          images,
         });
 
         messages.push({ role: "user", content: toolResult });
