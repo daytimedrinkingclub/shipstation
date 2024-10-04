@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { supabase } from "@/lib/supabaseClient";
 import AppLayout from "@/components/layout/AppLayout";
 
 const Showcase = () => {
+  const baseUrl = import.meta.env.VITE_MAIN_URL; //https://shipstation.ai
+  const navigate = useNavigate();
+
   const [generatedWebsites, setGeneratedWebsites] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -36,6 +40,15 @@ const Showcase = () => {
       isSkeleton: true,
     }));
 
+  const handleWebsiteSelection = (website) => {
+    navigate("/", {
+      state: {
+        customDesignPrompt: website.prompt,
+        portfolioType: website.portfolio_type,
+      },
+    });
+  };
+
   return (
     <AppLayout>
       <div className="container mx-auto px-4 py-8">
@@ -45,8 +58,8 @@ const Showcase = () => {
             isLoading
               ? skeletonCards
               : generatedWebsites.map((website) => ({
-                  src: `https://api.microlink.io?url=https://shipstation.ai/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
-                  url: `https://shipstation.ai/site/${website.slug}`,
+                  src: `https://api.microlink.io?url=${baseUrl}/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
+                  url: `${baseUrl}/site/${website.slug}`,
                   onClick: () =>
                     window.open(
                       `https://shipstation.ai/site/${website.slug}`,

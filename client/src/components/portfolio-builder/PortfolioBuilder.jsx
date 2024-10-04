@@ -266,11 +266,6 @@ export default function PortfolioBuilder() {
             ) : (
               "No ships available"
             )}
-            {availableShips <= 0 && !isGenerating && (
-              <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
-                Get more ships
-              </span>
-            )}
           </Button>
         </div>
       </div>
@@ -299,8 +294,10 @@ export default function PortfolioBuilder() {
               cards={generatedWebsites.map((website) => ({
                 src: `https://api.microlink.io?url=${baseUrl}/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
                 url: `${baseUrl}/site/${website.slug}`,
-                onClick: () => handleWebsiteSelection(website),
+                onClick: () =>
+                  window.open(`${baseUrl}/site/${website.slug}`, "_blank"),
               }))}
+              onTryDesign={handleWebsiteSelection}
             />
           </div>
         </DialogContent>
