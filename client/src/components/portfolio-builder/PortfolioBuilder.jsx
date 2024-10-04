@@ -45,6 +45,8 @@ export default function PortfolioBuilder() {
   const [generatedWebsites, setGeneratedWebsites] = useState([]);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
 
+  const baseUrl = import.meta.env.VITE_MAIN_URL; //https://shipstation.ai
+
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isLoaderOpen,
@@ -295,8 +297,8 @@ export default function PortfolioBuilder() {
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
               cards={generatedWebsites.map((website) => ({
-                src: `https://api.microlink.io?url=https://shipstation.ai/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
-                url: `https://shipstation.ai/site/${website.slug}`,
+                src: `https://api.microlink.io?url=${baseUrl}/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
+                url: `${baseUrl}/site/${website.slug}`,
                 onClick: () => handleWebsiteSelection(website),
               }))}
             />
