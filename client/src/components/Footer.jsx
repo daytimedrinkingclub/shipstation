@@ -27,18 +27,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="p-4 flex justify-between items-center container">
-      <div className="cursor-pointer" onClick={handleFlagClick}>
-        {indiaAnimation && (
-          <Lottie
-            loop
-            animationData={indiaAnimation}
-            play
-            style={{ width: 250, height: 250 }}
-          />
-        )}
-      </div>
-
+    <footer className="p-4 flex justify-center container">
       <div className="flex items-center gap-4 flex-wrap justify-end">
         <a
           href="mailto:anuj@daytimedrinkingclub.com"
@@ -49,55 +38,6 @@ const Footer = () => {
           <HelpCircle height={16} width={16} />
           Help and Support
         </a>
-        <Popover>
-          <PopoverTrigger
-            data-trigger="legal-popover"
-            className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground cursor-pointer"
-          >
-            <Scale height={16} width={16} />
-            Legal
-          </PopoverTrigger>
-          <PopoverContent
-            className="bg-popover border-border"
-            side="top"
-            align="end"
-          >
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="/contact.html"
-                  className="text-popover-foreground hover:text-foreground"
-                >
-                  Contact Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/terms.html"
-                  className="text-popover-foreground hover:text-foreground"
-                >
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/privacy.html"
-                  className="text-popover-foreground hover:text-foreground"
-                >
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/refunds.html"
-                  className="text-popover-foreground hover:text-foreground"
-                >
-                  Refund Policy
-                </a>
-              </li>
-            </ul>
-          </PopoverContent>
-        </Popover>
         <a
           href="https://github.com/daytimedrinkingclub/shipstation"
           target="_blank"
@@ -107,7 +47,7 @@ const Footer = () => {
           Star us on GitHub
         </a>
         <a
-          href="https://discord.gg/zKJ8WKwFzm"
+          href="https://discord.gg/wMNmcmq3SX"
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
@@ -116,15 +56,6 @@ const Footer = () => {
           Join us on Discord
         </a>
       </div>
-
-      {showEmojiOverlay && (
-        <EmojiOverlay
-          emoji="🇮🇳"
-          duration={3000}
-          count={20}
-          animationName="wave"
-        />
-      )}
     </footer>
   );
 };
