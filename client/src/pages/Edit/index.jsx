@@ -131,6 +131,8 @@ const Edit = () => {
   const initialPrompt = location.state?.initialPrompt || "";
 
   const fetchAssets = useCallback(async () => {
+    if (isDeploying) return; // Don't fetch assets while deploying
+
     try {
       const { data, error } = await supabase
         .from("ships")
@@ -160,11 +162,13 @@ const Edit = () => {
       setAssets([]);
       setAssetCount(0);
     }
-  }, [shipId]);
+  }, [shipId, isDeploying]);
 
   useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
+    if (!isDeploying) {
+      fetchAssets();
+    }
+  }, [fetchAssets, isDeploying]);
 
   const updateAssets = useCallback((newAssets) => {
     setAssets(newAssets);
@@ -351,7 +355,7 @@ const Edit = () => {
                     <ChevronLeft className="w-6 h-6" />
                   </Link>
                 </TooltipTrigger>
-                <TooltipContent>Back to Projects</TooltipContent>
+                <TooltipContent>Back to Home</TooltipContent>
               </Tooltip>
               <h1 className="text-xl font-semibold">{shipId}</h1>
             </div>

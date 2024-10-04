@@ -70,17 +70,42 @@ const Chat = ({
   const dispatch = useDispatch();
   const filesToUpload = useSelector((state) => state.fileUpload.filesToUpload);
 
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const initChat = async () => {
     setIsLoadingMessages(true);
-    await fetchConversationHistory();
-    await fetchInitialUserMessage();
+    if (isDeploying && initialPrompt) {
+      setMessages([
+        { text: initialPrompt, sender: "user" },
+        { text: "", sender: "assistant", isLoading: true },
+      ]);
+    } else {
+      await fetchConversationHistory();
+      if (!isDeploying) {
+        await fetchInitialUserMessage();
+      }
+    }
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
+    setIsInitialized(true);
   };
+
+  useEffect(() => {
+    if (!isInitialized) {
+      initChat();
+    }
+  }, [isInitialized, isDeploying, initialPrompt]);
+
+  useEffect(() => {
+    if (isInitialized && !isDeploying) {
+      setMessages([]);
+      fetchInitialUserMessage();
+    }
+  }, [isDeploying, isInitialized]);
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
@@ -88,10 +113,6 @@ const Chat = ({
     );
     setIsUploadDisabled(!allDescriptionsFilled);
   }, [fileDescriptions, tempFiles]);
-
-  useEffect(() => {
-    initChat();
-  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -108,22 +129,6 @@ const Chat = ({
       };
     }
   }, [socket, onCodeUpdate, shipId]);
-
-  useEffect(() => {
-    if (initialPrompt) {
-      setMessages([
-        { text: initialPrompt, sender: "user" },
-        { text: "", sender: "assistant", isLoading: true },
-      ]);
-    }
-  }, [initialPrompt]);
-
-  useEffect(() => {
-    if (!isDeploying) {
-      setMessages([]);
-      fetchInitialUserMessage();
-    }
-  }, [isDeploying]);
 
   const fetchConversationHistory = async () => {
     try {
@@ -435,7 +440,7 @@ const Chat = ({
           {input.trim() && (
             <Button
               onClick={handleSend}
-              disabled={isLoading}
+              disabled={isLoading || isDeploying}
               size="sm"
               className="absolute bottom-2 right-2"
             >

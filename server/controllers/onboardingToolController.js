@@ -62,8 +62,16 @@ async function handleOnboardingToolUse({
       Sections : ${sections}
       Design style : ${design_style}`
     );
+    console.log(
+      "project_started sending event",
+      "slug:",
+      generatedFolderName,
+      "prompt:",
+      customDesignPrompt
+    );
     sendEvent("project_started", {
       slug: generatedFolderName,
+      prompt: customDesignPrompt,
     });
     return [
       {

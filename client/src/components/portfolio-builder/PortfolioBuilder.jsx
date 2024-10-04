@@ -291,7 +291,8 @@ export default function PortfolioBuilder() {
         onLoaderClose();
       });
 
-      socket.on("project_started", ({ slug, prompt }) => {
+      socket.on("project_started", (data) => {
+        const { slug, prompt } = data;
         dispatch(setIsDeploying(true));
         navigate(`/project/${slug}`, { state: { initialPrompt: prompt } });
       });

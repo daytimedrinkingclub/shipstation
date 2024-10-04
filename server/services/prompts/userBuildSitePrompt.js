@@ -136,7 +136,7 @@ const createUserBuildSitePrompt = async (
   - Inline JavaScript for functionality and interactions
   - Inline Tailwind CSS classes, making extensive use of responsive utility classes
   
-  Remember to strictly follow the user's requirements, including only the specified sections in the exact order provided and adhering to the chosen design language.
+  Remember to strictly follow the user's design requirements, going above and beyond to fulfill them. Pay meticulous attention to the smallest details, ensuring every aspect of the design aligns perfectly with the user's vision. Leave no stone unturned in creating a website that exceeds expectations and truly embodies the specified design language and requirements.
   `;
 
   // Include analysis if provided
