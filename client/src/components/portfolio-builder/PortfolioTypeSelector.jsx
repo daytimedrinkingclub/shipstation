@@ -78,16 +78,18 @@ export default function PortfolioTypeSelector({
             const IconComponent = icon;
             return (
               <div key={id} className="relative">
-                <RadioGroupItem 
-                  value={id} 
-                  id={id} 
-                  className="peer sr-only" 
+                <RadioGroupItem
+                  value={id}
+                  id={id}
+                  className="peer sr-only"
                   disabled={isGenerating}
                 />
                 <Label
                   htmlFor={id}
                   className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
-                    isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                    isGenerating
+                      ? "cursor-not-allowed opacity-50"
+                      : "cursor-pointer"
                   } ${
                     portfolioType === id
                       ? "border-primary bg-primary/10 text-primary"
@@ -101,16 +103,18 @@ export default function PortfolioTypeSelector({
             );
           })}
           <div className="relative">
-            <RadioGroupItem 
-              value="Other" 
-              id="Other" 
-              className="peer sr-only" 
+            <RadioGroupItem
+              value="Other"
+              id="Other"
+              className="peer sr-only"
               disabled={isGenerating}
             />
             <Label
               htmlFor="Other"
               className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
-                isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                isGenerating
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer"
               } ${
                 portfolioType === "Other" || customType !== ""
                   ? "border-primary bg-primary/10 text-primary"

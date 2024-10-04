@@ -35,7 +35,7 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
         }}
       >
         <span className="flex items-center gap-2">
-          View this template <ExternalLink className="w-4 h-4" />
+          View live demo <ExternalLink className="w-4 h-4" />
         </span>
       </div>
     </div>

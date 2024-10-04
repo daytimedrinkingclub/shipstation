@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { ImageIcon, PencilIcon } from "lucide-react";
 import { useSocket } from "@/context/SocketProvider";
 import { AuthContext } from "@/context/AuthContext";
 import { toast } from "sonner";
@@ -190,11 +193,11 @@ export default function PortfolioBuilder() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto p-6 space-y-8 flex flex-col h-full w-full"
+      className="mx-auto p-6 space-y-8 flex flex-col h-full w-full max-w-4xl"
     >
       <h1 className="text-3xl font-bold mb-6">Build Your Portfolio</h1>
 
-      <div className="space-y-6 flex-grow overflow-y-auto">
+      <div className="space-y-8 flex-grow overflow-y-auto">
         <div>
           <Label htmlFor="name">Your Name</Label>
           <Input
@@ -213,18 +216,56 @@ export default function PortfolioBuilder() {
           isGenerating={isGenerating}
         />
 
-        <Button
-          onClick={() => setIsWebsitesDialogOpen(true)}
-          disabled={isGenerating}
-        >
-          View Inspiration
-        </Button>
+        <div className="grid grid-cols-1 gap-8">
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <ImageIcon className="mr-2 h-5 w-5" />
+                Choose from Templates
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-muted-foreground">
+                Browse our curated collection of portfolio templates for
+                inspiration.
+              </p>
+              <Button
+                onClick={() => setIsWebsitesDialogOpen(true)}
+                disabled={isGenerating}
+                className="w-full py-2"
+              >
+                View Templates
+              </Button>
+            </CardContent>
+          </Card>
 
-        <CustomDesignPrompt
-          customDesignPrompt={customDesignPrompt}
-          setCustomDesignPrompt={setCustomDesignPrompt}
-          isGenerating={isGenerating}
-        />
+          <div className="flex items-center justify-center">
+            <div className="flex-grow h-px bg-gray-300"></div>
+            <span className="px-4 text-gray-500 text-sm font-medium">or</span>
+            <div className="flex-grow h-px bg-gray-300"></div>
+          </div>
+
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PencilIcon className="mr-2 h-5 w-5" />
+                Custom Design
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-muted-foreground">
+                Describe your ideal portfolio design in your own words.
+              </p>
+              <Textarea
+                placeholder="Minimalist design with light blue and gray colors, using sans-serif fonts..."
+                value={customDesignPrompt}
+                onChange={(e) => setCustomDesignPrompt(e.target.value)}
+                disabled={isGenerating}
+                className="min-h-[200px]"
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex justify-between items-center mt-auto pt-4">
           <TooltipProvider>
@@ -266,11 +307,6 @@ export default function PortfolioBuilder() {
             ) : (
               "No ships available"
             )}
-            {availableShips <= 0 && !isGenerating && (
-              <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
-                Get more ships
-              </span>
-            )}
           </Button>
         </div>
       </div>
@@ -293,7 +329,9 @@ export default function PortfolioBuilder() {
         onOpenChange={setIsWebsitesDialogOpen}
       >
         <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogTitle className="text-foreground">Select a portfolio design</DialogTitle>
+          <DialogTitle className="text-foreground">
+            Select a portfolio design
+          </DialogTitle>
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
               cards={generatedWebsites.map((website) => ({
