@@ -293,7 +293,7 @@ export default function PortfolioBuilder() {
         onOpenChange={setIsWebsitesDialogOpen}
       >
         <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogTitle>Choose Inspiration</DialogTitle>
+          <DialogTitle className="text-foreground">Select a portfolio design</DialogTitle>
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
               cards={generatedWebsites.map((website) => ({
