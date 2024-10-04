@@ -97,7 +97,7 @@ const IframePreview = forwardRef(
       ) : slug ? (
         <iframe
           ref={iframeRef}
-          src={`${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`}
+          src={`${import.meta.env.VITE_MAIN_URL}/site/${slug}/`}
           className={`w-full h-full border-0 ${
             device && HAS_NOTCH.includes(device) ? "pt-8 bg-black" : ""
           }`}

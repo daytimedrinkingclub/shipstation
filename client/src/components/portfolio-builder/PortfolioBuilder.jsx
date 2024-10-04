@@ -25,6 +25,14 @@ import PortfolioTypeSelector from "./PortfolioTypeSelector";
 import { supabase } from "@/lib/supabaseClient";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
+import { ImageIcon } from "lucide-react";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -196,7 +204,7 @@ export default function PortfolioBuilder() {
 
       <div className="space-y-6 flex-grow overflow-y-auto">
         <div>
-          <Label htmlFor="name">Your Name</Label>
+          <h2 className="text-lg font-semibold mb-4 block">Your Name</h2>
           <Input
             id="name"
             value={name}
@@ -213,18 +221,40 @@ export default function PortfolioBuilder() {
           isGenerating={isGenerating}
         />
 
-        <Button
-          onClick={() => setIsWebsitesDialogOpen(true)}
-          disabled={isGenerating}
-        >
-          View Inspiration
-        </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card
+            className="relative cursor-pointer overflow-hidden h-full bg-gray-50 dark:bg-gray-800 transition-all duration-300 ease-in-out hover:shadow-lg group"
+            onClick={() => setIsWebsitesDialogOpen(true)}
+          >
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-30 transition-opacity duration-300 ease-in-out bg-shimmer-gradient bg-[length:200%_100%] animate-shimmer" />
+            <CardContent className="relative z-10 flex flex-col items-center justify-center h-full text-center p-6">
+              <ImageIcon className="w-12 h-12 mb-4 text-gray-400" />
+              <CardTitle className="text-xl font-semibold mb-2">
+                Browse Design Inspirations
+              </CardTitle>
+              <CardDescription className="mb-6">
+                Get inspired by existing portfolio designs
+              </CardDescription>
+              <Button disabled={isGenerating}>View Inspirations</Button>
+            </CardContent>
+          </Card>
 
-        <CustomDesignPrompt
-          customDesignPrompt={customDesignPrompt}
-          setCustomDesignPrompt={setCustomDesignPrompt}
-          isGenerating={isGenerating}
-        />
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
+              <CardDescription>
+                Describe your ideal portfolio design
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CustomDesignPrompt
+                customDesignPrompt={customDesignPrompt}
+                setCustomDesignPrompt={setCustomDesignPrompt}
+                isGenerating={isGenerating}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex justify-between items-center mt-auto pt-4">
           <TooltipProvider>
@@ -293,7 +323,9 @@ export default function PortfolioBuilder() {
         onOpenChange={setIsWebsitesDialogOpen}
       >
         <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
-          <DialogTitle className="text-foreground">Select a portfolio design</DialogTitle>
+          <DialogTitle className="text-foreground">
+            Select a portfolio design
+          </DialogTitle>
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
               cards={generatedWebsites.map((website) => ({

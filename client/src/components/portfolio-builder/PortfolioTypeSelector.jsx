@@ -66,7 +66,7 @@ export default function PortfolioTypeSelector({
   return (
     <div className="mb-6">
       <h2 className="text-lg font-semibold mb-4 block">
-        Choose Portfolio Type
+        Select profession
       </h2>
       <RadioGroup
         value={portfolioType === customType ? "Other" : portfolioType}

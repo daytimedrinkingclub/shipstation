@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
-const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
+const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { handleLogin, isLoading, sendLoginLink, isSendingLoginLink } =
@@ -88,7 +88,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <Label htmlFor="password" className="text-foreground">Password</Label>
-              <Button
+              {/* <Button
                 variant="link"
                 type="button"
                 size="sm"
@@ -96,7 +96,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
                 disabled={isSendingLoginLink}
               >
                 {isSendingLoginLink ? "Sending..." : "Email me a login link!"}
-              </Button>
+              </Button> */}
             </div>
             <Input
               id="password"
