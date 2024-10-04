@@ -112,5 +112,5 @@ export default {
   	}
   },
   plugins: [],
-  darkMode: ["class", "class"],
+  darkMode: 'class',
 }
