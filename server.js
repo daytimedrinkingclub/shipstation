@@ -75,6 +75,18 @@ app.get("/ship", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+app.get("/home", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/home", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+app.get("/project/:projectId", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.get("/taaft.txt", async (req, res) => {
   res.setHeader("Content-Type", "text/plain");
   res.setHeader("Content-Disposition", "attachment; filename=taaft.txt");
