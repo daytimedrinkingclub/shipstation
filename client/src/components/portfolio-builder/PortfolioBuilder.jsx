@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,9 +9,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "../ChoosePaymentOptionDialog";
-import LoadingGameOverlay from "../LoadingGameOverlay";
-import SuccessOverlay from "../SuccessOverlay";
-import GoogleFontLoader from "react-google-font";
+
 import { Fuel, Loader2, Sparkles } from "lucide-react";
 import { pluralize } from "@/lib/utils";
 import {
@@ -20,16 +18,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
 import { useDispatch } from "react-redux";
 import { setIsDeploying } from "@/store/deploymentSlice";
-import DesignApproachSelector from "./DesignApproachSelector";
 import CustomDesignPrompt from "./CustomDesignPrompt";
-import PresetDesignSelector from "./PresetDesignSelector";
-import ColorPaletteEditor from "./ColorPaletteEditor";
-import FontSelector from "./FontSelector";
 import PortfolioTypeSelector from "./PortfolioTypeSelector";
 import { supabase } from "@/lib/supabaseClient";
+import { FocusCards } from "@/components/ui/focus-cards";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -40,23 +35,15 @@ export default function PortfolioBuilder() {
   const dispatch = useDispatch();
 
   const [name, setName] = useState("");
-  const [designChoice, setDesignChoice] = useState("custom");
-  const [selectedDesign, setSelectedDesign] = useState(null);
   const [customDesignPrompt, setCustomDesignPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [designLanguages, setDesignLanguages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [colorPalette, setColorPalette] = useState({});
-  const [activeColor, setActiveColor] = useState(null);
-  const [fonts, setFonts] = useState([]);
-  const [selectedFont, setSelectedFont] = useState(null);
-  const [customFont, setCustomFont] = useState("");
-  const [fontWeights, setFontWeights] = useState({});
   const [portfolioType, setPortfolioType] = useState("Developer");
-
   const [isPaymentRequired, setIsPaymentRequired] = useState(false);
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const [isKeyValidating, setIsKeyValidating] = useState(false);
+  const [generatedWebsites, setGeneratedWebsites] = useState([]);
+  const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -73,46 +60,31 @@ export default function PortfolioBuilder() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (designChoice === "preset") {
-      fetchDesignPresets();
-    } else {
-      // Reset preset-related states when switching to custom
-      setSelectedDesign(null);
-      setColorPalette({});
-      setFonts([]);
-      setSelectedFont(null);
-      setCustomFont("");
-      setFontWeights({});
-    }
-  }, [designChoice]);
+    fetchGeneratedWebsites();
+  }, []);
 
-  const fetchDesignPresets = async () => {
+  const fetchGeneratedWebsites = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from("design_presets")
-      .select(
-        "id, design_name, sample_link, design_description, color_palette, fonts"
-      )
-      .eq("site_type", "portfolio");
+    try {
+      const { data, error } = await supabase
+        .from("ships")
+        .select("prompt, slug, portfolio_type, id")
+        .order("id", { ascending: false })
+        .limit(15);
 
-    if (error) {
-      console.error("Error fetching design presets:", error);
-      toast.error("Failed to load design presets");
-    } else {
-      setDesignLanguages(data);
-      if (data.length > 0) {
-        setSelectedDesign(data[0]);
-        setColorPalette(data[0].color_palette);
-        setFonts(data[0].fonts);
-        setSelectedFont(data[0].fonts[0]);
-        const initialWeights = {};
-        data[0].fonts.forEach((font) => {
-          initialWeights[font.name] = font.weights[0].toString();
-        });
-        setFontWeights(initialWeights);
-      }
+      if (error) throw error;
+      setGeneratedWebsites(data);
+    } catch (error) {
+      console.error("Error fetching generated websites:", error);
+      toast.error("Failed to load generated websites");
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
+  };
+
+  const handleWebsiteSelection = (website) => {
+    setCustomDesignPrompt(website.prompt);
+    setIsWebsitesDialogOpen(false);
   };
 
   const handleSubmit = useCallback(() => {
@@ -121,12 +93,7 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    if (designChoice === "preset" && !selectedDesign) {
-      toast.error("Please select a design");
-      return;
-    }
-
-    if (designChoice === "custom" && !customDesignPrompt.trim()) {
+    if (!customDesignPrompt.trim()) {
       toast.error("Please describe your desired design");
       return;
     }
@@ -143,9 +110,8 @@ export default function PortfolioBuilder() {
       shipType: "portfolio",
       name,
       portfolioType,
-      designChoice,
-      selectedDesign: designChoice === "preset" ? selectedDesign : null,
-      customDesignPrompt: designChoice === "custom" ? customDesignPrompt : null,
+      designChoice: "custom",
+      customDesignPrompt: customDesignPrompt,
     };
 
     socket.emit("startProject", {
@@ -158,8 +124,6 @@ export default function PortfolioBuilder() {
     onLoaderOpen();
   }, [
     name,
-    designChoice,
-    selectedDesign,
     customDesignPrompt,
     availableShips,
     portfolioType,
@@ -167,104 +131,6 @@ export default function PortfolioBuilder() {
     roomId,
     userId,
   ]);
-
-  const handleColorChange = (newColor, colorKey) => {
-    setColorPalette((prevPalette) => {
-      const updatedPalette = {
-        ...prevPalette,
-        [colorKey]: { ...prevPalette[colorKey], value: newColor },
-      };
-
-      // Update selectedDesign with the new color palette
-      setSelectedDesign((prevDesign) => ({
-        ...prevDesign,
-        color_palette: updatedPalette,
-      }));
-
-      return updatedPalette;
-    });
-  };
-
-  const handleFontChange = (fontName) => {
-    const newSelectedFont = fonts.find((font) => font.name === fontName);
-    setSelectedFont(newSelectedFont);
-
-    // Update selectedDesign with the new selected font
-    setSelectedDesign((prevDesign) => ({
-      ...prevDesign,
-      fonts: prevDesign.fonts.map((font) => ({
-        ...font,
-        selected: font.name === fontName,
-      })),
-    }));
-  };
-
-  const handleAddCustomFont = () => {
-    if (
-      customFont &&
-      !fonts.some(
-        (font) => font.name.toLowerCase() === customFont.toLowerCase()
-      )
-    ) {
-      const capitalizedFontName = customFont
-        .trim()
-        .split(" ")
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ");
-
-      const newFont = {
-        name: capitalizedFontName,
-        weights: [400, 500, 600, 700],
-        selected: true,
-      };
-
-      const updatedFonts = [...fonts, newFont];
-      setFonts(updatedFonts);
-      setSelectedFont(newFont);
-      setFontWeights((prevWeights) => ({
-        ...prevWeights,
-        [capitalizedFontName]: "400",
-      }));
-
-      // Update selectedDesign with the new font
-      setSelectedDesign((prevDesign) => ({
-        ...prevDesign,
-        fonts: updatedFonts.map((font) => ({
-          ...font,
-          selected: font.name === capitalizedFontName,
-        })),
-      }));
-
-      setCustomFont("");
-    }
-  };
-
-  const handleCustomFontKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddCustomFont();
-    }
-  };
-
-  const handleFontWeightChange = (fontName, weight) => {
-    setFontWeights((prevWeights) => ({
-      ...prevWeights,
-      [fontName]: weight,
-    }));
-
-    // Update selectedDesign with the new font weight
-    setSelectedDesign((prevDesign) => ({
-      ...prevDesign,
-      fonts: prevDesign.fonts.map((font) =>
-        font.name === fontName ? { ...font, selectedWeight: weight } : font
-      ),
-    }));
-  };
-
-  const fontsToLoad = fonts.map((font) => ({
-    font: font.name,
-    weights: font.weights.map(Number),
-  }));
 
   useEffect(() => {
     if (socket) {
@@ -322,13 +188,11 @@ export default function PortfolioBuilder() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto p-6 space-y-8"
+      className="mx-auto p-6 space-y-8 flex flex-col h-full w-full"
     >
-      <GoogleFontLoader fonts={fontsToLoad} />
-
       <h1 className="text-3xl font-bold mb-6">Build Your Portfolio</h1>
 
-      <div className="space-y-6">
+      <div className="space-y-6 flex-grow overflow-y-auto">
         <div>
           <Label htmlFor="name">Your Name</Label>
           <Input
@@ -337,70 +201,30 @@ export default function PortfolioBuilder() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name"
             className="mt-1 w-1/2"
+            disabled={isGenerating}
           />
         </div>
 
         <PortfolioTypeSelector
           portfolioType={portfolioType}
           setPortfolioType={setPortfolioType}
+          isGenerating={isGenerating}
         />
 
-        <DesignApproachSelector
-          designChoice={designChoice}
-          setDesignChoice={setDesignChoice}
+        <Button
+          onClick={() => setIsWebsitesDialogOpen(true)}
+          disabled={isGenerating}
+        >
+          View Inspiration
+        </Button>
+
+        <CustomDesignPrompt
+          customDesignPrompt={customDesignPrompt}
+          setCustomDesignPrompt={setCustomDesignPrompt}
+          isGenerating={isGenerating}
         />
 
-        <AnimatePresence mode="wait">
-          {designChoice === "custom" ? (
-            <CustomDesignPrompt
-              key="custom"
-              customDesignPrompt={customDesignPrompt}
-              setCustomDesignPrompt={setCustomDesignPrompt}
-            />
-          ) : (
-            <motion.div
-              key="preset"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <PresetDesignSelector
-                isLoading={isLoading}
-                designLanguages={designLanguages}
-                selectedDesign={selectedDesign}
-                setSelectedDesign={setSelectedDesign}
-                setColorPalette={setColorPalette}
-                setFonts={setFonts}
-                setSelectedFont={setSelectedFont}
-                setFontWeights={setFontWeights}
-              />
-              {selectedDesign && (
-                <>
-                  <ColorPaletteEditor
-                    colorPalette={colorPalette}
-                    activeColor={activeColor}
-                    setActiveColor={setActiveColor}
-                    handleColorChange={handleColorChange}
-                  />
-                  <FontSelector
-                    fonts={fonts}
-                    selectedFont={selectedFont}
-                    handleFontChange={handleFontChange}
-                    customFont={customFont}
-                    setCustomFont={setCustomFont}
-                    handleAddCustomFont={handleAddCustomFont}
-                    handleCustomFontKeyDown={handleCustomFontKeyDown}
-                    fontWeights={fontWeights}
-                    handleFontWeightChange={handleFontWeightChange}
-                  />
-                </>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-auto pt-4">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
@@ -461,6 +285,24 @@ export default function PortfolioBuilder() {
         type="portfolio"
         isKeyValidating={isKeyValidating}
       />
+
+      <Dialog
+        open={isWebsitesDialogOpen}
+        onOpenChange={setIsWebsitesDialogOpen}
+      >
+        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogTitle>Choose Inspiration</DialogTitle>
+          <div className="flex-grow overflow-y-auto pr-4">
+            <FocusCards
+              cards={generatedWebsites.map((website) => ({
+                src: `https://api.microlink.io?url=https://shipstation.ai/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
+                url: `https://shipstation.ai/site/${website.slug}`,
+                onClick: () => handleWebsiteSelection(website),
+              }))}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </motion.div>
   );
 }

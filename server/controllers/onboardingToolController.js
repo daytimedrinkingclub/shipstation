@@ -208,6 +208,8 @@ async function handleOnboardingToolUse({
       user_id: userId,
       status: "completed",
       prompt: customDesignPrompt,
+      name: name,
+      portfolio_type: portfolioType,
       mode,
       slug,
       execution_time: duration,

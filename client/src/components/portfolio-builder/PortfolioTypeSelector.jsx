@@ -25,6 +25,7 @@ const portfolioTypes = [
 export default function PortfolioTypeSelector({
   portfolioType,
   setPortfolioType,
+  isGenerating,
 }) {
   const [customType, setCustomType] = useState("");
   const [isCustomTypeConfirmed, setIsCustomTypeConfirmed] = useState(false);
@@ -70,21 +71,28 @@ export default function PortfolioTypeSelector({
       <RadioGroup
         value={portfolioType === customType ? "Other" : portfolioType}
         onValueChange={handlePortfolioTypeChange}
+        disabled={isGenerating}
       >
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {portfolioTypes.map(({ id, icon }) => {
             const IconComponent = icon;
             return (
               <div key={id} className="relative">
-                <RadioGroupItem value={id} id={id} className="peer sr-only" />
+                <RadioGroupItem 
+                  value={id} 
+                  id={id} 
+                  className="peer sr-only" 
+                  disabled={isGenerating}
+                />
                 <Label
                   htmlFor={id}
-                  className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer 
-                    ${
-                      portfolioType === id
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-                    }`}
+                  className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
+                    isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+                  } ${
+                    portfolioType === id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+                  }`}
                 >
                   <IconComponent className="h-5 w-5 mr-2" />
                   <span className="text-sm font-medium">{id}</span>
@@ -93,15 +101,21 @@ export default function PortfolioTypeSelector({
             );
           })}
           <div className="relative">
-            <RadioGroupItem value="Other" id="Other" className="peer sr-only" />
+            <RadioGroupItem 
+              value="Other" 
+              id="Other" 
+              className="peer sr-only" 
+              disabled={isGenerating}
+            />
             <Label
               htmlFor="Other"
-              className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out cursor-pointer
-               ${
-                 portfolioType === "Other" || customType !== ""
-                   ? "border-primary bg-primary/10 text-primary"
-                   : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
-               }`}
+              className={`flex items-center justify-center p-2 h-12 w-full rounded-md border transition-all duration-200 ease-in-out ${
+                isGenerating ? "cursor-not-allowed opacity-50" : "cursor-pointer"
+              } ${
+                portfolioType === "Other" || customType !== ""
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-input bg-background text-foreground hover:bg-accent hover:text-accent-foreground"
+              }`}
             >
               {portfolioType === "Other" || customType !== "" ? (
                 isCustomTypeConfirmed && !isEditing ? (
@@ -116,6 +130,7 @@ export default function PortfolioTypeSelector({
                       variant="ghost"
                       className="p-1 ml-2 hover:bg-transparent"
                       onClick={startEditing}
+                      disabled={isGenerating}
                     >
                       <Edit2 className="h-4 w-4" />
                     </Button>
@@ -135,6 +150,7 @@ export default function PortfolioTypeSelector({
                         }
                       }}
                       autoFocus
+                      disabled={isGenerating}
                     />
                     <Button
                       type="button"
@@ -142,6 +158,7 @@ export default function PortfolioTypeSelector({
                       variant="ghost"
                       className="p-1 hover:bg-transparent"
                       onClick={confirmCustomType}
+                      disabled={isGenerating}
                     >
                       <Check className="h-4 w-4 ml-2" />
                     </Button>

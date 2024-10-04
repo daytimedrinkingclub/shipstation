@@ -399,7 +399,7 @@ const Chat = ({
         )}
         <div ref={messagesEndRef} />
       </div>
-      {messages.length <= 2 && (
+      {messages.length <= 2 && !isDeploying && (
         <div className="px-4">
           <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
         </div>

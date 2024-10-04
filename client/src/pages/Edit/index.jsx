@@ -346,9 +346,10 @@ const Edit = () => {
     <TooltipProvider delayDuration={0}>
       <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
         {showConfetti && <Confetti />}
-        {!isDeploying && (
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
-            <div className="flex items-center space-x-4 w-full md:w-auto">
+
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
+          <div className="flex items-center space-x-4 w-full md:w-auto">
+            {!isDeploying && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Link to="/" className="text-foreground hover:text-primary">
@@ -357,8 +358,10 @@ const Edit = () => {
                 </TooltipTrigger>
                 <TooltipContent>Back to Home</TooltipContent>
               </Tooltip>
-              <h1 className="text-xl font-semibold">{shipId}</h1>
-            </div>
+            )}
+            <h1 className="text-xl font-semibold">{shipId}</h1>
+          </div>
+          {!isDeploying && (
             <div className="flex flex-row items-start md:items-center md:space-y-0 md:space-x-2 w-full md:w-auto">
               <div className="flex w-full md:w-auto">
                 <Tooltip>
@@ -435,8 +438,8 @@ const Edit = () => {
                 </Button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         <div className="md:hidden flex flex-col flex-1 overflow-hidden rounded-lg border border-border">
           <div className={showMobilePreview ? "hidden" : "flex-1"}>
@@ -451,19 +454,26 @@ const Edit = () => {
                     <MessageSquare className="w-4 h-4 mr-2" />
                     AI Chat
                   </TabsTrigger>
-                  <TabsTrigger value="code" className="flex items-center">
-                    <Code className="w-4 h-4 mr-2" />
-                    Code
-                  </TabsTrigger>
-                  <TabsTrigger value="assets" className="flex items-center">
-                    <Files className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Assets</span>
-                    {assetCount === 0 ? null : (
-                      <Badge variant="default" className="rounded-full ml-2">
-                        {assetCount}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
+                  {!isDeploying && (
+                    <>
+                      <TabsTrigger value="code" className="flex items-center">
+                        <Code className="w-4 h-4 mr-2" />
+                        Code
+                      </TabsTrigger>
+                      <TabsTrigger value="assets" className="flex items-center">
+                        <Files className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Assets</span>
+                        {assetCount === 0 ? null : (
+                          <Badge
+                            variant="default"
+                            className="rounded-full ml-2"
+                          >
+                            {assetCount}
+                          </Badge>
+                        )}
+                      </TabsTrigger>
+                    </>
+                  )}
                 </TabsList>
                 {activeTab === "code" && (
                   <Button
@@ -577,22 +587,32 @@ const Edit = () => {
                         <MessageSquare className="w-4 h-4 mr-2" />
                         AI Chat
                       </TabsTrigger>
-                      <TabsTrigger value="code" className="flex items-center">
-                        <Code className="w-4 h-4 mr-2" />
-                        Code
-                      </TabsTrigger>
-                      <TabsTrigger value="assets" className="flex items-center">
-                        <Files className="w-4 h-4 mr-2" />
-                        <span className="text-sm">Assets</span>
-                        {assetCount === 0 ? null : (
-                          <Badge
-                            variant="default"
-                            className="rounded-full ml-2"
+                      {!isDeploying && (
+                        <>
+                          <TabsTrigger
+                            value="code"
+                            className="flex items-center"
                           >
-                            {assetCount}
-                          </Badge>
-                        )}
-                      </TabsTrigger>
+                            <Code className="w-4 h-4 mr-2" />
+                            Code
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="assets"
+                            className="flex items-center"
+                          >
+                            <Files className="w-4 h-4 mr-2" />
+                            <span className="text-sm">Assets</span>
+                            {assetCount === 0 ? null : (
+                              <Badge
+                                variant="default"
+                                className="rounded-full ml-2"
+                              >
+                                {assetCount}
+                              </Badge>
+                            )}
+                          </TabsTrigger>
+                        </>
+                      )}
                     </TabsList>
                     {activeTab === "code" && (
                       <Tooltip>

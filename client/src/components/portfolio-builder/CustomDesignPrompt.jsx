@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 export default function CustomDesignPrompt({
   customDesignPrompt,
   setCustomDesignPrompt,
+  isGenerating,
 }) {
   return (
     <motion.div
@@ -22,6 +23,7 @@ export default function CustomDesignPrompt({
           placeholder="Describe the style, colors, and feel of your desired portfolio design"
           rows={4}
           className="mt-1"
+          disabled={isGenerating}
         />
       </div>
     </motion.div>
