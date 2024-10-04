@@ -19,14 +19,6 @@ const Header = () => {
     }
   };
 
-  const handleViewAllShips = () => {
-    window.open(`${import.meta.env.VITE_BACKEND_URL}/all`, "_blank");
-  };
-
-  const handleWebsitesClick = () => {
-    window.open("https://example.com/websites", "_blank");
-  };
-
   return (
     <header className="py-4 bg-background text-foreground">
       <div className="container flex justify-between items-center">

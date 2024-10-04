@@ -70,8 +70,10 @@ export default function PortfolioBuilder() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchGeneratedWebsites();
-  }, []);
+    if (isWebsitesDialogOpen) {
+      fetchGeneratedWebsites();
+    }
+  }, [isWebsitesDialogOpen]);
 
   const fetchGeneratedWebsites = async () => {
     setIsLoading(true);

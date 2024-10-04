@@ -16,6 +16,10 @@ import {
   Redo2,
   Eye,
   Columns2,
+  Globe,
+  Briefcase,
+  Users,
+  Shield,
 } from "lucide-react";
 import { useSocket } from "@/context/SocketProvider";
 import { AuthContext } from "@/context/AuthContext";
@@ -47,6 +51,8 @@ import lottieAnimation from "@/assets/lottie/ship.json";
 import Confetti from "react-confetti";
 import { useSelector, useDispatch } from "react-redux";
 import { setIsDeploying } from "@/store/deploymentSlice";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -129,6 +135,10 @@ const Edit = () => {
 
   const location = useLocation();
   const initialPrompt = location.state?.initialPrompt || "";
+
+  const [customDomain, setCustomDomain] = useState("");
+  const [showDNSInstructions, setShowDNSInstructions] = useState(false);
+  const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
 
   const fetchAssets = useCallback(async () => {
     if (isDeploying) return; // Don't fetch assets while deploying
@@ -338,6 +348,16 @@ const Edit = () => {
     }, 3000);
   }, [dispatch]);
 
+  const handleCustomDomainSubmit = (e) => {
+    e.preventDefault();
+    setShowDNSInstructions(true);
+  };
+
+  const handleConfirmDomain = () => {
+    setShowConfirmationDialog(true);
+    // Here you would typically send a request to your backend to set up the custom domain
+  };
+
   if (!user || !shipId) {
     return null;
   }
@@ -359,7 +379,7 @@ const Edit = () => {
                 <TooltipContent>Back to Home</TooltipContent>
               </Tooltip>
             )}
-            <h1 className="text-xl font-semibold">{shipId}</h1>
+            <h1 className="text-xl font-semibold">Customise your portfolio</h1>
           </div>
           {!isDeploying && (
             <div className="flex flex-row items-start md:items-center md:space-y-0 md:space-x-2 w-full md:w-auto">
@@ -428,7 +448,7 @@ const Edit = () => {
                   className="w-10 h-10 md:w-auto md:px-2"
                   onClick={() => {
                     window.open(
-                      `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
+                      `${import.meta.env.VITE_MAIN_URL}/site/${shipId}/`,
                       "_blank"
                     );
                   }}
@@ -461,8 +481,8 @@ const Edit = () => {
                         Code
                       </TabsTrigger>
                       <TabsTrigger value="assets" className="flex items-center">
-                        <Files className="w-4 h-4 mr-2" />
-                        <span className="text-sm">Assets</span>
+                        <Globe className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Custom Domain</span>
                         {assetCount === 0 ? null : (
                           <Badge
                             variant="default"
@@ -597,11 +617,11 @@ const Edit = () => {
                             Code
                           </TabsTrigger>
                           <TabsTrigger
-                            value="assets"
+                            value="domain"
                             className="flex items-center"
                           >
-                            <Files className="w-4 h-4 mr-2" />
-                            <span className="text-sm">Assets</span>
+                            <Globe className="w-4 h-4 mr-2" />
+                            <span className="text-sm">Custom Domain</span>
                             {assetCount === 0 ? null : (
                               <Badge
                                 variant="default"
@@ -703,6 +723,54 @@ const Edit = () => {
                       fetchAssets={fetchAssets}
                     />
                   </TabsContent>
+                  <TabsContent
+                    value="domain"
+                    className="flex-grow overflow-hidden p-4"
+                  >
+                    <p className="mb-4">
+                      Enhance your portfolio with a custom domain. Benefits include:
+                    </p>
+                    <ul className="space-y-2 mb-4">
+                      <li className="flex items-center">
+                        <Briefcase className="w-5 h-5 mr-2 text-primary" />
+                        <span>Improved branding and professionalism</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Users className="w-5 h-5 mr-2 text-primary" />
+                        <span>Better memorability for potential employers or clients</span>
+                      </li>
+                      <li className="flex items-center">
+                        <Shield className="w-5 h-5 mr-2 text-primary" />
+                        <span>Increased control over your online presence</span>
+                      </li>
+                    </ul>
+                    {!showDNSInstructions ? (
+                      <form onSubmit={handleCustomDomainSubmit} className="space-y-4">
+                        <div className="flex space-x-2">
+                          <Input
+                            type="text"
+                            placeholder="Enter your custom domain (e.g., portfolio.yourdomain.com)"
+                            value={customDomain}
+                            onChange={(e) => setCustomDomain(e.target.value)}
+                            className="flex-grow"
+                          />
+                          <Button type="submit">Connect Domain</Button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="space-y-4">
+                        <h3 className="text-xl font-semibold">DNS Configuration Instructions</h3>
+                        <p>Please add the following A record to your domain's DNS settings:</p>
+                        <div className="bg-muted p-4 rounded">
+                          <p><strong>Type:</strong> A</p>
+                          <p><strong>Name:</strong> @ or portfolio (or your subdomain)</p>
+                          <p><strong>Value:</strong> 184.164.80.42</p>
+                        </div>
+                        <p>Once you've added the DNS record, click the button below to confirm:</p>
+                        <Button onClick={handleConfirmDomain}>Confirm DNS Settings</Button>
+                      </div>
+                    )}
+                  </TabsContent>
                 </Tabs>
               </ResizablePanel>
             )}
@@ -736,6 +804,18 @@ const Edit = () => {
           </ResizablePanelGroup>
         </div>
       </div>
+
+      <Dialog open={showConfirmationDialog} onOpenChange={setShowConfirmationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Domain Connection in Progress</DialogTitle>
+            <DialogDescription>
+              Your custom domain ({customDomain}) is being connected to your portfolio. This process may take up to 24 hours to complete. We'll send you an email confirmation once it's live.
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={() => setShowConfirmationDialog(false)}>Close</Button>
+        </DialogContent>
+      </Dialog>
     </TooltipProvider>
   );
 };
