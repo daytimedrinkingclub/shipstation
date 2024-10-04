@@ -114,6 +114,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const checkCustomDomain = async (shipId) => {
+    try {
+      const { data, error } = await supabase
+        .from('custom_domains')
+        .select('*')
+        .eq('ship_slug', shipId)
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error("Error checking custom domain:", error);
+      return null;
+    }
+  };
+
   useEffect(() => {
     checkUser();
     getWebsitesCount();
@@ -137,6 +154,7 @@ export const AuthProvider = ({ children }) => {
         setAnthropicKey,
         websitesCount,
         getWebsitesCount,
+        checkCustomDomain,
       }}
     >
       {children}
