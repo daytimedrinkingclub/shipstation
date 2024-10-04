@@ -33,6 +33,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
+import { useInView } from 'react-intersection-observer';
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -52,6 +53,11 @@ export default function PortfolioBuilder() {
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [generatedWebsites, setGeneratedWebsites] = useState([]);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const { ref, inView } = useInView({
+    threshold: 0,
+  });
 
   const baseUrl = import.meta.env.VITE_MAIN_URL; //https://shipstation.ai
 
@@ -75,22 +81,36 @@ export default function PortfolioBuilder() {
     }
   }, [isWebsitesDialogOpen]);
 
-  const fetchGeneratedWebsites = async () => {
+  useEffect(() => {
+    if (inView && !isLoading && hasMore) {
+      fetchGeneratedWebsites(page + 1);
+    }
+  }, [inView, isLoading, hasMore]);
+
+  const fetchGeneratedWebsites = async (pageNumber = 1) => {
+    if (!hasMore && pageNumber !== 1) return;
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase
         .from("ships")
         .select("prompt, slug, portfolio_type, id")
         .order("id", { ascending: false })
-        .limit(15);
-
-      console.log(data);
+        .range((pageNumber - 1) * 15, pageNumber * 15 - 1);
 
       if (error) {
         console.error(error);
         throw error;
       }
-      setGeneratedWebsites(data);
+
+      if (pageNumber === 1) {
+        setGeneratedWebsites(data);
+      } else {
+        setGeneratedWebsites((prev) => [...prev, ...data]);
+      }
+
+      setHasMore(data.length === 15);
+      setPage(pageNumber);
     } catch (error) {
       console.error("Error fetching generated websites:", error);
       toast.error("Failed to load generated websites");
@@ -354,6 +374,8 @@ export default function PortfolioBuilder() {
                 onClick: () => handleWebsiteSelection(website),
               }))}
             />
+            {isLoading && <p className="text-center mt-4">Loading...</p>}
+            {!isLoading && hasMore && <div ref={ref} className="h-10" />}
           </div>
         </DialogContent>
       </Dialog>

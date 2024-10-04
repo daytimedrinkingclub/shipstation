@@ -797,14 +797,6 @@ const Edit = () => {
                           >
                             <Globe className="w-4 h-4 mr-2" />
                             <span className="text-sm">Custom Domain</span>
-                            {assetCount === 0 ? null : (
-                              <Badge
-                                variant="default"
-                                className="rounded-full ml-2"
-                              >
-                                {assetCount}
-                              </Badge>
-                            )}
                           </TabsTrigger>
                         </>
                       )}

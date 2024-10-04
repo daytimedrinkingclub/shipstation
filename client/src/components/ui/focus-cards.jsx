@@ -4,6 +4,7 @@ import "react-lazy-load-image-component/src/effects/blur.css";
 import { cn } from "@/lib/utils";
 
 import { ExternalLink } from "lucide-react";
+import { Button } from "./button";
 export const Card = React.memo(({ card, index, hovered, setHovered }) => (
   <div
     onMouseEnter={() => setHovered(index)}
@@ -34,9 +35,11 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
           window.open(card.url, "_blank");
         }}
       >
-        <span className="flex items-center gap-2">
-          View live demo <ExternalLink className="w-4 h-4" />
-        </span>
+        <Button variant="outline" className="text-white">
+          <span className="flex items-center gap-2">
+            View live demo <ExternalLink className="w-4 h-4" />
+          </span>
+        </Button>
       </div>
     </div>
   </div>

@@ -127,7 +127,7 @@ const FileUpload = ({ onFileUpload }) => {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <Label htmlFor={`forAI-${index}`} className="text-xs">
-                    Show to AI for ideas
+                    This is a reference image
                   </Label>
                   <Switch
                     id={`forAI-${index}`}
@@ -143,7 +143,7 @@ const FileUpload = ({ onFileUpload }) => {
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
                   <Label htmlFor={`forWebsite-${index}`} className="text-xs">
-                    Add to my website
+                    I want to add this image to my website
                   </Label>
                   <Switch
                     id={`forWebsite-${index}`}

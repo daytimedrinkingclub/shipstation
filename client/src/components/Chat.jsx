@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 
 import ThreeDotLoader from "@/components/random/ThreeDotLoader";
 import ChatSuggestions from "@/components/ChatSuggestions";
@@ -504,66 +503,45 @@ const Chat = ({
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
             {tempFiles.map((file, index) => (
-              <Card key={index} className="bg-gray-50">
+              <Card key={index} className="bg-card">
                 <CardContent className="p-4 space-y-4">
-                  <div className="aspect-video bg-gray-200 rounded-md overflow-hidden">
+                  <div className="aspect-video bg-muted rounded-md overflow-hidden">
                     <FilePreview file={file.file} />
                   </div>
                   <div>
                     <p
-                      className="font-semibold truncate"
+                      className="font-semibold truncate text-foreground"
                       title={file.file.name}
                     >
                       {file.file.name}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-muted-foreground">
                       {(file.file.size / 1024).toFixed(2)} KB
                     </p>
                   </div>
-                  <div>
-                    <Label
-                      htmlFor={`description-${index}`}
-                      className="text-xs mb-1 block"
-                    >
-                      Description (required)
-                    </Label>
+                  <div className="space-y-2">
                     <Input
-                      id={`description-${index}`}
                       placeholder="Enter description"
                       value={file.description}
-                      onChange={(e) =>
-                        handleDescriptionChange(file.file.name, e.target.value)
-                      }
+                      onChange={(e) => updateDescription(file.file.name, e.target.value)}
+                      className="text-xs"
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor={`forAI-${index}`} className="text-xs">
-                        Show to AI for ideas
-                      </Label>
-                      <Switch
-                        id={`forAI-${index}`}
-                        checked={file.forAI}
-                        onCheckedChange={() =>
-                          toggleUse(file.file.name, "forAI")
-                        }
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <Label
-                        htmlFor={`forWebsite-${index}`}
-                        className="text-xs"
-                      >
-                        Add to my website
-                      </Label>
-                      <Switch
-                        id={`forWebsite-${index}`}
-                        checked={file.forWebsite}
-                        onCheckedChange={() =>
-                          toggleUse(file.file.name, "forWebsite")
-                        }
-                      />
-                    </div>
+                    <Tabs defaultValue="portfolio" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="portfolio">Add to Portfolio</TabsTrigger>
+                        <TabsTrigger value="reference">Use as Reference</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="portfolio">
+                        <p className="text-xs text-muted-foreground">
+                          This image will be added to your portfolio.
+                        </p>
+                      </TabsContent>
+                      <TabsContent value="reference">
+                        <p className="text-xs text-muted-foreground">
+                          This image will be used as a reference for AI.
+                        </p>
+                      </TabsContent>
+                    </Tabs>
                   </div>
                 </CardContent>
               </Card>
