@@ -53,6 +53,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { setIsDeploying } from "@/store/deploymentSlice";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import axios from 'axios';
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -139,6 +140,7 @@ const Edit = () => {
   const [customDomain, setCustomDomain] = useState("");
   const [showDNSInstructions, setShowDNSInstructions] = useState(false);
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [isConnectingDomain, setIsConnectingDomain] = useState(false);
 
   const fetchAssets = useCallback(async () => {
     if (isDeploying) return; // Don't fetch assets while deploying
@@ -353,9 +355,26 @@ const Edit = () => {
     setShowDNSInstructions(true);
   };
 
-  const handleConfirmDomain = () => {
-    setShowConfirmationDialog(true);
-    // Here you would typically send a request to your backend to set up the custom domain
+  const handleConfirmDomain = async () => {
+    setIsConnectingDomain(true);
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/add-custom-domain`, {
+        domain: customDomain,
+        shipSlug: shipId 
+      });
+
+      if (response.status === 200) {
+        setShowConfirmationDialog(true);
+        toast.success("Custom domain connection initiated successfully!");
+      } else {
+        throw new Error("Failed to connect custom domain");
+      }
+    } catch (error) {
+      console.error("Error connecting custom domain:", error);
+      toast.error("Failed to connect custom domain. Please try again.");
+    } finally {
+      setIsConnectingDomain(false);
+    }
   };
 
   if (!user || !shipId) {
@@ -754,7 +773,7 @@ const Edit = () => {
                             onChange={(e) => setCustomDomain(e.target.value)}
                             className="flex-grow"
                           />
-                          <Button type="submit">Connect Domain</Button>
+                          <Button type="submit" disabled={!customDomain}>Connect</Button>
                         </div>
                       </form>
                     ) : (
@@ -767,7 +786,12 @@ const Edit = () => {
                           <p><strong>Value:</strong> 184.164.80.42</p>
                         </div>
                         <p>Once you've added the DNS record, click the button below to confirm:</p>
-                        <Button onClick={handleConfirmDomain}>Confirm DNS Settings</Button>
+                        <Button 
+                          onClick={handleConfirmDomain} 
+                          disabled={isConnectingDomain}
+                        >
+                          {isConnectingDomain ? "Connecting..." : "Confirm DNS Settings"}
+                        </Button>
                       </div>
                     )}
                   </TabsContent>

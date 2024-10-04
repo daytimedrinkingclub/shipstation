@@ -418,15 +418,15 @@ app.post(
 );
 
 app.post("/add-custom-domain", async (req, res) => {
-  const { domain, shipId, shipSlug } = req.body;
-  if (!domain || !shipId || !shipSlug) {
+  const { domain, shipSlug } = req.body;
+  if (!domain || !shipSlug) {
     return res
       .status(400)
       .json({ error: "Missing domain, shipId or shipSlug" });
   }
 
   try {
-    await addDomainMapping(domain, shipId, shipSlug);
+    await addDomainMapping(domain, shipSlug);
     res.status(200).json({ message: "Custom domain added successfully" });
   } catch (error) {
     console.error("Error adding custom domain:", error);

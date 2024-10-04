@@ -348,7 +348,7 @@ const Chat = ({
               <Skeleton className="h-10 w-3/4 rounded" />
             </div>
             <div className="flex justify-start mb-2">
-              <Skeleton className="h-20 w-3/4 rounded" />
+              <Skeleton className="h-20 w-3/4 rounded bg-slate-600" />
             </div>
             <div className="flex justify-end mb-2">
               <Skeleton className="h-10 w-2/4 rounded" />

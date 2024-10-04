@@ -84,7 +84,12 @@ export default function PortfolioBuilder() {
         .order("id", { ascending: false })
         .limit(15);
 
-      if (error) throw error;
+      console.log(data);
+
+      if (error) {
+        console.error(error);
+        throw error;
+      }
       setGeneratedWebsites(data);
     } catch (error) {
       console.error("Error fetching generated websites:", error);
@@ -97,6 +102,7 @@ export default function PortfolioBuilder() {
   const handleWebsiteSelection = (website) => {
     setCustomDesignPrompt(website.prompt);
     setIsWebsitesDialogOpen(false);
+    toast.success("Prompt selected and applied!");
   };
 
   const handleSubmit = useCallback(() => {
@@ -223,7 +229,8 @@ export default function PortfolioBuilder() {
           isGenerating={isGenerating}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
+          {/* Commented out first card
           <Card
             className="relative cursor-pointer overflow-hidden h-full bg-gray-50 dark:bg-gray-800 transition-all duration-300 ease-in-out hover:shadow-lg group"
             onClick={() => setIsWebsitesDialogOpen(true)}
@@ -240,13 +247,24 @@ export default function PortfolioBuilder() {
               <Button disabled={isGenerating}>View Inspirations</Button>
             </CardContent>
           </Card>
+          */}
 
           <Card className="h-full">
-            <CardHeader>
-              <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
-              <CardDescription>
-                Describe your ideal portfolio design
-              </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
+                <CardDescription>
+                  Describe your ideal portfolio design
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => setIsWebsitesDialogOpen(true)}
+                disabled={isGenerating}
+                size="sm"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Prompt Gallery
+              </Button>
             </CardHeader>
             <CardContent>
               <CustomDesignPrompt

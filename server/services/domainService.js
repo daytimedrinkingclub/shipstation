@@ -48,7 +48,22 @@ async function getDomainMapping(domain) {
   return data ? { shipSlug: data.ship_slug } : null;
 }
 
-async function addDomainMapping(domain, shipId, shipSlug) {
+async function addDomainMapping(domain, shipSlug) {
+  // Get the ship_id from the ships table
+  const { data: shipData, error: shipError } = await supabaseClient
+    .from("ships")
+    .select("id")
+    .eq("slug", shipSlug)
+    .single();
+
+  if (shipError) {
+    console.error("Error fetching ship id:", shipError);
+    throw shipError;
+  }
+
+  const shipId = shipData.id;
+
+  // Insert the domain mapping
   const { data, error } = await supabaseClient
     .from("custom_domains")
     .insert({ domain, ship_id: shipId, ship_slug: shipSlug });
