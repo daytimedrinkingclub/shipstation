@@ -523,7 +523,9 @@ const Chat = ({
                     <Input
                       placeholder="Enter description"
                       value={file.description}
-                      onChange={(e) => updateDescription(file.file.name, e.target.value)}
+                      onChange={(e) =>
+                        handleDescriptionChange(file.file.name, e.target.value)
+                      }
                       className="text-xs"
                     />
                     <Tabs defaultValue="portfolio" className="w-full">
