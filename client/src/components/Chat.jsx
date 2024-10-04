@@ -44,7 +44,13 @@ import {
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
 import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
 
-const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
+const Chat = ({
+  shipId,
+  onCodeUpdate,
+  onAssetsUpdate,
+  initialPrompt,
+  isDeploying,
+}) => {
   const { socket } = useSocket();
   const { uploadAssets } = useProject(shipId);
 
@@ -64,17 +70,42 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
   const dispatch = useDispatch();
   const filesToUpload = useSelector((state) => state.fileUpload.filesToUpload);
 
+  const [isInitialized, setIsInitialized] = useState(false);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const initChat = async () => {
     setIsLoadingMessages(true);
-    await fetchConversationHistory();
-    await fetchInitialUserMessage();
+    if (isDeploying && initialPrompt) {
+      setMessages([
+        { text: initialPrompt, sender: "user" },
+        { text: "", sender: "assistant", isLoading: true },
+      ]);
+    } else {
+      await fetchConversationHistory();
+      if (!isDeploying) {
+        await fetchInitialUserMessage();
+      }
+    }
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
+    setIsInitialized(true);
   };
+
+  useEffect(() => {
+    if (!isInitialized) {
+      initChat();
+    }
+  }, [isInitialized, isDeploying, initialPrompt]);
+
+  useEffect(() => {
+    if (isInitialized && !isDeploying) {
+      setMessages([]);
+      fetchInitialUserMessage();
+    }
+  }, [isDeploying, isInitialized]);
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
@@ -82,10 +113,6 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
     );
     setIsUploadDisabled(!allDescriptionsFilled);
   }, [fileDescriptions, tempFiles]);
-
-  useEffect(() => {
-    initChat();
-  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -348,7 +375,11 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {convertUrlsToLinks(message.text || "")}
+                  {message.isLoading ? (
+                    <ThreeDotLoader />
+                  ) : (
+                    convertUrlsToLinks(message.text || "")
+                  )}
                 </span>
                 {message.assetInfo && (
                   <span className="text-sm text-muted-foreground mt-1">
@@ -368,7 +399,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
         )}
         <div ref={messagesEndRef} />
       </div>
-      {messages.length <= 2 && (
+      {messages.length <= 2 && !isDeploying && (
         <div className="px-4">
           <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
         </div>
@@ -389,6 +420,7 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
               className="hidden"
               onChange={(e) => handleFiles(e.target.files)}
               multiple
+              disabled={isLoading || isDeploying}
             />
           </div>
           <span className="text-xs text-gray-500 hidden md:block">
@@ -401,14 +433,14 @@ const Chat = ({ shipId, onCodeUpdate, onAssetsUpdate }) => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Describe changes or attach files/images for your website..."
             onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            disabled={isLoading}
+            disabled={isLoading || isDeploying}
             rows={3}
             className="pr-12"
           />
           {input.trim() && (
             <Button
               onClick={handleSend}
-              disabled={isLoading}
+              disabled={isLoading || isDeploying}
               size="sm"
               className="absolute bottom-2 right-2"
             >

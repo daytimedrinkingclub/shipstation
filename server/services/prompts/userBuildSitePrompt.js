@@ -4,45 +4,38 @@ const { getDesignPresetPrompt } = require("../dbService");
 const createUserBuildSitePrompt = async (
   shipType,
   analysis,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage
+  designChoice,
+  selectedDesign,
+  customDesignPrompt
 ) => {
   let designPresetPrompt = "";
-  if (shipType !== "landing_page") {
+  let designLanguage = {};
+
+  if (designChoice === "preset" && selectedDesign) {
     try {
       const designPresetData = await getDesignPresetPrompt(
         shipType,
-        designLanguage?.design_name
+        selectedDesign.design_name
       );
       designPresetPrompt = designPresetData.additive_prompt;
+      designLanguage = selectedDesign;
     } catch (error) {
       console.error("Error fetching design preset prompt:", error);
       designPresetPrompt = "Default design guidelines";
     }
+  } else if (designChoice === "custom" && customDesignPrompt) {
+    designPresetPrompt = customDesignPrompt;
+    designLanguage = {
+      design_name: "Custom Design",
+      design_description: "Custom design based on user input",
+      color_palette: {},
+      fonts: [],
+    };
   } else {
-    designPresetPrompt =
-      "Follow the provided design language strictly without additional preset guidelines.";
+    throw new Error("Invalid design choice or missing required data");
   }
-
-  const formatSections = (sections) => {
-    return sections
-      .map(
-        (section, index) =>
-          `Section ${index + 1}:\nTitle: ${section.title}\nContent: ${
-            section.content
-          }\n`
-      )
-      .join("\n");
-  };
-
-  const formatWebsiteAssets = (assets) => {
-    return assets
-      .map((asset) => `URL: ${asset.url}\nComment: ${asset.comment}\n`)
-      .join("\n");
-  };
 
   const formatColorPalette = (palette) => {
     return Object.entries(palette)
@@ -73,18 +66,13 @@ const createUserBuildSitePrompt = async (
   You are a web developer tasked with creating a modern, visually appealing, and fully responsive website based on specific user requirements. Your primary goal is to create a website that accurately reflects the user's needs while incorporating the specified design language and elements.
   
   Important: The implementation should strictly adhere to the user's requirements and the specified design language. Use the provided information to guide your implementation, ensuring that all requested sections and features are included.
+
+  User Name: ${name}
+  IMPORTANT: Prominently display the user's name (${name}) in the website, such as in the header or hero section.
   
   User-Specific Requirements:
   ${shipType === "portfolio" ? `Portfolio Type: ${portfolioType}` : ""}
   ${shipType === "landing_page" ? "Website Type: Landing Page" : ""}
-  
-  Sections:
-  ${formatSections(sections)}
-  
-  IMPORTANT: Create the sections in the exact order provided above. Do not add any new sections or remove any sections. The content and order of these sections are final and must be strictly followed.
-  
-  Social Media Links:
-  ${socials.join("\n")}
   
   Design:
   Name: ${designLanguage.design_name}
@@ -93,26 +81,42 @@ const createUserBuildSitePrompt = async (
   Design Guidelines:
   ${designPresetPrompt}
   
+  ${
+    designChoice === "preset"
+      ? `
   Color Palette:
   ${formatColorPalette(designLanguage.color_palette)}
   
   Fonts:
   ${formatFonts(designLanguage.fonts)}
   IMPORTANT: Use Google Fonts for all specified fonts. Prioritize the use of the user-selected primary font in the design.
-  
-  Website Assets:
-  ${formatWebsiteAssets(websiteAssets)}
-  IMPORTANT: Incorporate these assets into the website as per their respective comments. Each asset should be used according to the specific instructions provided in its comment.
-  
+  `
+      : ""
+  }
+
   General Guidelines:
   - Implement the exact design language specified (${
     designLanguage.design_name
   }).
+  ${
+    designChoice === "preset"
+      ? `
   - Use the provided color palette strictly.
   - Prioritize the use of the user-selected primary font, complementing it with the additional fonts as needed.
-  - Create only the sections specified by the user, in the exact order provided.
-  - Incorporate the provided website assets as described in their comments.
-  - Include the specified social media links in appropriate locations (e.g., footer, contact section).
+  `
+      : `
+      Custom Design Instructions:
+        1. Carefully analyze the user's custom design requirements provided below.
+        2. Extract key design elements, color schemes, typography preferences, and layout ideas from the user's description.
+        3. Create a cohesive design that accurately reflects the user's vision while maintaining professional web design standards.
+        4. If specific colors are mentioned, use them as the primary color palette. If not, choose a suitable color scheme that matches the described style.
+        5. Select appropriate Google Fonts that align with the described typography style.
+        6. Implement a layout and structure that best represents the user's described design, while ensuring responsiveness and usability.
+      `
+  }
+  - Generate appropriate sections and content based on the ${portfolioType}.
+  - Create relevant social media links and include them in appropriate locations (e.g., footer, contact section).
+  - Ensure the generated sections and content align with industry standards for the specified portfolioType.
   - Ensure the design is fully responsive and looks great on mobile, tablet, and desktop devices.
   - Optimize for performance and accessibility.
   
@@ -132,7 +136,7 @@ const createUserBuildSitePrompt = async (
   - Inline JavaScript for functionality and interactions
   - Inline Tailwind CSS classes, making extensive use of responsive utility classes
   
-  Remember to strictly follow the user's requirements, including only the specified sections in the exact order provided and adhering to the chosen design language.
+  Remember to strictly follow the user's design requirements, going above and beyond to fulfill them. Pay meticulous attention to the smallest details, ensuring every aspect of the design aligns perfectly with the user's vision. Leave no stone unturned in creating a website that exceeds expectations and truly embodies the specified design language and requirements.
   `;
 
   // Include analysis if provided

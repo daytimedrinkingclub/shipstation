@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState, useRef, useCallback } from "react";
 import { format } from "date-fns";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import {
   Save,
@@ -42,6 +42,11 @@ import {
 } from "@/components/ui/tooltip";
 import { Loader } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
+import Lottie from "react-lottie-player";
+import lottieAnimation from "@/assets/lottie/ship.json";
+import Confetti from "react-confetti";
+import { useSelector, useDispatch } from "react-redux";
+import { setIsDeploying } from "@/store/deploymentSlice";
 
 const ViewOptions = ({ currentView, onViewChange }) => {
   const views = [
@@ -97,7 +102,7 @@ const Edit = () => {
     useProject(shipId);
 
   const [fileContent, setFileContent] = useState("");
-  const [isFileLoading, setIsFileLoading] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(true);
   const iframeRef = useRef(null);
   const [unsavedChanges, setUnsavedChanges] = useState(false);
 
@@ -116,7 +121,18 @@ const Edit = () => {
 
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
+  const [isWebsiteDeployed, setIsWebsiteDeployed] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const dispatch = useDispatch();
+  const isDeploying = useSelector((state) => state.deployment.isDeploying);
+
+  const location = useLocation();
+  const initialPrompt = location.state?.initialPrompt || "";
+
   const fetchAssets = useCallback(async () => {
+    if (isDeploying) return; // Don't fetch assets while deploying
+
     try {
       const { data, error } = await supabase
         .from("ships")
@@ -146,11 +162,13 @@ const Edit = () => {
       setAssets([]);
       setAssetCount(0);
     }
-  }, [shipId]);
+  }, [shipId, isDeploying]);
 
   useEffect(() => {
-    fetchAssets();
-  }, [fetchAssets]);
+    if (!isDeploying) {
+      fetchAssets();
+    }
+  }, [fetchAssets, isDeploying]);
 
   const updateAssets = useCallback((newAssets) => {
     setAssets(newAssets);
@@ -160,11 +178,11 @@ const Edit = () => {
   useEffect(() => {
     if (!userLoading && (!user || !shipId)) {
       navigate("/");
-    } else {
-      // Load index.html content when the component mounts
+    } else if (!isDeploying) {
+      // Load index.html content when the component mounts and not deploying
       loadIndexHtml();
     }
-  }, [user, shipId, navigate, userLoading]);
+  }, [user, shipId, navigate, userLoading, isDeploying]);
 
   useEffect(() => {
     const preventScroll = (e) => {
@@ -281,14 +299,18 @@ const Edit = () => {
       socket.on("undoResult", handleUndoResult);
       socket.on("redoResult", handleRedoResult);
       socket.on("codeUpdate", handleCodeUpdate);
+      socket.on("websiteDeployed", handleWebsiteDeployed);
+      socket.on("project_started", () => dispatch(setIsDeploying(true)));
 
       return () => {
         socket.off("undoResult", handleUndoResult);
         socket.off("redoResult", handleRedoResult);
         socket.off("codeUpdate", handleCodeUpdate);
+        socket.off("websiteDeployed", handleWebsiteDeployed);
+        socket.off("project_started");
       };
     }
-  }, [socket]);
+  }, [socket, dispatch]);
 
   const shuffleDevice = () => {
     const newDevice =
@@ -306,6 +328,16 @@ const Edit = () => {
     setAssetCount((prevCount) => prevCount + newAssets.length);
   };
 
+  const handleWebsiteDeployed = useCallback(() => {
+    setIsWebsiteDeployed(true);
+    dispatch(setIsDeploying(false));
+    setShowConfetti(true);
+    toast.success("Your website has been deployed!");
+    setTimeout(() => {
+      setShowConfetti(false);
+    }, 3000);
+  }, [dispatch]);
+
   if (!user || !shipId) {
     return null;
   }
@@ -313,97 +345,102 @@ const Edit = () => {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
+        {showConfetti && <Confetti />}
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
           <div className="flex items-center space-x-4 w-full md:w-auto">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Link to="/" className="text-foreground hover:text-primary">
-                  <ChevronLeft className="w-6 h-6" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent>Back to Projects</TooltipContent>
-            </Tooltip>
+            {!isDeploying && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link to="/" className="text-foreground hover:text-primary">
+                    <ChevronLeft className="w-6 h-6" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>Back to Home</TooltipContent>
+              </Tooltip>
+            )}
             <h1 className="text-xl font-semibold">{shipId}</h1>
           </div>
-          <div className="flex flex-row items-start md:items-center md:space-y-0 md:space-x-2 w-full md:w-auto">
-            <div className="flex w-full md:w-auto">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleUndo}
-                    disabled={isUndoing}
-                    className="w-10 h-10 px-2 rounded-l-md rounded-r-none"
-                  >
-                    <Undo2 className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Undo</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleRedo}
-                    disabled={isRedoing}
-                    className="w-10 h-10 px-2 rounded-l-none rounded-r-md -ml-px"
-                  >
-                    <Redo2 className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Redo</TooltipContent>
-              </Tooltip>
-            </div>
-
-            <div className="flex flex-row items-center space-x-2">
-              <Button
-                variant={`${showMobilePreview ? "default" : "outline"}`}
-                onClick={() => setShowMobilePreview(!showMobilePreview)}
-                className="w-auto h-10 md:hidden"
-              >
-                <Eye className="w-4 h-4 mr-2" />
-                Preview
-              </Button>
-
-              <div className="hidden md:flex">
-                <ViewOptions
-                  currentView={currentView}
-                  onViewChange={setCurrentView}
-                />
+          {!isDeploying && (
+            <div className="flex flex-row items-start md:items-center md:space-y-0 md:space-x-2 w-full md:w-auto">
+              <div className="flex w-full md:w-auto">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleUndo}
+                      className="w-10 h-10 px-2 rounded-l-md rounded-r-none"
+                    >
+                      <Undo2 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Undo</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleRedo}
+                      className="w-10 h-10 px-2 rounded-l-none rounded-r-md -ml-px"
+                    >
+                      <Redo2 className="w-4 h-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Redo</TooltipContent>
+                </Tooltip>
               </div>
 
-              <Button
-                variant="secondary"
-                size="icon"
-                className="w-10 h-10 md:w-auto md:px-2"
-                onClick={() => {
-                  handledownloadzip();
-                  toast("Project will be downloaded shortly!");
-                }}
-              >
-                <Download className="w-4 h-4 md:mr-2" />
-                <span className="hidden md:inline">Export Project</span>
-              </Button>
+              <div className="flex flex-row items-center space-x-2">
+                <Button
+                  variant={`${showMobilePreview ? "default" : "outline"}`}
+                  onClick={() => setShowMobilePreview(!showMobilePreview)}
+                  className="w-auto h-10 md:hidden"
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
+                </Button>
 
-              <Button
-                variant="default"
-                size="icon"
-                className="w-10 h-10 md:w-auto md:px-2"
-                onClick={() => {
-                  window.open(
-                    `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
-                    "_blank"
-                  );
-                }}
-              >
-                <ExternalLink className="w-4 h-4 md:mr-2" />
-                <span className="hidden md:inline">Preview Live Site</span>
-              </Button>
+                <div className="hidden md:flex">
+                  <ViewOptions
+                    currentView={currentView}
+                    onViewChange={setCurrentView}
+                  />
+                </div>
+
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="w-10 h-10 md:w-auto md:px-2"
+                  onClick={() => {
+                    handledownloadzip();
+                    toast("Project will be downloaded shortly!");
+                  }}
+                >
+                  <Download className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Export Project</span>
+                </Button>
+
+                <Button
+                  variant="default"
+                  size="icon"
+                  className="w-10 h-10 md:w-auto md:px-2"
+                  onClick={() => {
+                    window.open(
+                      `${import.meta.env.VITE_BACKEND_URL}/site/${shipId}/`,
+                      "_blank"
+                    );
+                  }}
+                >
+                  <ExternalLink className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Preview Live Site</span>
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
+
         <div className="md:hidden flex flex-col flex-1 overflow-hidden rounded-lg border border-border">
           <div className={showMobilePreview ? "hidden" : "flex-1"}>
             <Tabs
@@ -417,19 +454,26 @@ const Edit = () => {
                     <MessageSquare className="w-4 h-4 mr-2" />
                     AI Chat
                   </TabsTrigger>
-                  <TabsTrigger value="code" className="flex items-center">
-                    <Code className="w-4 h-4 mr-2" />
-                    Code
-                  </TabsTrigger>
-                  <TabsTrigger value="assets" className="flex items-center">
-                    <Files className="w-4 h-4 mr-2" />
-                    <span className="text-sm">Assets</span>
-                    {assetCount === 0 ? null : (
-                      <Badge variant="default" className="rounded-full ml-2">
-                        {assetCount}
-                      </Badge>
-                    )}
-                  </TabsTrigger>
+                  {!isDeploying && (
+                    <>
+                      <TabsTrigger value="code" className="flex items-center">
+                        <Code className="w-4 h-4 mr-2" />
+                        Code
+                      </TabsTrigger>
+                      <TabsTrigger value="assets" className="flex items-center">
+                        <Files className="w-4 h-4 mr-2" />
+                        <span className="text-sm">Assets</span>
+                        {assetCount === 0 ? null : (
+                          <Badge
+                            variant="default"
+                            className="rounded-full ml-2"
+                          >
+                            {assetCount}
+                          </Badge>
+                        )}
+                      </TabsTrigger>
+                    </>
+                  )}
                 </TabsList>
                 {activeTab === "code" && (
                   <Button
@@ -451,6 +495,8 @@ const Edit = () => {
                   onAssetsUpdate={handleAssetsUpdate}
                   assets={assets}
                   assetCount={assetCount}
+                  initialPrompt={initialPrompt}
+                  isDeploying={isDeploying}
                 />
               </TabsContent>
               <TabsContent value="code" className="flex-grow overflow-hidden">
@@ -515,6 +561,7 @@ const Edit = () => {
                 ref={iframeRef}
                 slug={shipId}
                 isLoading={isFileLoading}
+                isDeploying={isDeploying}
               />
               {(isUndoing || isRedoing || isCodeUpdating || isChatUpdating) && (
                 <LoaderCircle />
@@ -540,22 +587,32 @@ const Edit = () => {
                         <MessageSquare className="w-4 h-4 mr-2" />
                         AI Chat
                       </TabsTrigger>
-                      <TabsTrigger value="code" className="flex items-center">
-                        <Code className="w-4 h-4 mr-2" />
-                        Code
-                      </TabsTrigger>
-                      <TabsTrigger value="assets" className="flex items-center">
-                        <Files className="w-4 h-4 mr-2" />
-                        <span className="text-sm">Assets</span>
-                        {assetCount === 0 ? null : (
-                          <Badge
-                            variant="default"
-                            className="rounded-full ml-2"
+                      {!isDeploying && (
+                        <>
+                          <TabsTrigger
+                            value="code"
+                            className="flex items-center"
                           >
-                            {assetCount}
-                          </Badge>
-                        )}
-                      </TabsTrigger>
+                            <Code className="w-4 h-4 mr-2" />
+                            Code
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="assets"
+                            className="flex items-center"
+                          >
+                            <Files className="w-4 h-4 mr-2" />
+                            <span className="text-sm">Assets</span>
+                            {assetCount === 0 ? null : (
+                              <Badge
+                                variant="default"
+                                className="rounded-full ml-2"
+                              >
+                                {assetCount}
+                              </Badge>
+                            )}
+                          </TabsTrigger>
+                        </>
+                      )}
                     </TabsList>
                     {activeTab === "code" && (
                       <Tooltip>
@@ -585,6 +642,8 @@ const Edit = () => {
                       onAssetsUpdate={handleAssetsUpdate}
                       assets={assets}
                       assetCount={assetCount}
+                      initialPrompt={initialPrompt}
+                      isDeploying={isDeploying}
                     />
                   </TabsContent>
                   <TabsContent
@@ -661,6 +720,7 @@ const Edit = () => {
                   slug={shipId}
                   currentView={currentView}
                   isLoading={isFileLoading}
+                  isDeploying={isDeploying}
                 />
                 {(isUndoing ||
                   isRedoing ||

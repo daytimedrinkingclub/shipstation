@@ -26,7 +26,7 @@ export const DEVICE_FRAMES = [
 export const HAS_NOTCH = ["iPhone X"];
 
 const IframePreview = forwardRef(
-  ({ slug, isLoading, device = null, currentView }, ref) => {
+  ({ slug, isLoading, isDeploying, device = null, currentView }, ref) => {
     const iframeRef = useRef(null);
     const containerRef = useRef(null);
     const [isFocused, setIsFocused] = useState(false);
@@ -79,28 +79,34 @@ const IframePreview = forwardRef(
       };
     }, [currentView, isFocused]);
 
-    const content = isLoading ? (
-      <div className="w-full h-full flex items-center justify-center">
-        <Lottie
-          loop
-          animationData={lottieAnimation}
-          play
-          style={{ width: 150, height: 150 }}
-        />
-      </div>
-    ) : slug ? (
-      <iframe
-        ref={iframeRef}
-        src={`${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`}
-        className={`w-full h-full border-0 ${
-          device && HAS_NOTCH.includes(device) ? "pt-8 bg-black" : ""
-        }`}
-      ></iframe>
-    ) : (
-      <div className="w-full h-full flex items-center justify-center text-gray-400">
-        No preview available
-      </div>
-    );
+    const content =
+      isLoading || isDeploying ? (
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <Lottie
+            loop
+            animationData={lottieAnimation}
+            play
+            style={{ width: 150, height: 150 }}
+          />
+          {isDeploying && (
+            <p className="mt-4 text-lg font-semibold">
+              Generating your portfolio...
+            </p>
+          )}
+        </div>
+      ) : slug ? (
+        <iframe
+          ref={iframeRef}
+          src={`${import.meta.env.VITE_BACKEND_URL}/site/${slug}/`}
+          className={`w-full h-full border-0 ${
+            device && HAS_NOTCH.includes(device) ? "pt-8 bg-black" : ""
+          }`}
+        ></iframe>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-gray-400">
+          No preview available
+        </div>
+      );
 
     const wrapperClass = `w-full h-full ${
       currentView !== "fullscreen" && currentView !== "mobile"

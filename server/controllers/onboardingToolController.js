@@ -25,15 +25,13 @@ async function handleOnboardingToolUse({
   userId,
   client,
   shipType,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
-  console.log("onboradingToolController recieved images:", images.length);
-
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
@@ -64,8 +62,16 @@ async function handleOnboardingToolUse({
       Sections : ${sections}
       Design style : ${design_style}`
     );
+    console.log(
+      "project_started sending event",
+      "slug:",
+      generatedFolderName,
+      "prompt:",
+      customDesignPrompt
+    );
     sendEvent("project_started", {
       slug: generatedFolderName,
+      prompt: customDesignPrompt,
     });
     return [
       {
@@ -93,6 +99,7 @@ async function handleOnboardingToolUse({
     );
     sendEvent("project_started", {
       slug: generatedFolderName,
+      prompt: customDesignPrompt,
     });
     return [
       {
@@ -184,22 +191,25 @@ async function handleOnboardingToolUse({
       sendEvent,
       client,
       shipType,
-      images,
+      name,
       portfolioType,
-      websiteAssets,
-      sections,
-      socials,
-      designLanguage,
+      designChoice,
+      selectedDesign,
+      customDesignPrompt,
+      images,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";
     const endTimestamp = Date.now();
     const duration = (endTimestamp - client.startTimestamp) / 1000; // Convert to seconds
     console.log("Time taken for CTO tool (in seconds):", duration);
+
     const ship = {
       user_id: userId,
       status: "completed",
-      prompt: messages[0].content[0].text,
+      prompt: customDesignPrompt,
+      name: name,
+      portfolio_type: portfolioType,
       mode,
       slug,
       execution_time: duration,

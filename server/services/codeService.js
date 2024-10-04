@@ -16,20 +16,20 @@ async function codeAssistant({
   filePath,
   client,
   shipType,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
   console.log("codeAssistant received:", {
+    name: name,
     images: images?.length,
-    portfolioType,
-    websiteAssets: websiteAssets?.length,
-    sections: sections?.length,
-    socials: socials?.length,
-    designLanguage: designLanguage ? "present" : "undefined",
+    portfolioType: portfolioType,
+    designChoice: designChoice,
+    selectedDesign: selectedDesign,
+    customDesignPrompt: customDesignPrompt,
   });
 
   try {
@@ -79,11 +79,12 @@ async function codeAssistant({
     buildPrompt = await createUserBuildSitePrompt(
       shipType,
       analysisResult?.analysis || null,
+      name,
       portfolioType,
-      websiteAssets,
-      sections,
-      socials,
-      designLanguage
+      designChoice,
+      selectedDesign,
+      customDesignPrompt,
+      images
     );
 
     messages.push({

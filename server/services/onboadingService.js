@@ -30,15 +30,15 @@ async function processConversation({
   abortSignal,
   userId,
   shipType,
-  message,
-  images,
+  name,
   portfolioType,
-  websiteAssets,
-  sections,
-  socials,
-  designLanguage,
+  designChoice,
+  selectedDesign,
+  customDesignPrompt,
+  images,
 }) {
-  console.log("processConversation received images:", images.length);
+  console.log("Entered processConversation function");
+  console.log("processConversation received images:", images?.length);
 
   while (true) {
     if (abortSignal.aborted) {
@@ -46,7 +46,6 @@ async function processConversation({
     }
 
     let currentMessage;
-
     let messages = [];
     let tools = [];
 
@@ -54,16 +53,13 @@ async function processConversation({
       if (shipType === SHIP_TYPES.PORTFOLIO) {
         tools.push(ctoTool);
         tools.push(startShippingPortfolioTool);
-      }
-      if (shipType === SHIP_TYPES.LANDING_PAGE) {
+      } else if (shipType === SHIP_TYPES.LANDING_PAGE) {
         tools.push(ctoTool);
         tools.push(startShippingLandingPageTool);
-      }
-      if (shipType === SHIP_TYPES.EMAIL_TEMPLATE) {
+      } else if (shipType === SHIP_TYPES.EMAIL_TEMPLATE) {
         tools.push(ctoTool);
         tools.push(startShippingEmailTemplateTool);
-      }
-      if (shipType === SHIP_TYPES.PROMPT) {
+      } else if (shipType === SHIP_TYPES.PROMPT) {
         tools.push(ctoTool);
         tools.push(productManagerTool);
         tools.push(searchTool);
@@ -71,16 +67,26 @@ async function processConversation({
       }
     }
 
-    let content = [{ type: "text", text: message }];
+    let content = [
+      {
+        type: "text",
+        text: `Generate a ${portfolioType} portfolio for ${name}. This portfolio should showcase ${name}'s work and skills in the field of ${portfolioType}.`,
+      },
+    ];
 
-    if (sections && sections.length > 0) {
-      content.push({ type: "text", text: "User-suggested sections:" });
-      sections.forEach((section, index) => {
-        content.push({
-          type: "text",
-          text: `${index + 1}. ${section.title}: ${section.content}`,
-        });
-      });
+    if (portfolioType) {
+      const portfolioPrompt = `
+      Based on the portfolio type "${portfolioType}", create a comprehensive portfolio website for ${name}. Use your knowledge to generate appropriate placeholder content and sections typically found in a ${portfolioType.toLowerCase()} portfolio. Consider the following:
+      
+      1. Identify and include key sections relevant to a ${portfolioType.toLowerCase()} portfolio (e.g., About, Projects, Skills).
+      2. Generate placeholder content for each section that aligns with the ${portfolioType.toLowerCase()} field.
+      3. Include any specific elements or features commonly found in ${portfolioType.toLowerCase()} portfolios.
+      
+      Your task is to create a complete, professional portfolio website using this limited information. Use your best judgment to fill in any gaps with realistic, industry-appropriate placeholder data. The goal is to produce a functional, appealing portfolio that can be easily customized later with real data.
+      
+      Proceed to build the portfolio site incorporating these elements and your expertise in web development and ${portfolioType.toLowerCase()} portfolios.`;
+
+      content.push({ type: "text", text: portfolioPrompt });
     }
 
     // Add images to the content if available
@@ -105,25 +111,20 @@ async function processConversation({
 
     messages = [{ role: "user", content: content }];
 
-    try {
-      // insertMessage({
-      //   chat_id: roomId,
-      //   role: "user",
-      //   content: messages[0].content,
-      // });
-      const systemPrompt = (() => {
-        switch (shipType) {
-          case SHIP_TYPES.PORTFOLIO:
-            return "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
-          case SHIP_TYPES.LANDING_PAGE:
-            return "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
-          case SHIP_TYPES.EMAIL_TEMPLATE:
-            return "Your task is to create an email template for the user. Analyze the user's requirements and use the start_shipping_email_template_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the email template.";
-          default:
-            throw new Error(`Unsupported ship type: ${shipType}`);
-        }
-      })();
+    const systemPrompt = (() => {
+      switch (shipType) {
+        case SHIP_TYPES.PORTFOLIO:
+          return "Your task is to create a portfolio website for the user. Analyze the user's requirements and use the start_shipping_portfolio_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+        case SHIP_TYPES.LANDING_PAGE:
+          return "Your task is to create a landing page for the user. Analyze the user's requirements and use the start_shipping_landing_page_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the website.";
+        case SHIP_TYPES.EMAIL_TEMPLATE:
+          return "Your task is to create an email template for the user. Analyze the user's requirements and use the start_shipping_email_template_tool to begin the project. Then, coordinate with the cto_tool to develop and deploy the email template.";
+        default:
+          throw new Error(`Unsupported ship type: ${shipType}`);
+      }
+    })();
 
+    try {
       currentMessage = await client.sendMessage({
         system: systemPrompt,
         messages,
@@ -139,6 +140,7 @@ async function processConversation({
       });
       throw error;
     }
+
     console.log("message in onboardingService", currentMessage);
     if (currentMessage.stop_reason === "end_turn") {
       messages.push({
@@ -169,12 +171,12 @@ async function processConversation({
           userId,
           client,
           shipType,
-          images,
+          name,
           portfolioType,
-          websiteAssets,
-          sections,
-          socials,
-          designLanguage,
+          designChoice,
+          selectedDesign,
+          customDesignPrompt,
+          images,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -233,24 +235,14 @@ function handleOnboardingSocketEvents(io) {
         userId,
         apiKey,
         shipType,
-        message,
-        images,
+        name,
         portfolioType,
-        websiteAssets,
-        sections,
-        socials,
-        designLanguage,
+        designChoice,
+        selectedDesign,
+        customDesignPrompt,
+        images,
       } = data;
-      console.log("startProject", roomId, userId, apiKey, shipType, message);
-
-      console.log("Project Details:", {
-        Images: images.length,
-        "Portfolio Type": portfolioType,
-        "Website Assets": websiteAssets,
-        Sections: sections,
-        Socials: socials,
-        "Design Language": designLanguage,
-      });
+      console.log("startProject", roomId, userId, apiKey, shipType, name);
 
       const clientParams = { userId };
       if (apiKey) {
@@ -277,6 +269,7 @@ function handleOnboardingSocketEvents(io) {
 
       abortController = new AbortController();
       try {
+        console.log("Starting processConversation...");
         await processConversation({
           client,
           sendEvent,
@@ -284,14 +277,12 @@ function handleOnboardingSocketEvents(io) {
           abortSignal: abortController.signal,
           userId,
           shipType,
-          socket,
-          message,
-          images,
+          name,
           portfolioType,
-          websiteAssets,
-          sections,
-          socials,
-          designLanguage,
+          designChoice,
+          selectedDesign,
+          customDesignPrompt,
+          images,
         });
         return;
       } catch (error) {
