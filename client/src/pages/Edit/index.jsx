@@ -45,9 +45,13 @@ import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
 
 const Edit = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const { user, userLoading, checkCustomDomain } = useContext(AuthContext);
-  const [shipId, setShipId] = useState(null);
-  const [isShipIdLoading, setIsShipIdLoading] = useState(true);
+  const [shipId, setShipId] = useState(location.state?.shipId || null);
+  const [isShipIdLoading, setIsShipIdLoading] = useState(
+    !location.state?.shipId
+  );
 
   const previewContainerRef = useRef(null);
   const { socket } = useSocket();
@@ -81,7 +85,6 @@ const Edit = () => {
   const dispatch = useDispatch();
   const isDeploying = useSelector((state) => state.deployment.isDeploying);
 
-  const location = useLocation();
   const initialPrompt = location.state?.initialPrompt || "";
 
   const [customDomain, setCustomDomain] = useState("");
@@ -94,7 +97,7 @@ const Edit = () => {
 
   useEffect(() => {
     const fetchShipId = async () => {
-      if (!userLoading && user) {
+      if (!userLoading && user && !shipId) {
         setIsShipIdLoading(true);
         try {
           const latestShipId = await getLatestShipIdForUser(user.id);
@@ -117,7 +120,7 @@ const Edit = () => {
     };
 
     fetchShipId();
-  }, [user, userLoading, navigate]);
+  }, [user, userLoading, navigate, shipId]);
 
   useEffect(() => {
     const fetchCustomDomainStatus = async () => {
