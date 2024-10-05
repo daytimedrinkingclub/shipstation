@@ -43,6 +43,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 
 import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
 
+import Lottie from "react-lottie-player";
+import shipAnimation from "@/assets/lottie/ship.json";
+
 const Edit = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +55,7 @@ const Edit = () => {
   const [isShipIdLoading, setIsShipIdLoading] = useState(
     !location.state?.shipId
   );
+  const initialPrompt = location.state?.initialPrompt || "";
 
   const previewContainerRef = useRef(null);
   const { socket } = useSocket();
@@ -84,8 +88,6 @@ const Edit = () => {
 
   const dispatch = useDispatch();
   const isDeploying = useSelector((state) => state.deployment.isDeploying);
-
-  const initialPrompt = location.state?.initialPrompt || "";
 
   const [customDomain, setCustomDomain] = useState("");
   const [showDNSInstructions, setShowDNSInstructions] = useState(false);
@@ -377,7 +379,16 @@ const Edit = () => {
   };
 
   if (userLoading || isShipIdLoading) {
-    return <div>Loading...</div>; // Or a more sophisticated loading component
+    return (
+      <div className="flex justify-center items-center h-screen bg-background">
+        <Lottie
+          animationData={shipAnimation}
+          style={{ width: 200, height: 200 }}
+          loop={true}
+          play={true}
+        />
+      </div>
+    );
   }
 
   if (!user || !shipId) {
@@ -510,11 +521,18 @@ const Edit = () => {
                 >
                   <div className="bg-card p-2 flex justify-between items-center">
                     <TabsList>
-                      <TabsTrigger value="chat">AI Chat</TabsTrigger>
+                      <TabsTrigger value="chat">
+                        <MessageSquare className="w-4 h-4 mr-2" />
+                        AI Chat
+                      </TabsTrigger>
                       {!isDeploying && (
                         <>
-                          <TabsTrigger value="code">Code</TabsTrigger>
+                          <TabsTrigger value="code">
+                            <Code className="w-4 h-4 mr-2" />
+                            Code
+                          </TabsTrigger>
                           <TabsTrigger value="domain">
+                            <Globe className="w-4 h-4 mr-2" />
                             Custom Domain
                           </TabsTrigger>
                         </>

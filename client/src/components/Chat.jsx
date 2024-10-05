@@ -85,18 +85,13 @@ const Chat = ({
         { text: "", sender: "assistant", isLoading: true },
       ]);
     } else {
-      if (!isDeploying) {
-        const conversationHistory = await fetchConversationHistory();
-        const initialUserMessage = await fetchInitialUserMessage();
+      const conversationHistory = await fetchConversationHistory();
+      const initialUserMessage = await fetchInitialUserMessage();
 
-        const combinedMessages = [
-          ...initialUserMessage,
-          ...conversationHistory,
-        ];
+      const combinedMessages = [...initialUserMessage, ...conversationHistory];
 
-        setMessages(combinedMessages);
-        setIsConversationHistoryFetched(true);
-      }
+      setMessages(combinedMessages);
+      setIsConversationHistoryFetched(true);
     }
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
@@ -104,17 +99,16 @@ const Chat = ({
   };
 
   useEffect(() => {
-    if (!isInitialized) {
+    if (!isInitialized || isDeploying) {
       initChat();
     }
   }, [isInitialized, isDeploying, initialPrompt]);
 
   useEffect(() => {
     if (isInitialized && !isDeploying) {
-      setMessages([]);
-      fetchInitialUserMessage();
+      initChat();
     }
-  }, [isDeploying, isInitialized]);
+  }, [isDeploying]);
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
@@ -348,41 +342,65 @@ const Chat = ({
             </div>
           </>
         ) : (
-          initialMessageFetched &&
-          isConversationHistoryFetched &&
-          messages.map((message, index) => (
-            <div
-              key={index}
-              className={`mb-2 flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`flex flex-col ${
-                  message.sender === "user" ? "items-end" : "items-start"
-                }`}
-              >
-                <span
-                  className={`inline-block p-2 rounded max-w-[80%] ${
-                    message.sender === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
+          <>
+            {isDeploying && initialPrompt ? (
+              <>
+                <div key="initial-user" className="mb-2 flex justify-end">
+                  <div className="flex flex-col items-end">
+                    <span className="inline-block p-2 rounded max-w-[80%] bg-primary text-primary-foreground">
+                      {initialPrompt}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  key="initial-assistant"
+                  className="mb-2 flex justify-start"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="inline-block p-2 rounded max-w-[80%] bg-secondary text-secondary-foreground">
+                      <ThreeDotLoader />
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              initialMessageFetched &&
+              isConversationHistoryFetched &&
+              messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`mb-2 flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {message.isLoading ? (
-                    <ThreeDotLoader />
-                  ) : (
-                    convertUrlsToLinks(message.text || "")
-                  )}
-                </span>
-                {message.assetInfo && (
-                  <span className="text-sm text-muted-foreground mt-1">
-                    {message.assetInfo}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
+                  <div
+                    className={`flex flex-col ${
+                      message.sender === "user" ? "items-end" : "items-start"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block p-2 rounded max-w-[80%] ${
+                        message.sender === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {message.isLoading ? (
+                        <ThreeDotLoader />
+                      ) : (
+                        convertUrlsToLinks(message.text || "")
+                      )}
+                    </span>
+                    {message.assetInfo && (
+                      <span className="text-sm text-muted-foreground mt-1">
+                        {message.assetInfo}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </>
         )}
         {isLoading && (
           <div className="flex justify-start mb-2">

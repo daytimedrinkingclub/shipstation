@@ -6,6 +6,8 @@ import useDisclosure from "@/hooks/useDisclosure";
 import LoginDialog from "@/components/LoginDialog";
 import AppLayout from "@/components/layout/AppLayout";
 import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
+import Lottie from "react-lottie-player";
+import shipAnimation from "@/assets/lottie/ship.json";
 
 const Portfolio = () => {
   const navigate = useNavigate();
@@ -38,7 +40,18 @@ const Portfolio = () => {
   }, [user, userLoading, navigate, onOpen]);
 
   if (userLoading || isCheckingProject) {
-    return <AppLayout>Loading...</AppLayout>;
+    return (
+      <AppLayout>
+        <div className="flex justify-center items-center h-screen">
+          <Lottie
+            animationData={shipAnimation}
+            style={{ width: 200, height: 200 }}
+            loop={true}
+            play={true}
+          />
+        </div>
+      </AppLayout>
+    );
   }
 
   if (!user) {

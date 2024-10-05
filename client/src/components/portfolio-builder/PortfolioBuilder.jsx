@@ -33,7 +33,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ImageIcon } from "lucide-react";
-import { useInView } from 'react-intersection-observer';
+import { useInView } from "react-intersection-observer";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -198,7 +198,7 @@ export default function PortfolioBuilder() {
       socket.on("project_started", (data) => {
         const { slug, prompt } = data;
         dispatch(setIsDeploying(true));
-        navigate(`/project/${slug}`, { state: { initialPrompt: prompt } });
+        navigate("/editor", { state: { shipId: slug, initialPrompt: prompt } });
       });
 
       socket.on("websiteDeployed", ({ slug }) => {
