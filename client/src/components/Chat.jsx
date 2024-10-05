@@ -72,6 +72,7 @@ const Chat = ({
   const filesToUpload = useSelector((state) => state.fileUpload.filesToUpload);
 
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isInputEmpty, setIsInputEmpty] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -319,6 +320,12 @@ const Chat = ({
     setIsDialogOpen(false);
   };
 
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInput(value);
+    setIsInputEmpty(value.trim() === "");
+  };
+
   return (
     <div
       className="flex flex-col h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] relative"
@@ -411,7 +418,7 @@ const Chat = ({
         )}
         <div ref={messagesEndRef} />
       </div>
-      {messages.length <= 2 && !isDeploying && (
+      {messages.length <= 2 && !isDeploying && isInputEmpty && (
         <div className="px-4">
           <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
         </div>
@@ -442,12 +449,9 @@ const Chat = ({
         <div className="relative">
           <Textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe changes or attach files/images for your website..."
-            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            disabled={isLoading || isDeploying}
-            rows={3}
-            className="pr-12"
+            onChange={handleInputChange}
+            placeholder="Type your message here..."
+            className="w-full p-2 mb-2 bg-background text-foreground"
           />
           {input.trim() && (
             <Button
