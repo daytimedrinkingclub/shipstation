@@ -29,6 +29,7 @@
     "@reduxjs/toolkit": "^2.2.7",
     "@supabase/supabase-js": "^2.44.2",
     "@uiw/react-color": "^2.3.1",
+    "axios": "^1.7.7",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",

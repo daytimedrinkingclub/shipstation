@@ -1,106 +1,45 @@
-import { useContext, useEffect, useState, useRef, useCallback } from "react";
-import { format } from "date-fns";
-import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
-import Editor from "@monaco-editor/react";
-import {
-  Save,
-  Download,
-  ExternalLink,
-  Code,
-  MessageSquare,
-  Maximize2,
-  Smartphone,
-  ChevronLeft,
-  Files,
-  Undo2,
-  Redo2,
-  Eye,
-  Columns2,
-  Globe,
-  Briefcase,
-  Users,
-  Shield,
-  Lock,
-  Award,
-  Zap,
-  CheckCircle,
-  Clock,
-} from "lucide-react";
+import React, {
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+} from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useSocket } from "@/context/SocketProvider";
 import { AuthContext } from "@/context/AuthContext";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useProject } from "@/hooks/useProject";
-import IframePreview, { DEVICE_FRAMES } from "@/components/IframePreview";
-import Dice from "@/components/random/Dice";
-import Chat from "@/components/Chat";
-import Assets from "@/components/Assets";
+import { useSelector, useDispatch } from "react-redux";
+import { setIsDeploying } from "@/store/deploymentSlice";
+import { toast } from "sonner";
+import Confetti from "react-confetti";
+import { supabase } from "@/lib/supabaseClient";
+import axios from "axios";
+
+import Header from "@/components/editor/Header";
+import CodeEditor from "@/components/editor/CodeEditor";
+import ChatPanel from "@/components/editor/ChatPanel";
+import PreviewPanel from "@/components/editor/PreviewPanel";
+import DomainPanel from "@/components/editor/DomainPanel";
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Loader } from "lucide-react";
-import { supabase } from "@/lib/supabaseClient";
-import Lottie from "react-lottie-player";
-import lottieAnimation from "@/assets/lottie/ship.json";
-import Confetti from "react-confetti";
-import { useSelector, useDispatch } from "react-redux";
-import { setIsDeploying } from "@/store/deploymentSlice";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import axios from 'axios';
-
-const ViewOptions = ({ currentView, onViewChange }) => {
-  const views = [
-    { id: "horizontal", icon: Columns2, tooltip: "Horizontal View" },
-    { id: "mobile", icon: Smartphone, tooltip: "Mobile View" },
-    { id: "fullscreen", icon: Maximize2, tooltip: "Fullscreen View" },
-  ];
-
-  return (
-    <div className="flex">
-      {views.map((view, index) => (
-        <Tooltip key={view.id}>
-          <TooltipTrigger asChild>
-            <Button
-              variant={currentView === view.id ? "default" : "outline"}
-              size="icon"
-              onClick={() => onViewChange(view.id)}
-              className={`w-10 h-10 px-2 ${
-                index === 0
-                  ? "rounded-l-md rounded-r-none"
-                  : index === views.length - 1
-                  ? "rounded-r-md rounded-l-none"
-                  : "rounded-none"
-              } ${index !== 0 ? "-ml-px" : ""}`}
-            >
-              <view.icon className="w-4 h-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>{view.tooltip}</TooltipContent>
-        </Tooltip>
-      ))}
-    </div>
-  );
-};
-
-const LoaderCircle = () => {
-  return (
-    <div className="absolute inset-0 bg-white bg-opacity-70 flex items-center justify-center z-10">
-      <Loader className="animate-spin text-black" size={48} />
-    </div>
-  );
-};
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import Assets from "@/components/Assets";
+import { DEVICE_FRAMES } from "@/components/IframePreview";
+import { Badge, Code, Globe, Save } from "lucide-react";
+import { MessageSquare } from "lucide-react";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Edit = () => {
   const navigate = useNavigate();
@@ -148,7 +87,7 @@ const Edit = () => {
   const [isConnectingDomain, setIsConnectingDomain] = useState(false);
 
   const [customDomainStatus, setCustomDomainStatus] = useState(null);
-  const [domainStatus, setDomainStatus] = useState('not_connected');
+  const [domainStatus, setDomainStatus] = useState("not_connected");
 
   useEffect(() => {
     const fetchCustomDomainStatus = async () => {
@@ -375,14 +314,17 @@ const Edit = () => {
   const handleConfirmDomain = async () => {
     setIsConnectingDomain(true);
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/add-custom-domain`, {
-        domain: customDomain,
-        shipSlug: shipId 
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/add-custom-domain`,
+        {
+          domain: customDomain,
+          shipSlug: shipId,
+        }
+      );
 
       if (response.status === 200) {
         setShowConfirmationDialog(true);
-        setDomainStatus('pending');
+        setDomainStatus("pending");
         toast.success("Custom domain connection initiated successfully!");
       } else {
         throw new Error("Failed to connect custom domain");
@@ -395,144 +337,6 @@ const Edit = () => {
     }
   };
 
-  const renderDomainContent = () => {
-    if (domainStatus === 'pending') {
-      return (
-        <div className="space-y-6">
-          <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 flex items-center space-x-3">
-            <Loader className="text-blue-500 w-6 h-6 animate-spin" />
-            <div>
-              <h3 className="font-semibold text-blue-700">Domain Connection in Progress</h3>
-              <p className="text-blue-600">{customDomain}</p>
-            </div>
-          </div>
-          <div className="bg-black-500 rounded-lg p-4 space-y-4">
-            <h3 className="text-lg font-semibold">What's happening now?</h3>
-            <ul className="space-y-3">
-              {[
-                "Verifying DNS records",
-                "Provisioning SSL certificate",
-                "Configuring server settings",
-                "Testing connection"
-              ].map((step, index) => (
-                <li key={index} className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                  <span>{step}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="text-sm text-gray-600">
-              This process typically takes up to 24 hours. We'll send you an email confirmation once your domain is live.
-            </p>
-          </div>
-        </div>
-      );
-    } else if (customDomainStatus && customDomainStatus.is_connected) {
-      return (
-        <div className="space-y-6">
-          <div className="bg-green-100 border border-green-300 rounded-lg p-4 flex items-center space-x-3">
-            <CheckCircle className="text-green-500 w-6 h-6" />
-            <div>
-              <h3 className="font-semibold text-green-700">Your portfolio is live on</h3>
-              <p className="text-green-600">
-                <a href={`https://${customDomainStatus.domain}`} target="_blank" rel="noopener noreferrer" className="flex items-center hover:underline">
-                  {customDomainStatus.domain}
-                  <ExternalLink className="w-4 h-4 ml-1" />
-                </a>
-              </p>
-            </div>
-          </div>
-          <h3 className="text-xl font-semibold">Benefits of Your Custom Domain</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { icon: Lock, title: "Free SSL Certificate", description: "Secure your site with HTTPS" },
-              { icon: Award, title: "Improved Credibility", description: "Enhance your professional image" },
-              { icon: Zap, title: "Better SEO", description: "Improve your search engine rankings" },
-              { icon: Users, title: "Brand Recognition", description: "Increase memorability for visitors" },
-            ].map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3  rounded-lg">
-                <benefit.icon className="text-primary w-6 h-6 mt-1" />
-                <div>
-                  <h4 className="font-semibold">{benefit.title}</h4>
-                  <p className="text-sm text-gray-600">{benefit.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div className="space-y-6">
-         {/* <div>
-         <p className="text-xl font-semiboldmb-2">Enhance Your Portfolio with a Custom Domain</p>
-            <p className="">Take your online presence to the next level with a personalized domain.</p>
-         </div> */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { icon: Briefcase, title: "Professional Branding", description: "Establish a strong, memorable online identity" },
-              { icon: Users, title: "Improved Visibility", description: "Increase discoverability for potential clients" },
-              { icon: Shield, title: "Enhanced Credibility", description: "Build trust with a professional web address" },
-              { icon: Zap, title: "Better SEO", description: "Improve your search engine rankings" },
-            ].map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 rounded-lg">
-                <benefit.icon className="text-primary w-6 h-6 mt-1" />
-                <div>
-                  <h4 className="font-semibold">{benefit.title}</h4>
-                  <p className="text-sm text-gray-600">{benefit.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {!showDNSInstructions ? (
-            <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-              <h3 className="text-lg font-semibold">Connect Your Custom Domain</h3>
-              <form onSubmit={handleCustomDomainSubmit} className="space-y-4">
-                <div className="flex flex-col space-y-2">
-                  <label htmlFor="customDomain" className="text-sm font-medium">
-                    Enter your custom domain
-                  </label>
-                  <div className="flex space-x-2">
-                    <Input
-                      id="customDomain"
-                      type="text"
-                      placeholder="e.g., portfolio.yourdomain.com"
-                      value={customDomain}
-                      onChange={(e) => setCustomDomain(e.target.value)}
-                      className="flex-grow"
-                    />
-                    <Button type="submit" disabled={!customDomain}>
-                      Connect
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </div>
-          ) : (
-            <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-              <h3 className="text-xl font-semibold">DNS Configuration Instructions</h3>
-              <p> To connect your domain <b>{customDomain} </b>please add the following A record to your domain's DNS settings:</p>
-              <div className="bg-black-50 p-4 rounded-lg space-y-2">
-                <p><strong>Type:</strong> A</p>
-                <p><strong>Name:</strong> @ or portfolio (or your subdomain)</p>
-                <p><strong>Value:</strong> 184.164.80.42</p>
-              </div>
-              <p>Once you've added the DNS record, click Confirm</p>
-              <Button 
-                onClick={handleConfirmDomain} 
-                disabled={isConnectingDomain}
-                className="w-full"
-              >
-                {isConnectingDomain ? "Connecting..." : "Confirm DNS Settings"}
-              </Button>
-            </div>
-          )}
-        </div>
-      );
-    }
-  };
-
   if (!user || !shipId) {
     return null;
   }
@@ -542,99 +346,17 @@ const Edit = () => {
       <div className="mx-auto flex flex-col h-screen p-4 bg-background text-foreground">
         {showConfetti && <Confetti />}
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
-          <div className="flex items-center space-x-4 w-full md:w-auto">
-            {!isDeploying && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link to="/" className="text-foreground hover:text-primary">
-                    <ChevronLeft className="w-6 h-6" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>Back to Home</TooltipContent>
-              </Tooltip>
-            )}
-            <h1 className="text-xl font-semibold">Customise your portfolio</h1>
-          </div>
-          {!isDeploying && (
-            <div className="flex flex-row items-start md:items-center md:space-y-0 md:space-x-2 w-full md:w-auto">
-              <div className="flex w-full md:w-auto">
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleUndo}
-                      className="w-10 h-10 px-2 rounded-l-md rounded-r-none"
-                    >
-                      <Undo2 className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Undo</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={handleRedo}
-                      className="w-10 h-10 px-2 rounded-l-none rounded-r-md -ml-px"
-                    >
-                      <Redo2 className="w-4 h-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Redo</TooltipContent>
-                </Tooltip>
-              </div>
-
-              <div className="flex flex-row items-center space-x-2">
-                <Button
-                  variant={`${showMobilePreview ? "default" : "outline"}`}
-                  onClick={() => setShowMobilePreview(!showMobilePreview)}
-                  className="w-auto h-10 md:hidden"
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview
-                </Button>
-
-                <div className="hidden md:flex">
-                  <ViewOptions
-                    currentView={currentView}
-                    onViewChange={setCurrentView}
-                  />
-                </div>
-
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="w-10 h-10 md:w-auto md:px-2"
-                  onClick={() => {
-                    handledownloadzip();
-                    toast("Project will be downloaded shortly!");
-                  }}
-                >
-                  <Download className="w-4 h-4 md:mr-2" />
-                  <span className="hidden md:inline">Export Project</span>
-                </Button>
-
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="w-10 h-10 md:w-auto md:px-2"
-                  onClick={() => {
-                    window.open(
-                      `${import.meta.env.VITE_MAIN_URL}/site/${shipId}/`,
-                      "_blank"
-                    );
-                  }}
-                >
-                  <ExternalLink className="w-4 h-4 md:mr-2" />
-                  <span className="hidden md:inline">Preview Live Site</span>
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
+        <Header
+          isDeploying={isDeploying}
+          shipId={shipId}
+          handleUndo={handleUndo}
+          handleRedo={handleRedo}
+          currentView={currentView}
+          setCurrentView={setCurrentView}
+          handledownloadzip={handledownloadzip}
+          showMobilePreview={showMobilePreview}
+          setShowMobilePreview={setShowMobilePreview}
+        />
 
         <div className="md:hidden flex flex-col flex-1 overflow-hidden rounded-lg border border-border">
           <div className={showMobilePreview ? "hidden" : "flex-1"}>
@@ -684,7 +406,7 @@ const Edit = () => {
                 )}
               </div>
               <TabsContent value="chat" className="flex-grow overflow-hidden">
-                <Chat
+                <ChatPanel
                   shipId={shipId}
                   onCodeUpdate={handleChatUpdate}
                   onAssetsUpdate={handleAssetsUpdate}
@@ -695,47 +417,14 @@ const Edit = () => {
                 />
               </TabsContent>
               <TabsContent value="code" className="flex-grow overflow-hidden">
-                <div className="h-full flex flex-col bg-background">
-                  <div className="flex items-center gap-2 px-2 py-1">
-                    <span className="font-bold text-foreground">
-                      index.html
-                    </span>
-                    {unsavedChanges && (
-                      <Badge variant="secondary">Unsaved changes</Badge>
-                    )}
-                  </div>
-                  {isFileLoading ? (
-                    <div className="flex justify-center items-center h-full">
-                      <div className="relative w-16 h-16">
-                        <div className="absolute top-0 left-0 w-full h-full border-4 border-muted rounded-full animate-pulse"></div>
-                        <div className="absolute top-0 left-0 w-full h-full border-t-4 border-primary rounded-full animate-spin"></div>
-                      </div>
-                    </div>
-                  ) : (
-                    <Editor
-                      language="html"
-                      theme="vs-dark"
-                      options={{
-                        minimap: { enabled: false },
-                        scrollbar: {
-                          vertical: "visible",
-                          horizontal: "visible",
-                        },
-                        fontSize: 14,
-                        lineNumbers: "on",
-                        glyphMargin: false,
-                        folding: true,
-                        lineDecorationsWidth: 0,
-                        lineNumbersMinChars: 3,
-                        renderLineHighlight: "all",
-                        scrollBeyondLastLine: false,
-                        automaticLayout: true,
-                      }}
-                      value={fileContent}
-                      onChange={handleFileChange}
-                    />
-                  )}
-                </div>
+                <CodeEditor
+                  fileContent={fileContent}
+                  isFileLoading={isFileLoading}
+                  handleFileChange={handleFileChange}
+                  handleFileSave={handleFileSave}
+                  unsavedChanges={unsavedChanges}
+                  submitting={submitting}
+                />
               </TabsContent>
               <TabsContent value="assets" className="flex-grow overflow-hidden">
                 <Assets
@@ -748,22 +437,22 @@ const Edit = () => {
             </Tabs>
           </div>
           <div className={showMobilePreview ? "flex-1" : "hidden"}>
-            <div
-              ref={previewContainerRef}
-              className="h-full overflow-hidden relative"
-            >
-              <IframePreview
-                ref={iframeRef}
-                slug={shipId}
-                isLoading={isFileLoading}
-                isDeploying={isDeploying}
-              />
-              {(isUndoing || isRedoing || isCodeUpdating || isChatUpdating) && (
-                <LoaderCircle />
-              )}
-            </div>
+            <PreviewPanel
+              currentView={currentView}
+              currentDevice={currentDevice}
+              iframeRef={iframeRef}
+              shipId={shipId}
+              isFileLoading={isFileLoading}
+              isDeploying={isDeploying}
+              isUndoing={isUndoing}
+              isRedoing={isRedoing}
+              isCodeUpdating={isCodeUpdating}
+              isChatUpdating={isChatUpdating}
+              shuffleDevice={shuffleDevice}
+            />
           </div>
         </div>
+
         <div className="hidden md:block flex-1">
           <ResizablePanelGroup
             direction="horizontal"
@@ -778,52 +467,22 @@ const Edit = () => {
                 >
                   <div className="bg-card p-2 flex justify-between items-center">
                     <TabsList>
-                      <TabsTrigger value="chat" className="flex items-center">
-                        <MessageSquare className="w-4 h-4 mr-2" />
-                        AI Chat
-                      </TabsTrigger>
+                      <TabsTrigger value="chat">AI Chat</TabsTrigger>
                       {!isDeploying && (
                         <>
-                          <TabsTrigger
-                            value="code"
-                            className="flex items-center"
-                          >
-                            <Code className="w-4 h-4 mr-2" />
-                            Code
-                          </TabsTrigger>
-                          <TabsTrigger
-                            value="domain"
-                            className="flex items-center"
-                          >
-                            <Globe className="w-4 h-4 mr-2" />
-                            <span className="text-sm">Custom Domain</span>
+                          <TabsTrigger value="code">Code</TabsTrigger>
+                          <TabsTrigger value="domain">
+                            Custom Domain
                           </TabsTrigger>
                         </>
                       )}
                     </TabsList>
-                    {activeTab === "code" && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={submitting}
-                            onClick={handleFileSave}
-                            className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
-                          >
-                            <Save className="w-4 h-4 mr-2" />
-                            Save
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Save Changes</TooltipContent>
-                      </Tooltip>
-                    )}
                   </div>
                   <TabsContent
                     value="chat"
                     className="flex-grow overflow-hidden"
                   >
-                    <Chat
+                    <ChatPanel
                       shipId={shipId}
                       onCodeUpdate={handleChatUpdate}
                       onAssetsUpdate={handleAssetsUpdate}
@@ -837,64 +496,29 @@ const Edit = () => {
                     value="code"
                     className="flex-grow overflow-hidden"
                   >
-                    <div className="h-full flex flex-col bg-background">
-                      <div className="flex items-center gap-2 px-2 py-1">
-                        <span className="font-bold text-foreground">
-                          index.html
-                        </span>
-                        {unsavedChanges && (
-                          <Badge variant="secondary">Unsaved changes</Badge>
-                        )}
-                      </div>
-                      {isFileLoading ? (
-                        <div className="flex justify-center items-center h-full">
-                          <div className="relative w-16 h-16">
-                            <div className="absolute top-0 left-0 w-full h-full border-4 border-muted rounded-full animate-pulse"></div>
-                            <div className="absolute top-0 left-0 w-full h-full border-t-4 border-primary rounded-full animate-spin"></div>
-                          </div>
-                        </div>
-                      ) : (
-                        <Editor
-                          language="html"
-                          theme="vs-dark"
-                          options={{
-                            minimap: { enabled: false },
-                            scrollbar: {
-                              vertical: "visible",
-                              horizontal: "visible",
-                            },
-                            fontSize: 14,
-                            lineNumbers: "on",
-                            glyphMargin: false,
-                            folding: true,
-                            lineDecorationsWidth: 0,
-                            lineNumbersMinChars: 3,
-                            renderLineHighlight: "all",
-                            scrollBeyondLastLine: false,
-                            automaticLayout: true,
-                          }}
-                          value={fileContent}
-                          onChange={handleFileChange}
-                        />
-                      )}
-                    </div>
-                  </TabsContent>
-                  <TabsContent
-                    value="assets"
-                    className="flex-grow overflow-hidden"
-                  >
-                    <Assets
-                      shipId={shipId}
-                      assets={assets}
-                      onAssetsChange={updateAssets}
-                      fetchAssets={fetchAssets}
+                    <CodeEditor
+                      fileContent={fileContent}
+                      isFileLoading={isFileLoading}
+                      handleFileChange={handleFileChange}
+                      handleFileSave={handleFileSave}
+                      unsavedChanges={unsavedChanges}
+                      submitting={submitting}
                     />
                   </TabsContent>
                   <TabsContent
                     value="domain"
                     className="flex-grow overflow-hidden p-4"
                   >
-                    {renderDomainContent()}
+                    <DomainPanel
+                      customDomain={customDomain}
+                      setCustomDomain={setCustomDomain}
+                      handleCustomDomainSubmit={handleCustomDomainSubmit}
+                      showDNSInstructions={showDNSInstructions}
+                      handleConfirmDomain={handleConfirmDomain}
+                      isConnectingDomain={isConnectingDomain}
+                      domainStatus={domainStatus}
+                      customDomainStatus={customDomainStatus}
+                    />
                   </TabsContent>
                 </Tabs>
               </ResizablePanel>
@@ -903,44 +527,42 @@ const Edit = () => {
             <ResizablePanel
               defaultSize={currentView === "fullscreen" ? 100 : 70}
             >
-              <div
-                ref={previewContainerRef}
-                className="h-full overflow-hidden relative"
-              >
-                <IframePreview
-                  device={currentView === "mobile" ? currentDevice : null}
-                  ref={iframeRef}
-                  slug={shipId}
-                  currentView={currentView}
-                  isLoading={isFileLoading}
-                  isDeploying={isDeploying}
-                />
-                {(isUndoing ||
-                  isRedoing ||
-                  isCodeUpdating ||
-                  isChatUpdating) && <LoaderCircle />}
-                {currentView === "mobile" && (
-                  <div className="absolute bottom-8 right-8 z-10">
-                    <Dice onRoll={shuffleDevice} />
-                  </div>
-                )}
-              </div>
+              <PreviewPanel
+                currentView={currentView}
+                currentDevice={currentDevice}
+                iframeRef={iframeRef}
+                shipId={shipId}
+                isFileLoading={isFileLoading}
+                isDeploying={isDeploying}
+                isUndoing={isUndoing}
+                isRedoing={isRedoing}
+                isCodeUpdating={isCodeUpdating}
+                isChatUpdating={isChatUpdating}
+                shuffleDevice={shuffleDevice}
+              />
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
-      </div>
 
-      <Dialog open={showConfirmationDialog} onOpenChange={setShowConfirmationDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Domain Connection in Progress</DialogTitle>
-            <DialogDescription>
-              Your custom domain ({customDomain}) is being connected to your portfolio. This process may take up to 24 hours to complete. We'll send you an email confirmation once it's live.
-            </DialogDescription>
-          </DialogHeader>
-          <Button onClick={() => setShowConfirmationDialog(false)}>Close</Button>
-        </DialogContent>
-      </Dialog>
+        <Dialog
+          open={showConfirmationDialog}
+          onOpenChange={setShowConfirmationDialog}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Domain Connection in Progress</DialogTitle>
+              <DialogDescription>
+                Your custom domain ({customDomain}) is being connected to your
+                portfolio. This process may take up to 24 hours to complete.
+                We'll send you an email confirmation once it's live.
+              </DialogDescription>
+            </DialogHeader>
+            <Button onClick={() => setShowConfirmationDialog(false)}>
+              Close
+            </Button>
+          </DialogContent>
+        </Dialog>
+      </div>
     </TooltipProvider>
   );
 };
