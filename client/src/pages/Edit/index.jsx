@@ -41,13 +41,16 @@ import { Badge, Code, Globe, Save } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
+import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
+
 const Edit = () => {
   const navigate = useNavigate();
   const { user, userLoading, checkCustomDomain } = useContext(AuthContext);
+  const [shipId, setShipId] = useState(null);
+  const [isShipIdLoading, setIsShipIdLoading] = useState(true);
+
   const previewContainerRef = useRef(null);
   const { socket } = useSocket();
-
-  const { shipId } = useParams();
 
   const { readFile, updateFile, submitting, handledownloadzip } =
     useProject(shipId);
@@ -90,9 +93,38 @@ const Edit = () => {
   const [domainStatus, setDomainStatus] = useState("not_connected");
 
   useEffect(() => {
+    const fetchShipId = async () => {
+      if (!userLoading && user) {
+        setIsShipIdLoading(true);
+        try {
+          const latestShipId = await getLatestShipIdForUser(user.id);
+          if (latestShipId) {
+            setShipId(latestShipId);
+          } else {
+            toast.error("No projects found. Create a new project first.");
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Error fetching ship ID:", error);
+          toast.error("An error occurred while loading your project.");
+          navigate("/");
+        } finally {
+          setIsShipIdLoading(false);
+        }
+      } else if (!userLoading && !user) {
+        navigate("/");
+      }
+    };
+
+    fetchShipId();
+  }, [user, userLoading, navigate]);
+
+  useEffect(() => {
     const fetchCustomDomainStatus = async () => {
-      const domainData = await checkCustomDomain(shipId);
-      setCustomDomainStatus(domainData);
+      if (shipId) {
+        const domainData = await checkCustomDomain(shipId);
+        setCustomDomainStatus(domainData);
+      }
     };
 
     fetchCustomDomainStatus();
@@ -133,10 +165,10 @@ const Edit = () => {
   }, [shipId, isDeploying]);
 
   useEffect(() => {
-    if (!isDeploying) {
+    if (!isDeploying && shipId) {
       fetchAssets();
     }
-  }, [fetchAssets, isDeploying]);
+  }, [fetchAssets, isDeploying, shipId]);
 
   const updateAssets = useCallback((newAssets) => {
     setAssets(newAssets);
@@ -144,13 +176,16 @@ const Edit = () => {
   }, []);
 
   useEffect(() => {
-    if (!userLoading && (!user || !shipId)) {
-      navigate("/");
-    } else if (!isDeploying) {
-      // Load index.html content when the component mounts and not deploying
-      loadIndexHtml();
+    if (!userLoading && !isShipIdLoading) {
+      if (!user) {
+        navigate("/");
+      } else if (shipId && !isDeploying) {
+        loadIndexHtml();
+      } else if (!shipId) {
+        navigate("/");
+      }
     }
-  }, [user, shipId, navigate, userLoading, isDeploying]);
+  }, [user, shipId, navigate, userLoading, isShipIdLoading, isDeploying]);
 
   useEffect(() => {
     const preventScroll = (e) => {
@@ -172,6 +207,7 @@ const Edit = () => {
   }, [currentView]);
 
   const loadIndexHtml = async () => {
+    if (!shipId) return;
     setIsFileLoading(true);
     setHasShownErrorToast(false); // Reset the flag before loading
     try {
@@ -337,6 +373,10 @@ const Edit = () => {
     }
   };
 
+  if (userLoading || isShipIdLoading) {
+    return <div>Loading...</div>; // Or a more sophisticated loading component
+  }
+
   if (!user || !shipId) {
     return null;
   }
@@ -459,7 +499,7 @@ const Edit = () => {
             className="flex-1 overflow-hidden rounded-lg border border-border"
           >
             {currentView !== "fullscreen" && (
-              <ResizablePanel defaultSize={35} minSize={30}>
+              <ResizablePanel defaultSize={30} minSize={30}>
                 <Tabs
                   value={activeTab}
                   onValueChange={setActiveTab}
