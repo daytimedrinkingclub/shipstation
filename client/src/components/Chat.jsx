@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import ThreeDotLoader from "@/components/random/ThreeDotLoader";
 import ChatSuggestions from "@/components/ChatSuggestions";
@@ -63,6 +63,8 @@ const Chat = ({
   const [fileDescriptions, setFileDescriptions] = useState({});
   const [isUploadDisabled, setIsUploadDisabled] = useState(true);
   const [initialMessageFetched, setInitialMessageFetched] = useState(false);
+  const [isConversationHistoryFetched, setIsConversationHistoryFetched] =
+    useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
   const [tempFiles, setTempFiles] = useState([]);
@@ -83,9 +85,17 @@ const Chat = ({
         { text: "", sender: "assistant", isLoading: true },
       ]);
     } else {
-      await fetchConversationHistory();
       if (!isDeploying) {
-        await fetchInitialUserMessage();
+        const conversationHistory = await fetchConversationHistory();
+        const initialUserMessage = await fetchInitialUserMessage();
+
+        const combinedMessages = [
+          ...initialUserMessage,
+          ...conversationHistory,
+        ];
+
+        setMessages(combinedMessages);
+        setIsConversationHistoryFetched(true);
       }
     }
     setInitialMessageFetched(true);
@@ -139,7 +149,7 @@ const Chat = ({
 
       if (error) {
         console.error("Error fetching conversation history:", error);
-        setMessages([]);
+        return [];
       } else if (data) {
         const displayMessages = data.messages
           .filter(
@@ -165,13 +175,13 @@ const Chat = ({
               };
             }
           });
-        setMessages(displayMessages);
+        return displayMessages;
       } else {
-        setMessages([]);
+        return [];
       }
     } catch (error) {
       console.error("Unexpected error fetching conversation history:", error);
-      setMessages([]);
+      return [];
     }
   };
 
@@ -183,30 +193,14 @@ const Chat = ({
       .maybeSingle();
 
     if (data && data.prompt) {
-      setMessages((prevMessages) => {
-        // Check if the initial messages are already in the array
-        const initialMessagesExist = prevMessages.some(
-          (msg) => msg.sender === "user" && msg.text === data.prompt
-        );
-
-        if (!initialMessagesExist) {
-          const userMessage = { text: data.prompt, sender: "user" };
-          const aiMessage = {
-            text: `Sure! Your website is live at https://shipstation.ai/site/${shipId} How can I help you further with your project?`,
-            sender: "assistant",
-          };
-
-          // If there are existing messages, add the new ones at the beginning
-          if (prevMessages.length > 0) {
-            return [userMessage, aiMessage, ...prevMessages];
-          } else {
-            // If there are no existing messages, just return the new ones
-            return [userMessage, aiMessage];
-          }
-        }
-        return prevMessages;
-      });
+      const userMessage = { text: data.prompt, sender: "user" };
+      const aiMessage = {
+        text: `Sure! Your website is live at https://shipstation.ai/site/${shipId} How can I help you further with your project?`,
+        sender: "assistant",
+      };
+      return [userMessage, aiMessage];
     }
+    return [];
   };
 
   const handleChatResponse = (response) => {
@@ -355,6 +349,7 @@ const Chat = ({
           </>
         ) : (
           initialMessageFetched &&
+          isConversationHistoryFetched &&
           messages.map((message, index) => (
             <div
               key={index}
@@ -530,8 +525,12 @@ const Chat = ({
                     />
                     <Tabs defaultValue="portfolio" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="portfolio">Add to Portfolio</TabsTrigger>
-                        <TabsTrigger value="reference">Use as Reference</TabsTrigger>
+                        <TabsTrigger value="portfolio">
+                          Add to Portfolio
+                        </TabsTrigger>
+                        <TabsTrigger value="reference">
+                          Use as Reference
+                        </TabsTrigger>
                       </TabsList>
                       <TabsContent value="portfolio">
                         <p className="text-xs text-muted-foreground">
