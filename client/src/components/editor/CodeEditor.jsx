@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save } from "lucide-react";
+import { Save, Download } from "lucide-react";
 
 const CodeEditor = ({
   fileContent,
@@ -10,6 +10,7 @@ const CodeEditor = ({
   handleFileSave,
   unsavedChanges,
   submitting,
+  handledownloadzip, // Add this prop
 }) => {
   return (
     <div className="h-full flex flex-col bg-background">
@@ -18,16 +19,28 @@ const CodeEditor = ({
           <span className="font-bold text-foreground">index.html</span>
           {unsavedChanges && <Badge variant="secondary">Unsaved changes</Badge>}
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={submitting}
-          onClick={handleFileSave}
-          className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
-        >
-          <Save className="w-4 h-4 mr-2" />
-          Save
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={submitting}
+            onClick={handledownloadzip} 
+            className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={submitting}
+            onClick={handleFileSave}
+            className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
+          >
+            <Save className="w-4 h-4 mr-2" />
+            Save
+          </Button>
+        </div>
       </div>
       {isFileLoading ? (
         <div className="flex justify-center items-center h-full">

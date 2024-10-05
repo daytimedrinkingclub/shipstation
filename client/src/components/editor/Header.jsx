@@ -90,19 +90,6 @@ const Header = ({
             </div>
 
             <Button
-              variant="secondary"
-              size="icon"
-              className="w-10 h-10 md:w-auto md:px-2"
-              onClick={() => {
-                handledownloadzip();
-                toast("Project will be downloaded shortly!");
-              }}
-            >
-              <Download className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">Export Project</span>
-            </Button>
-
-            <Button
               variant="default"
               size="icon"
               className="w-10 h-10 md:w-auto md:px-2"

@@ -446,18 +446,6 @@ const Edit = () => {
                     </>
                   )}
                 </TabsList>
-                {activeTab === "code" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={submitting}
-                    onClick={handleFileSave}
-                    className="text-muted-foreground hover:text-foreground border-border hover:bg-accent"
-                  >
-                    <Save className="w-4 h-4 md:mr-2" />
-                    <span className="hidden md:block">Save</span>
-                  </Button>
-                )}
               </div>
               <TabsContent value="chat" className="flex-grow overflow-hidden">
                 <ChatPanel
@@ -478,6 +466,7 @@ const Edit = () => {
                   handleFileSave={handleFileSave}
                   unsavedChanges={unsavedChanges}
                   submitting={submitting}
+                  handledownloadzip={handledownloadzip}
                 />
               </TabsContent>
               <TabsContent value="assets" className="flex-grow overflow-hidden">
@@ -564,6 +553,7 @@ const Edit = () => {
                       handleFileSave={handleFileSave}
                       unsavedChanges={unsavedChanges}
                       submitting={submitting}
+                      handledownloadzip={handledownloadzip}
                     />
                   </TabsContent>
                   <TabsContent
