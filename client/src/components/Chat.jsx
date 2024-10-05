@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import ThreeDotLoader from "@/components/random/ThreeDotLoader";
 import ChatSuggestions from "@/components/ChatSuggestions";
@@ -63,6 +63,8 @@ const Chat = ({
   const [fileDescriptions, setFileDescriptions] = useState({});
   const [isUploadDisabled, setIsUploadDisabled] = useState(true);
   const [initialMessageFetched, setInitialMessageFetched] = useState(false);
+  const [isConversationHistoryFetched, setIsConversationHistoryFetched] =
+    useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
 
   const [tempFiles, setTempFiles] = useState([]);
@@ -70,6 +72,7 @@ const Chat = ({
   const filesToUpload = useSelector((state) => state.fileUpload.filesToUpload);
 
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isInputEmpty, setIsInputEmpty] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -83,10 +86,13 @@ const Chat = ({
         { text: "", sender: "assistant", isLoading: true },
       ]);
     } else {
-      await fetchConversationHistory();
-      if (!isDeploying) {
-        await fetchInitialUserMessage();
-      }
+      const conversationHistory = await fetchConversationHistory();
+      const initialUserMessage = await fetchInitialUserMessage();
+
+      const combinedMessages = [...initialUserMessage, ...conversationHistory];
+
+      setMessages(combinedMessages);
+      setIsConversationHistoryFetched(true);
     }
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
@@ -94,17 +100,16 @@ const Chat = ({
   };
 
   useEffect(() => {
-    if (!isInitialized) {
+    if (!isInitialized || isDeploying) {
       initChat();
     }
   }, [isInitialized, isDeploying, initialPrompt]);
 
   useEffect(() => {
     if (isInitialized && !isDeploying) {
-      setMessages([]);
-      fetchInitialUserMessage();
+      initChat();
     }
-  }, [isDeploying, isInitialized]);
+  }, [isDeploying]);
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
@@ -139,7 +144,7 @@ const Chat = ({
 
       if (error) {
         console.error("Error fetching conversation history:", error);
-        setMessages([]);
+        return [];
       } else if (data) {
         const displayMessages = data.messages
           .filter(
@@ -165,13 +170,13 @@ const Chat = ({
               };
             }
           });
-        setMessages(displayMessages);
+        return displayMessages;
       } else {
-        setMessages([]);
+        return [];
       }
     } catch (error) {
       console.error("Unexpected error fetching conversation history:", error);
-      setMessages([]);
+      return [];
     }
   };
 
@@ -183,30 +188,14 @@ const Chat = ({
       .maybeSingle();
 
     if (data && data.prompt) {
-      setMessages((prevMessages) => {
-        // Check if the initial messages are already in the array
-        const initialMessagesExist = prevMessages.some(
-          (msg) => msg.sender === "user" && msg.text === data.prompt
-        );
-
-        if (!initialMessagesExist) {
-          const userMessage = { text: data.prompt, sender: "user" };
-          const aiMessage = {
-            text: `Sure! Your website is live at https://shipstation.ai/site/${shipId} How can I help you further with your project?`,
-            sender: "assistant",
-          };
-
-          // If there are existing messages, add the new ones at the beginning
-          if (prevMessages.length > 0) {
-            return [userMessage, aiMessage, ...prevMessages];
-          } else {
-            // If there are no existing messages, just return the new ones
-            return [userMessage, aiMessage];
-          }
-        }
-        return prevMessages;
-      });
+      const userMessage = { text: data.prompt, sender: "user" };
+      const aiMessage = {
+        text: `Sure! Your website is live at ${import.meta.env.VITE_MAIN_URL}/site/${shipId} \n\n How can I help you further with your project?`,
+        sender: "assistant",
+      };
+      return [userMessage, aiMessage];
     }
+    return [];
   };
 
   const handleChatResponse = (response) => {
@@ -331,6 +320,12 @@ const Chat = ({
     setIsDialogOpen(false);
   };
 
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setInput(value);
+    setIsInputEmpty(value.trim() === "");
+  };
+
   return (
     <div
       className="flex flex-col h-[calc(100vh-12rem)] md:h-[calc(100vh-10rem)] relative"
@@ -354,40 +349,65 @@ const Chat = ({
             </div>
           </>
         ) : (
-          initialMessageFetched &&
-          messages.map((message, index) => (
-            <div
-              key={index}
-              className={`mb-2 flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
-              <div
-                className={`flex flex-col ${
-                  message.sender === "user" ? "items-end" : "items-start"
-                }`}
-              >
-                <span
-                  className={`inline-block p-2 rounded max-w-[80%] ${
-                    message.sender === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground"
+          <>
+            {isDeploying && initialPrompt ? (
+              <>
+                <div key="initial-user" className="mb-2 flex justify-end">
+                  <div className="flex flex-col items-end">
+                    <span className="inline-block p-2 rounded max-w-[80%] bg-primary text-primary-foreground">
+                      {initialPrompt}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  key="initial-assistant"
+                  className="mb-2 flex justify-start"
+                >
+                  <div className="flex flex-col items-start">
+                    <span className="inline-block p-2 rounded max-w-[80%] bg-secondary text-secondary-foreground">
+                      <ThreeDotLoader />
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              initialMessageFetched &&
+              isConversationHistoryFetched &&
+              messages.map((message, index) => (
+                <div
+                  key={index}
+                  className={`mb-2 flex ${
+                    message.sender === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {message.isLoading ? (
-                    <ThreeDotLoader />
-                  ) : (
-                    convertUrlsToLinks(message.text || "")
-                  )}
-                </span>
-                {message.assetInfo && (
-                  <span className="text-sm text-muted-foreground mt-1">
-                    {message.assetInfo}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))
+                  <div
+                    className={`flex flex-col ${
+                      message.sender === "user" ? "items-end" : "items-start"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block p-2 rounded max-w-[80%] ${
+                        message.sender === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {message.isLoading ? (
+                        <ThreeDotLoader />
+                      ) : (
+                        convertUrlsToLinks(message.text || "")
+                      )}
+                    </span>
+                    {message.assetInfo && (
+                      <span className="text-sm text-muted-foreground mt-1">
+                        {message.assetInfo}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </>
         )}
         {isLoading && (
           <div className="flex justify-start mb-2">
@@ -398,7 +418,7 @@ const Chat = ({
         )}
         <div ref={messagesEndRef} />
       </div>
-      {messages.length <= 2 && !isDeploying && (
+      {messages.length <= 2 && !isDeploying && isInputEmpty && (
         <div className="px-4">
           <ChatSuggestions onSuggestionClick={handleSuggestionClick} />
         </div>
@@ -429,12 +449,9 @@ const Chat = ({
         <div className="relative">
           <Textarea
             value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Describe changes or attach files/images for your website..."
-            onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
-            disabled={isLoading || isDeploying}
-            rows={3}
-            className="pr-12"
+            onChange={handleInputChange}
+            placeholder="Type your message here..."
+            className="w-full p-2 mb-2 bg-background text-foreground"
           />
           {input.trim() && (
             <Button
@@ -530,8 +547,12 @@ const Chat = ({
                     />
                     <Tabs defaultValue="portfolio" className="w-full">
                       <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="portfolio">Add to Portfolio</TabsTrigger>
-                        <TabsTrigger value="reference">Use as Reference</TabsTrigger>
+                        <TabsTrigger value="portfolio">
+                          Add to Portfolio
+                        </TabsTrigger>
+                        <TabsTrigger value="reference">
+                          Use as Reference
+                        </TabsTrigger>
                       </TabsList>
                       <TabsContent value="portfolio">
                         <p className="text-xs text-muted-foreground">
