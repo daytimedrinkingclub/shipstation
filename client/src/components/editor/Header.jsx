@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +16,8 @@ import {
   Eye,
 } from "lucide-react";
 import ViewOptions from "./ViewOptions";
+import UserAccountMenu from "./UserAccountMenu";
+import { AuthContext } from "@/context/AuthContext";
 
 const Header = ({
   isDeploying,
@@ -27,19 +30,15 @@ const Header = ({
   showMobilePreview,
   setShowMobilePreview,
 }) => {
+  const { user, handleLogout } = useContext(AuthContext);
+
+  const handleLogoutClick = async () => {
+    await handleLogout();
+  };
+
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
       <div className="flex items-center space-x-4 w-full md:w-auto">
-        {!isDeploying && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link to="/" className="text-foreground hover:text-primary">
-                <ChevronLeft className="w-6 h-6" />
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent>Back to Home</TooltipContent>
-          </Tooltip>
-        )}
         <h1 className="text-xl font-semibold">Customise your portfolio</h1>
       </div>
       {!isDeploying && (
@@ -117,6 +116,7 @@ const Header = ({
               <ExternalLink className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Preview Live Site</span>
             </Button>
+            <UserAccountMenu user={user} onLogout={handleLogoutClick} />
           </div>
         </div>
       )}
