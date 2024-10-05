@@ -3,8 +3,9 @@ import { AuthContext } from "../context/AuthContext";
 import LoginDialog from "./LoginDialog";
 import useDisclosure from "@/hooks/useDisclosure";
 import { Button } from "@/components/ui/button";
-import { LogIn, LogOut, Ship, User } from "lucide-react";
+import { GripIcon, LogIn, LogOut, Ship, User } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
+import UserAccountMenu from "./editor/UserAccountMenu";
 
 const Header = () => {
   const { user, availableShips, handleLogout, userLoading } =
@@ -34,28 +35,23 @@ const Header = () => {
 
         <div className="flex items-center space-x-4">
           <ThemeToggle />
-          {user && (
-            <div className="hidden sm:flex items-center">
-              <User className="w-4 h-4 mr-2" /> {user?.email}
-            </div>
-          )}
+          {user && <UserAccountMenu user={user} onLogout={handleLogout} />}
           {userLoading ? (
             <div className="w-24 h-8 rounded bg-muted animate-pulse">
               <div className="h-full w-full bg-gradient-to-r from-muted via-background to-muted bg-[length:200%_100%] animate-shimmer"></div>
             </div>
           ) : (
-            <Button variant="ghost" onClick={handleLoginLogout}>
-              {user ? (
-                <>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Log out
-                </>
-              ) : (
-                <>
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Login
-                </>
-              )}
+            <Button
+              variant="ghost"
+              onClick={() =>
+                window.open(
+                  `${import.meta.env.VITE_MAIN_URL}/showcase`,
+                  "_blank"
+                )
+              }
+            >
+              <GripIcon className="w-4 h-4 mr-2" />
+              Browse designs
             </Button>
           )}
         </div>

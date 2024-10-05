@@ -42,7 +42,7 @@ const Portfolio = () => {
     const result = await handleLogin(email, password);
     if (result.success) {
       toast("Welcome back 👋", {
-        description: "Let's start creating something beautiful!",
+        description: "Let's make your portfolio shine!",
         position: "bottom-right",
       });
       try {

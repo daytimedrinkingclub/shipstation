@@ -18,18 +18,32 @@ import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
 const LoginForm = ({ onSubmit, isLoading }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSigningUp, setIsSigningUp] = useState(true);
+  const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSigningUp) {
+      if (password !== confirmPassword) {
+        setPasswordError("Passwords do not match");
+        return;
+      }
+      setPasswordError("");
+    }
     onSubmit(email, password);
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-lg border-none sm:border">
       <CardHeader>
-        <CardTitle className="text-foreground">Identify yourself</CardTitle>
+        <CardTitle className="text-foreground">
+          {isSigningUp ? "Create an account" : "Sign in to your account"}
+        </CardTitle>
         <CardDescription className="text-muted-foreground">
-          Enter your email address and password to continue.
+          {isSigningUp
+            ? "Enter your email address and password to continue."
+            : "Enter your email address and password to continue."}
           <br />
           An account will be created for you if none exists.
         </CardDescription>
@@ -64,7 +78,39 @@ const LoginForm = ({ onSubmit, isLoading }) => {
               className="bg-background text-foreground"
             />
           </div>
-          <div className="flex justify-end">
+          {isSigningUp && (
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-foreground">
+                Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="bg-background text-foreground"
+              />
+              {passwordError && (
+                <p className="text-red-500 text-sm">{passwordError}</p>
+              )}
+            </div>
+          )}
+          <div className="flex justify-between items-center gap-4">
+            <Button
+              variant="link"
+              type="button"
+              size="sm"
+              onClick={() => {
+                setIsSigningUp(!isSigningUp);
+                setPasswordError("");
+              }}
+            >
+              {isSigningUp
+                ? "Already have an account?"
+                : "Create a new account?"}
+            </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
@@ -74,7 +120,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  Sign in
+                  {isSigningUp ? "Create account" : "Sign in"}
                 </>
               )}
             </Button>

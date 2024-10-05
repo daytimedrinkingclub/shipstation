@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "../ChoosePaymentOptionDialog";
 
-import { Fuel, Loader2, Sparkles } from "lucide-react";
+import { DraftingCompass, Fuel, Loader2, Sparkles } from "lucide-react";
 import { pluralize } from "@/lib/utils";
 import {
   Tooltip,
@@ -32,7 +32,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { ImageIcon } from "lucide-react";
 import { useInView } from "react-intersection-observer";
 
 export default function PortfolioBuilder() {
@@ -228,8 +227,7 @@ export default function PortfolioBuilder() {
       transition={{ duration: 0.5 }}
       className="mx-auto p-6 space-y-8 flex flex-col h-full w-full"
     >
-      <h1 className="text-3xl font-bold mb-6">Build Your Portfolio</h1>
-
+      <h1 className="text-3xl font-bold mb-6">Start your project</h1>
       <div className="space-y-6 flex-grow overflow-y-auto">
         <div>
           <h2 className="text-lg font-semibold mb-4 block">Your Name</h2>
@@ -274,7 +272,8 @@ export default function PortfolioBuilder() {
               <div>
                 <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
                 <CardDescription>
-                  Describe your ideal portfolio design
+                  Describe your ideal portfolio design or select a design from
+                  the gallery
                 </CardDescription>
               </div>
               <Button
@@ -282,8 +281,8 @@ export default function PortfolioBuilder() {
                 disabled={isGenerating}
                 size="sm"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
-                Prompt Gallery
+                <DraftingCompass className="mr-2 h-4 w-4" />
+                Open Prompt Gallery
               </Button>
             </CardHeader>
             <CardContent>

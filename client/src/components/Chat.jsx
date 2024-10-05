@@ -190,7 +190,7 @@ const Chat = ({
     if (data && data.prompt) {
       const userMessage = { text: data.prompt, sender: "user" };
       const aiMessage = {
-        text: `Sure! Your website is live at https://shipstation.ai/site/${shipId} How can I help you further with your project?`,
+        text: `Sure! Your website is live at ${import.meta.env.VITE_MAIN_URL}/site/${shipId} \n\n How can I help you further with your project?`,
         sender: "assistant",
       };
       return [userMessage, aiMessage];
