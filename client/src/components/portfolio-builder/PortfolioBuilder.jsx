@@ -33,6 +33,8 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { useInView } from "react-intersection-observer";
+import { fetchGeneratedWebsites } from "@/lib/utils/portfolioUtils";
+import MobilePortfolioBuilder from "./MobilePortfolioBuilder";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -74,41 +76,20 @@ export default function PortfolioBuilder() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isWebsitesDialogOpen) {
-      fetchGeneratedWebsites();
-    }
-  }, [isWebsitesDialogOpen]);
-
-  useEffect(() => {
-    if (inView && !isLoading && hasMore) {
-      fetchGeneratedWebsites(page + 1);
-    }
-  }, [inView, isLoading, hasMore]);
-
-  const fetchGeneratedWebsites = async (pageNumber = 1) => {
+  const loadGeneratedWebsites = async (pageNumber = 1) => {
     if (!hasMore && pageNumber !== 1) return;
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from("ships")
-        .select("prompt, slug, portfolio_type, id")
-        .order("id", { ascending: false })
-        .range((pageNumber - 1) * 15, pageNumber * 15 - 1);
-
-      if (error) {
-        console.error(error);
-        throw error;
-      }
+      const data = await fetchGeneratedWebsites(pageNumber);
 
       if (pageNumber === 1) {
-        setGeneratedWebsites(data);
+        setGeneratedWebsites(data.websites);
       } else {
-        setGeneratedWebsites((prev) => [...prev, ...data]);
+        setGeneratedWebsites((prev) => [...prev, ...data.websites]);
       }
 
-      setHasMore(data.length === 15);
+      setHasMore(data.hasMore);
       setPage(pageNumber);
     } catch (error) {
       console.error("Error fetching generated websites:", error);
@@ -117,6 +98,18 @@ export default function PortfolioBuilder() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isWebsitesDialogOpen) {
+      loadGeneratedWebsites();
+    }
+  }, [isWebsitesDialogOpen]);
+
+  useEffect(() => {
+    if (inView && !isLoading && hasMore) {
+      loadGeneratedWebsites(page + 1);
+    }
+  }, [inView, isLoading, hasMore, page]);
 
   const handleWebsiteSelection = (website) => {
     setCustomDesignPrompt(website.prompt);
@@ -225,30 +218,32 @@ export default function PortfolioBuilder() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto p-6 space-y-8 flex flex-col h-full w-full"
+      className="mx-auto p-4 md:p-6 space-y-4 md:space-y-8 flex flex-col h-full w-full"
     >
-      <h1 className="text-3xl font-bold mb-6">Start your project</h1>
-      <div className="space-y-6 flex-grow overflow-y-auto">
-        <div>
-          <h2 className="text-lg font-semibold mb-4 block">Your Name</h2>
-          <Input
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            className="mt-1 w-1/2"
-            disabled={isGenerating}
+      <h1 className="text-2xl md:text-3xl font-bold">Start your project</h1>
+      <div className="space-y-4 md:space-y-6 flex-grow overflow-y-auto">
+        {/* Desktop view */}
+        <div className="hidden md:block">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold mb-4 block">Your Name</h2>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              className="mt-1 w-1/2"
+              disabled={isGenerating}
+            />
+          </div>
+
+          <PortfolioTypeSelector
+            portfolioType={portfolioType}
+            setPortfolioType={setPortfolioType}
+            isGenerating={isGenerating}
           />
-        </div>
 
-        <PortfolioTypeSelector
-          portfolioType={portfolioType}
-          setPortfolioType={setPortfolioType}
-          isGenerating={isGenerating}
-        />
-
-        <div className="grid grid-cols-1 gap-6">
-          {/* Commented out first card
+          <div className="grid grid-cols-1 gap-6">
+            {/* Commented out first card
           <Card
             className="relative cursor-pointer overflow-hidden h-full bg-gray-50 dark:bg-gray-800 transition-all duration-300 ease-in-out hover:shadow-lg group"
             onClick={() => setIsWebsitesDialogOpen(true)}
@@ -266,81 +261,103 @@ export default function PortfolioBuilder() {
             </CardContent>
           </Card>
           */}
+            <Card className="h-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
+                  <CardDescription>
+                    Describe your ideal portfolio design or select a design from
+                    the gallery
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setIsWebsitesDialogOpen(true)}
+                  disabled={isGenerating}
+                  size="sm"
+                >
+                  <DraftingCompass className="mr-2 h-4 w-4" />
+                  Open Prompt Gallery
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <CustomDesignPrompt
+                  customDesignPrompt={customDesignPrompt}
+                  setCustomDesignPrompt={setCustomDesignPrompt}
+                  isGenerating={isGenerating}
+                />
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card className="h-full">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
-                <CardDescription>
-                  Describe your ideal portfolio design or select a design from
-                  the gallery
-                </CardDescription>
-              </div>
-              <Button
-                onClick={() => setIsWebsitesDialogOpen(true)}
-                disabled={isGenerating}
-                size="sm"
-              >
-                <DraftingCompass className="mr-2 h-4 w-4" />
-                Open Prompt Gallery
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <CustomDesignPrompt
-                customDesignPrompt={customDesignPrompt}
-                setCustomDesignPrompt={setCustomDesignPrompt}
-                isGenerating={isGenerating}
-              />
-            </CardContent>
-          </Card>
+          <div className="flex justify-between items-center mt-auto pt-4">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <p
+                    className={`text-sm ${
+                      availableShips < 1
+                        ? "text-destructive"
+                        : "text-foreground"
+                    }`}
+                    onClick={(e) => e.preventDefault()}
+                  >
+                    <Fuel
+                      className="inline-block mr-2"
+                      height={18}
+                      width={18}
+                    />
+                    {availableShips} {pluralize(availableShips, "container")}{" "}
+                    available
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Your balance is {availableShips}{" "}
+                  {pluralize(availableShips, "container")}. <br />1 container is
+                  equal to 1 individual portfolio.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Button
+              onClick={handleSubmit}
+              disabled={availableShips <= 0 || isGenerating}
+              className="relative"
+            >
+              {isGenerating ? (
+                <>
+                  Generating...
+                  <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                </>
+              ) : availableShips > 0 ? (
+                <>
+                  Generate Portfolio
+                  <Sparkles className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                "No ships available"
+              )}
+              {availableShips <= 0 && !isGenerating && (
+                <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
+                  Get more ships
+                </span>
+              )}
+            </Button>
+          </div>
         </div>
 
-        <div className="flex justify-between items-center mt-auto pt-4">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <p
-                  className={`text-sm ${
-                    availableShips < 1 ? "text-destructive" : "text-foreground"
-                  }`}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  <Fuel className="inline-block mr-2" height={18} width={18} />
-                  {availableShips} {pluralize(availableShips, "container")}{" "}
-                  available
-                </p>
-              </TooltipTrigger>
-              <TooltipContent>
-                Your balance is {availableShips}{" "}
-                {pluralize(availableShips, "container")}. <br />1 container is
-                equal to 1 individual portfolio.
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button
-            onClick={handleSubmit}
-            disabled={availableShips <= 0 || isGenerating}
-            className="relative"
-          >
-            {isGenerating ? (
-              <>
-                Generating...
-                <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-              </>
-            ) : availableShips > 0 ? (
-              <>
-                Generate Portfolio
-                <Sparkles className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              "No ships available"
-            )}
-            {availableShips <= 0 && !isGenerating && (
-              <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
-                Get more ships
-              </span>
-            )}
-          </Button>
+        {/* Mobile view */}
+        <div className="md:hidden">
+          <MobilePortfolioBuilder
+            name={name}
+            setName={setName}
+            portfolioType={portfolioType}
+            setPortfolioType={setPortfolioType}
+            customDesignPrompt={customDesignPrompt}
+            setCustomDesignPrompt={setCustomDesignPrompt}
+            isGenerating={isGenerating}
+            handleSubmit={handleSubmit}
+            onOpenPromptGallery={() => setIsWebsitesDialogOpen(true)}
+            availableShips={availableShips}
+          />
         </div>
       </div>
 
@@ -361,7 +378,7 @@ export default function PortfolioBuilder() {
         open={isWebsitesDialogOpen}
         onOpenChange={setIsWebsitesDialogOpen}
       >
-        <DialogContent className="max-w-[90vw] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="max-w-[90vw] max-h-[80vh] md:max-h-[90vh] overflow-hidden flex flex-col my-4 md:my-0 rounded-lg">
           <DialogTitle className="text-foreground">
             Select a portfolio design
           </DialogTitle>
@@ -377,7 +394,11 @@ export default function PortfolioBuilder() {
                 onClick: () => handleWebsiteSelection(website),
               }))}
             />
-            {isLoading && <p className="text-center mt-4">Loading...</p>}
+            {isLoading && (
+              <div className="flex justify-center items-center mt-4">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            )}
             {!isLoading && hasMore && <div ref={ref} className="h-10" />}
           </div>
         </DialogContent>
