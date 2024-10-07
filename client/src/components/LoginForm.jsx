@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AuthContext } from "../context/AuthContext";
 import {
   Card,
   CardContent,
@@ -11,15 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
+import { useParams } from "react-router-dom";
 
 const LoginForm = ({ onSubmit, isLoading }) => {
+  const params = useParams();
+  const showSignup = !params.logout;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSigningUp, setIsSigningUp] = useState(true);
+  const [isSigningUp, setIsSigningUp] = useState(showSignup);
   const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (e) => {

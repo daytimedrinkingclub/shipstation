@@ -1,24 +1,12 @@
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import LoginDialog from "./LoginDialog";
-import useDisclosure from "@/hooks/useDisclosure";
 import { Button } from "@/components/ui/button";
-import { GripIcon, LogIn, LogOut, Ship, User } from "lucide-react";
+import { GripIcon, Ship } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 import UserAccountMenu from "./editor/UserAccountMenu";
 
 const Header = () => {
-  const { user, availableShips, handleLogout, userLoading } =
-    useContext(AuthContext);
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const handleLoginLogout = async () => {
-    if (user) {
-      await handleLogout();
-    } else {
-      onOpen();
-    }
-  };
+  const { user, handleLogout, userLoading } = useContext(AuthContext);
 
   return (
     <header className="py-4 bg-background text-foreground">
@@ -54,7 +42,6 @@ const Header = () => {
           )}
         </div>
       </div>
-      <LoginDialog isOpen={isOpen} onClose={onClose} />
     </header>
   );
 };

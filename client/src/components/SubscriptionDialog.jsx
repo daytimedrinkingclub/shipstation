@@ -111,7 +111,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 gap-4 py-4">
             {[
               {
                 icon: Zap,
@@ -152,15 +152,19 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               </div>
             ))}
           </div>
-          <DialogFooter className="flex w-full justify-between sm:justify-between">
-            <div className="flex items-center space-x-4">
-              <Tabs value={selectedPlan} onValueChange={setSelectedPlan}>
+          <DialogFooter className="flex flex-col w-full space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-start sm:gap-4 w-full">
+              <Tabs
+                value={selectedPlan}
+                onValueChange={setSelectedPlan}
+                className="mb-4 sm:mb-0"
+              >
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="monthly">Monthly</TabsTrigger>
                   <TabsTrigger value="yearly">Yearly</TabsTrigger>
                 </TabsList>
               </Tabs>
-              <div className="text-right">
+              <div className="flex items-center">
                 <span className="text-2xl font-bold text-primary">
                   {currentPlan.price}
                 </span>
@@ -169,7 +173,9 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
                 </span>
               </div>
             </div>
-            <Button onClick={handleSubscribe}>Subscribe Now</Button>
+            <Button onClick={handleSubscribe} className="w-full sm:w-auto">
+              Subscribe Now
+            </Button>
           </DialogFooter>
         </>
       );
@@ -222,7 +228,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     <>
       {showConfetti && <Confetti />}
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           {renderSubscriptionContent()}
         </DialogContent>
       </Dialog>
