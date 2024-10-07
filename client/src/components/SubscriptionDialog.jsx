@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
+import Confetti from "react-confetti";
 import {
   Dialog,
   DialogContent,
@@ -8,9 +9,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Zap, Image, Globe, FileText, XCircle, Crown } from "lucide-react";
+import { Zap, Image, Globe, FileText, Crown } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
+  const [selectedPlan, setSelectedPlan] = useState("yearly");
+  const [showConfetti, setShowConfetti] = useState(false);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
@@ -22,31 +28,72 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     };
   }, []);
 
+  const planDetails = {
+    monthly: {
+      price: "₹190",
+      period: "per month",
+      subscriptionId: "plan_P50C6KoJZ5cCYY	", // Replace with actual monthly plan ID
+      description: "Monthly Subscription",
+    },
+    yearly: {
+      price: "₹999",
+      period: "per year",
+      subscriptionId: "plan_P6Aold8asDFAUk", // Replace with actual yearly plan ID
+      description: "Yearly Subscription",
+    },
+  };
+
+  const rzpKeys = {
+    test: {
+      key: "rzp_test_81n8IWzEnxvpwy",
+    },
+    prod: {
+      key: "rzp_live_81n8IWzEnxvpwy",
+    },
+  };
+
+  const getRzpKey = () => {
+    if (process.env.NODE_ENV === "development") {
+      return rzpKeys.test.key;
+    } else {
+      return rzpKeys.prod.key;
+    }
+  };
+
+  const currentPlan = planDetails[selectedPlan];
+
   const handleSubscribe = () => {
     const options = {
-      key: "rzp_test_81n8IWzEnxvpwy", // Replace with your actual Razorpay key
-      subscription_id: "plan_P6BKzrKEJIctHZ", // Replace with actual subscription ID
+      key: getRzpKey(),
+      subscription_id: currentPlan.subscriptionId,
       name: "ShipStation.ai",
-      description: "Monthly Subscription",
-      image: "https://app.shipstation.ai/assets/logo.png", // Replace with your logo path
+      description: currentPlan.description,
+      image: "https://app.shipstation.ai/assets/logo.png",
       handler: function (response) {
         console.log(response.razorpay_payment_id);
         console.log(response.razorpay_subscription_id);
         console.log(response.razorpay_signature);
-        // Handle successful payment here (e.g., update user's subscription status)
+
+        setShowConfetti(true);
+
+        toast.success("Subscription successful!", {
+          description: "Welcome to the premium plan!",
+        });
+
+        setTimeout(() => {
+          onClose();
+          setShowConfetti(false);
+        }, 3000);
       },
-      currency: "INR",
       prefill: {
-        name: user.name,
         email: user.email,
-        contact: user.phone, // Assuming user object has these properties
       },
       notes: {
         note_key_1: "Premium Portfolio Subscription",
-        note_key_2: "Unlimited features",
+        note_key_2: selectedPlan === "yearly" ? "Yearly Plan" : "Monthly Plan",
       },
       theme: {
-        color: "#10B981", // Tailwind's emerald-500 color
+        color: "#10B981",
       },
     };
 
@@ -105,10 +152,24 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               </div>
             ))}
           </div>
-          <DialogFooter className="flex justify-center">
-            <Button className="" onClick={handleSubscribe}>
-              Subscribe Now
-            </Button>
+          <DialogFooter className="flex w-full justify-between sm:justify-between">
+            <div className="flex items-center space-x-4">
+              <Tabs value={selectedPlan} onValueChange={setSelectedPlan}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                  <TabsTrigger value="yearly">Yearly</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-primary">
+                  {currentPlan.price}
+                </span>
+                <span className="text-sm text-muted-foreground ml-1">
+                  {currentPlan.period}
+                </span>
+              </div>
+            </div>
+            <Button onClick={handleSubscribe}>Subscribe Now</Button>
           </DialogFooter>
         </>
       );
@@ -158,11 +219,14 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        {renderSubscriptionContent()}
-      </DialogContent>
-    </Dialog>
+    <>
+      {showConfetti && <Confetti />}
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px]">
+          {renderSubscriptionContent()}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
