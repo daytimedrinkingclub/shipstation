@@ -22,6 +22,10 @@ const {
   refineCode,
 } = require("./codeRefinementService");
 const { generateSiteContent } = require("./siteContentService");
+const ScreenshotService = require("./screenshotService");
+
+const screenshotService = new ScreenshotService();
+
 
 async function processConversation({
   client,
@@ -315,6 +319,7 @@ function handleOnboardingSocketEvents(io) {
 
         if (result.updatedCode) {
           socket.emit("codeUpdate", result.updatedCode);
+          await screenshotService.saveScreenshot(shipId);
         }
       } catch (error) {
         console.error("Error processing chat message:", error);

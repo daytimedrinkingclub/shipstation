@@ -7,13 +7,16 @@ class FileService {
     this.strategy = this.selectStorageStrategy();
   }
 
-  selectStorageStrategy() {
+  selectStorageStrategy(customStrategy) {
     switch (process.env.STORAGE_STRATEGY) {
       case "s3":
         return new S3StorageStrategy();
       case "local":
         return new LocalStorageStrategy();
       case "supabase":
+        return new SupabaseStorageStrategy();
+      case customStrategy === "supabase":
+        return new SupabaseStorageStrategy();
       default:
         return new SupabaseStorageStrategy();
     }

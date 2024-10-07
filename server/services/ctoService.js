@@ -9,6 +9,9 @@ const { TOOLS } = require("../config/tools");
 const ctoPrompt = require("./prompts/ctoPrompt");
 
 require("dotenv").config();
+const ScreenshotService = require("./screenshotService");
+
+const screenshotService = new ScreenshotService();
 
 async function ctoService({
   query,
@@ -91,6 +94,8 @@ async function ctoService({
     sendEvent("websiteDeployed", {
       slug,
     });
+
+    await screenshotService.saveScreenshot(slug);
 
     return {
       message: `Website successfully built, deployed, slug: ${slug}`,

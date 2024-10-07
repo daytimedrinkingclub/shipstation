@@ -368,7 +368,11 @@ export default function PortfolioBuilder() {
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
               cards={generatedWebsites.map((website) => ({
-                src: `https://api.microlink.io?url=${baseUrl}/site/${website.slug}&screenshot=true&meta=false&embed=screenshot.url`,
+                src: `${
+                  import.meta.env.VITE_SUPABASE_URL
+                }/storage/v1/object/public/shipstation-websites/websites/${
+                  website.slug
+                }/screenshot.png`,
                 url: `${baseUrl}/site/${website.slug}`,
                 onClick: () => handleWebsiteSelection(website),
               }))}
