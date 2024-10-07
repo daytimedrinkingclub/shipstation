@@ -41,11 +41,6 @@ export default function MobilePortfolioBuilder({
 }) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Add this useEffect for debugging
-  useEffect(() => {
-    console.log("MobilePortfolioBuilder - portfolioType:", portfolioType);
-  }, [portfolioType]);
-
   const nextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);

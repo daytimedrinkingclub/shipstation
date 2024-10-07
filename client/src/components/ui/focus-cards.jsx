@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 import { ExternalLink } from "lucide-react";
 import { Button } from "./button";
+
 export const Card = React.memo(({ card, index, hovered, setHovered }) => (
   <div
     onMouseEnter={() => setHovered(index)}
@@ -42,6 +43,9 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
         </Button>
       </div>
     </div>
+    {card.likeButton && (
+      <div className="absolute top-2 right-2 z-20">{card.likeButton}</div>
+    )}
   </div>
 ));
 
@@ -54,7 +58,7 @@ export function FocusCards({ cards }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       {cards.map((card, index) => (
         <Card
-          key={card.url}
+          key={card.key || card.id || card.url || `card-${index}`}
           card={card}
           index={index}
           hovered={hovered}

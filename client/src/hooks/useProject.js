@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import axiosInstance from "@/lib/axiosConfig";
 import axios from "axios";
 import { noop } from "@/lib/utils";
 
@@ -136,6 +137,28 @@ export function useProject(slug) {
     }
   };
 
+  const likeWebsite = async (websiteSlug) => {
+    try {
+      const response = await axiosInstance.post(`/like/${websiteSlug}`);
+      return response.data;
+    } catch (err) {
+      setError("Failed to like website");
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const unlikeWebsite = async (websiteSlug) => {
+    try {
+      const response = await axiosInstance.delete(`/like/${websiteSlug}`);
+      return response.data;
+    } catch (err) {
+      setError("Failed to unlike website");
+      console.error(err);
+      throw err;
+    }
+  };
+
   useEffect(() => {
     fetchDirectoryStructure();
   }, [slug]);
@@ -152,5 +175,7 @@ export function useProject(slug) {
     handledownloadzip,
     uploadAssets,
     uploadTemporaryAssets,
+    likeWebsite,
+    unlikeWebsite,
   };
 }

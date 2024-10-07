@@ -404,7 +404,7 @@ async function getDesignPresetPrompt(shipType, designName) {
 
 async function likeWebsite(userId, slug) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("website_likes")
       .insert({ user_id: userId, ship_slug: slug });
 
@@ -425,7 +425,7 @@ async function likeWebsite(userId, slug) {
 
 async function unlikeWebsite(userId, slug) {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from("website_likes")
       .delete()
       .match({ user_id: userId, ship_slug: slug });

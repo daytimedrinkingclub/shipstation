@@ -7,6 +7,8 @@ const { JSDOM } = require("jsdom");
 
 const multer = require("multer");
 
+const authMiddleware = require("./server/middleware/auth");
+
 const {
   validateRazorpayWebhook,
   validatePaypalWebhook,
@@ -449,7 +451,7 @@ app.post("/add-custom-domain", async (req, res) => {
 });
 
 // Like a website
-app.post("/like/:slug", async (req, res) => {
+app.post("/like/:slug", authMiddleware, async (req, res) => {
   const { slug } = req.params;
   const { user } = req;
 
@@ -470,7 +472,7 @@ app.post("/like/:slug", async (req, res) => {
 });
 
 // Unlike a website
-app.delete("/like/:slug", async (req, res) => {
+app.delete("/like/:slug", authMiddleware, async (req, res) => {
   const { slug } = req.params;
   const { user } = req;
 
