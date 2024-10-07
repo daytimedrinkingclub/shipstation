@@ -26,7 +26,7 @@ const DomainPanel = ({
     if (domainStatus === "pending") {
       return (
         <div className="space-y-6">
-          <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 flex items-center space-x-3">
+          <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 m-2 flex items-center space-x-3">
             <Loader className="text-blue-500 w-6 h-6 animate-spin" />
             <div>
               <h3 className="font-semibold text-blue-700">
@@ -59,7 +59,7 @@ const DomainPanel = ({
       );
     } else if (customDomainStatus && customDomainStatus.is_connected) {
       return (
-        <div className="space-y-6">
+        <div className="space-y-6 p-4 sm:p-2">
           <div className="bg-green-100 border border-green-300 rounded-lg p-4 flex items-center space-x-3">
             <CheckCircle className="text-green-500 w-6 h-6" />
             <div>
@@ -82,7 +82,7 @@ const DomainPanel = ({
           <h3 className="text-xl font-semibold">
             Benefits of Your Custom Domain
           </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4">
             {[
               {
                 icon: Lock,
@@ -135,7 +135,7 @@ const DomainPanel = ({
       return (
         <div className="space-y-6">
           {!showDNSInstructions ? (
-            <div>
+            <div className="p-4 sm:p-1">
               <h3 className="text-xl font-semibold mb-4">
                 Connect Your Custom Domain
               </h3>
@@ -159,9 +159,48 @@ const DomainPanel = ({
                   </div>
                 </div>
               </form>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                {[
+                  {
+                    icon: Briefcase,
+                    title: "Professional Branding",
+                    description:
+                      "Establish a strong, memorable online identity",
+                  },
+                  {
+                    icon: Users,
+                    title: "Improved Visibility",
+                    description:
+                      "Increase discoverability for potential clients",
+                  },
+                  {
+                    icon: Shield,
+                    title: "Enhanced Credibility",
+                    description: "Build trust with a professional web address",
+                  },
+                  {
+                    icon: Zap,
+                    title: "Better SEO",
+                    description: "Improve your search engine rankings",
+                  },
+                ].map((benefit, index) => (
+                  <div
+                    key={index}
+                    className="flex items-start space-x-3 p-3 rounded-lg"
+                  >
+                    <benefit.icon className="text-primary w-6 h-6 mt-1" />
+                    <div>
+                      <h4 className="font-semibold">{benefit.title}</h4>
+                      <p className="text-sm text-gray-600">
+                        {benefit.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
-            <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+            <div className=" p-4 space-y-4">
               <h3 className="text-xl font-semibold">
                 DNS Configuration Instructions
               </h3>
@@ -169,7 +208,7 @@ const DomainPanel = ({
                 To connect your domain <b>{customDomain}</b> please add the
                 following A record to your domain's DNS settings:
               </p>
-              <div className="bg-black-50 p-4 rounded-lg space-y-2">
+              <div className="bg-gray-700/20 p-4 rounded-lg space-y-2">
                 <p>
                   <strong>Type:</strong> A
                 </p>

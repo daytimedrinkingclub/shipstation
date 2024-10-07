@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }) => {
     // Clear local storage
     localStorage.clear();
     // Redirect to the home page
-    window.location.href = "/";
+    window.location.href = "/?logout=true";
   };
 
   const handleLogin = async (email, password = null) => {

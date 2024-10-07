@@ -431,17 +431,9 @@ const Edit = () => {
                         <Code className="w-4 h-4 mr-2" />
                         Code
                       </TabsTrigger>
-                      <TabsTrigger value="assets" className="flex items-center">
+                      <TabsTrigger value="domain" className="flex items-center">
                         <Globe className="w-4 h-4 mr-2" />
                         <span className="text-sm">Custom Domain</span>
-                        {assetCount === 0 ? null : (
-                          <Badge
-                            variant="default"
-                            className="rounded-full ml-2"
-                          >
-                            {assetCount}
-                          </Badge>
-                        )}
                       </TabsTrigger>
                     </>
                   )}
@@ -469,12 +461,16 @@ const Edit = () => {
                   handledownloadzip={handledownloadzip}
                 />
               </TabsContent>
-              <TabsContent value="assets" className="flex-grow overflow-hidden">
-                <Assets
-                  shipId={shipId}
-                  assets={assets}
-                  onAssetsChange={updateAssets}
-                  fetchAssets={fetchAssets}
+              <TabsContent value="domain" className="flex-grow overflow-hidden">
+                <DomainPanel
+                  customDomain={customDomain}
+                  setCustomDomain={setCustomDomain}
+                  handleCustomDomainSubmit={handleCustomDomainSubmit}
+                  showDNSInstructions={showDNSInstructions}
+                  handleConfirmDomain={handleConfirmDomain}
+                  isConnectingDomain={isConnectingDomain}
+                  domainStatus={domainStatus}
+                  customDomainStatus={customDomainStatus}
                 />
               </TabsContent>
             </Tabs>
