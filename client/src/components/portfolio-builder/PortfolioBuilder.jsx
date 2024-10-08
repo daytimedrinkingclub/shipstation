@@ -54,7 +54,8 @@ export default function PortfolioBuilder() {
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [page, setPage] = useState(1);
-  const [allGeneratedWebsites, setAllGeneratedWebsites] = useState([]);
+  const [allGeneratedWebsites, setAllGeneratedWebsites] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const { ref, inView } = useInView({
@@ -87,14 +88,13 @@ export default function PortfolioBuilder() {
       try {
         const data = await fetchGeneratedWebsites(pageNumber, 15, user?.id);
 
-        if (pageNumber === 1) {
-          setAllGeneratedWebsites(data.websites);
-        } else {
-          setAllGeneratedWebsites((prev) => [...prev, ...data.websites]);
-        }
+        setAllGeneratedWebsites((prev) => ({
+          ...prev,
+          [pageNumber]: data.websites,
+        }));
 
         setHasMore(data.hasMore);
-        setPage(data.nextPage);
+        setCurrentPage(pageNumber);
       } catch (error) {
         console.error("Error fetching generated websites:", error);
         toast.error("Failed to load generated websites");
@@ -113,11 +113,11 @@ export default function PortfolioBuilder() {
 
   useEffect(() => {
     if (inView && !isLoading && hasMore) {
-      loadGeneratedWebsites(page);
+      loadGeneratedWebsites(currentPage + 1);
     }
-  }, [inView, isLoading, hasMore, page, loadGeneratedWebsites]);
+  }, [inView, isLoading, hasMore, currentPage, loadGeneratedWebsites]);
 
-  const handleLikeWebsite = async (website) => {
+  const handleLikeWebsite = async (website, pageNumber) => {
     if (!user) {
       toast.error("Please log in to like websites");
       return;
@@ -129,8 +129,9 @@ export default function PortfolioBuilder() {
 
       await action(website.slug);
 
-      setAllGeneratedWebsites((prev) =>
-        prev.map((w) =>
+      setAllGeneratedWebsites((prev) => ({
+        ...prev,
+        [pageNumber]: prev[pageNumber].map((w) =>
           w.slug === website.slug
             ? {
                 ...w,
@@ -138,8 +139,8 @@ export default function PortfolioBuilder() {
                 is_liked_by_user: !isLiked,
               }
             : w
-        )
-      );
+        ),
+      }));
 
       toast.success(isLiked ? "Website unliked" : "Website liked");
     } catch (error) {
@@ -421,39 +422,42 @@ export default function PortfolioBuilder() {
           </DialogTitle>
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
-              cards={allGeneratedWebsites.map((website) => ({
-                key: website.slug,
-                src: `${
-                  import.meta.env.VITE_SUPABASE_URL
-                }/storage/v1/object/public/shipstation-websites/websites/${
-                  website.slug
-                }/screenshot.png`,
-                url: `${baseUrl}/site/${website.slug}`,
-                onClick: () => handleWebsiteSelection(website),
-                likeButton: (
-                  <Button
-                    key={`like-${website.slug}`}
-                    size="sm"
-                    variant="ghost"
-                    className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleLikeWebsite(website);
-                    }}
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${
-                        website.is_liked_by_user
-                          ? "fill-current text-red-500"
-                          : "text-gray-500"
-                      }`}
-                    />
-                    <span className="ml-1 text-gray-700 dark:text-gray-300">
-                      {website.likes_count}
-                    </span>
-                  </Button>
-                ),
-              }))}
+              cards={Object.entries(allGeneratedWebsites).flatMap(
+                ([pageNumber, websites]) =>
+                  websites.map((website) => ({
+                    key: `${website.slug}-${pageNumber}`,
+                    src: `${
+                      import.meta.env.VITE_SUPABASE_URL
+                    }/storage/v1/object/public/shipstation-websites/websites/${
+                      website.slug
+                    }/screenshot.png`,
+                    url: `${baseUrl}/site/${website.slug}`,
+                    onClick: () => handleWebsiteSelection(website),
+                    likeButton: (
+                      <Button
+                        key={`like-${website.slug}-${pageNumber}`}
+                        size="sm"
+                        variant="ghost"
+                        className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLikeWebsite(website, pageNumber);
+                        }}
+                      >
+                        <Heart
+                          className={`h-5 w-5 ${
+                            website.is_liked_by_user
+                              ? "fill-current text-red-500"
+                              : "text-gray-500"
+                          }`}
+                        />
+                        <span className="ml-1 text-gray-700 dark:text-gray-300">
+                          {website.likes_count}
+                        </span>
+                      </Button>
+                    ),
+                  }))
+              )}
             />
             {isLoading && (
               <div className="flex justify-center items-center mt-4">
