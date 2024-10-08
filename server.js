@@ -7,6 +7,8 @@ const { JSDOM } = require("jsdom");
 
 const multer = require("multer");
 
+const authMiddleware = require("./server/middleware/auth");
+
 const {
   validateRazorpayWebhook,
   validatePaypalWebhook,
@@ -17,6 +19,8 @@ const {
   getUserProfile,
   updateUserProfile,
   getShipPrompt,
+  unlikeWebsite,
+  likeWebsite,
 } = require("./server/services/dbService");
 const {
   handleOnboardingSocketEvents,
@@ -446,6 +450,44 @@ app.post("/add-custom-domain", async (req, res) => {
   }
 });
 
+// Like a website
+app.post("/like/:slug", authMiddleware, async (req, res) => {
+  const { slug } = req.params;
+  const { user } = req;
+
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const result = await likeWebsite(user.id, slug);
+    res.json(result);
+  } catch (error) {
+    if (error.message === "Already liked") {
+      return res.status(400).json({ error: "Already liked" });
+    }
+    console.error("Error liking website:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Unlike a website
+app.delete("/like/:slug", authMiddleware, async (req, res) => {
+  const { slug } = req.params;
+  const { user } = req;
+
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  try {
+    const result = await unlikeWebsite(user.id, slug);
+    res.json(result);
+  } catch (error) {
+    console.error("Error unliking website:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 handleOnboardingSocketEvents(io);
 

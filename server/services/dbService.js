@@ -402,6 +402,45 @@ async function getDesignPresetPrompt(shipType, designName) {
   return data;
 }
 
+async function likeWebsite(userId, slug) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("website_likes")
+      .insert({ user_id: userId, ship_slug: slug });
+
+    if (error) {
+      if (error.code === "23505") {
+        // Unique constraint violation
+        throw new Error("Already liked");
+      }
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error liking website:", error);
+    throw error;
+  }
+}
+
+async function unlikeWebsite(userId, slug) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("website_likes")
+      .delete()
+      .match({ user_id: userId, ship_slug: slug });
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error unliking website:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -425,4 +464,6 @@ module.exports = {
   fetchAssets,
   getShipPrompt,
   getDesignPresetPrompt,
+  likeWebsite,
+  unlikeWebsite,
 };
