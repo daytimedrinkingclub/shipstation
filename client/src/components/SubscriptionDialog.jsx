@@ -12,23 +12,28 @@ import { Button } from "@/components/ui/button";
 import { Zap, Image, Globe, FileText, Crown } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   const [selectedPlan, setSelectedPlan] = useState("yearly");
   const [showConfetti, setShowConfetti] = useState(false);
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
   const planDetails = {
+    monthly: {
+      price: "$4",
+      period: "per month",
+      planId: "P-31N80695BE517244WM4AQH2I",
+      description: "Monthly Subscription",
+    },
+    yearly: {
+      price: "$38",
+      period: "per year",
+      planId: "P-7CH88240A4661311RM4AQIUI",
+      description: "Yearly Subscription",
+    },
+  };
+
+  const rzpPlanDetails = {
     monthly: {
       price: "₹190",
       period: "per month",
@@ -59,7 +64,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
       return rzpKeys.prod.key;
     }
   };
-
+  
   const currentPlan = planDetails[selectedPlan];
 
   const handleSubscribe = () => {
@@ -101,6 +106,32 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     rzp.open();
   };
 
+
+  const handleSubscriptionApprove = (data, actions) => {
+    return actions.subscription.get().then((details) => {
+      console.log("Subscription completed", details);
+      setShowConfetti(true);
+      toast.success("Subscription successful!", {
+        description: "Welcome to the premium plan!",
+      });
+      setTimeout(() => {
+        onClose();
+        setShowConfetti(false);
+      }, 3000);
+    });
+  };
+
+  useEffect(() => {
+    // const script = document.createElement("script");
+    // script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    // script.async = true;
+    // document.body.appendChild(script);
+
+    // return () => {
+    //   document.body.removeChild(script);
+    // };
+  }, []);
+
   const renderSubscriptionContent = () => {
     if (!isSubscribed) {
       return (
@@ -111,6 +142,26 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
+          <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-start sm:gap-4 w-full">
+            <Tabs
+              value={selectedPlan}
+              onValueChange={setSelectedPlan}
+              className="mb-4 sm:mb-0"
+            >
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="monthly">Monthly</TabsTrigger>
+                <TabsTrigger value="yearly">Yearly</TabsTrigger>
+              </TabsList>
+            </Tabs>
+            <div className="flex items-center">
+              <span className="text-2xl font-bold text-primary">
+                {currentPlan.price}
+              </span>
+              <span className="text-sm text-muted-foreground ml-1">
+                {currentPlan.period}
+              </span>
+            </div>
+          </div>
           <div className="grid grid-cols-1 gap-4 py-4">
             {[
               {
@@ -152,30 +203,18 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               </div>
             ))}
           </div>
-          <DialogFooter className="flex flex-col w-full space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-start sm:gap-4 w-full">
-              <Tabs
-                value={selectedPlan}
-                onValueChange={setSelectedPlan}
-                className="mb-4 sm:mb-0"
-              >
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                  <TabsTrigger value="yearly">Yearly</TabsTrigger>
-                </TabsList>
-              </Tabs>
-              <div className="flex items-center">
-                <span className="text-2xl font-bold text-primary">
-                  {currentPlan.price}
-                </span>
-                <span className="text-sm text-muted-foreground ml-1">
-                  {currentPlan.period}
-                </span>
-              </div>
-            </div>
-            <Button onClick={handleSubscribe} className="w-full sm:w-auto">
-              Subscribe Now
-            </Button>
+          <DialogFooter className="flex items-center sm:justify-center w-full">
+            <PayPalButtons
+              key={selectedPlan}
+              createSubscription={(data, actions) => {
+                const currentPlan = planDetails[selectedPlan];
+                return actions.subscription.create({
+                  plan_id: currentPlan.planId,
+                });
+              }}
+              onApprove={handleSubscriptionApprove}
+              style={{ layout: "vertical", color: "blue" }}
+            />
           </DialogFooter>
         </>
       );
@@ -225,14 +264,20 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   };
 
   return (
-    <>
+    <PayPalScriptProvider
+      options={{
+        "client-id":
+          "Abfx2fBz2b8Zos3YenEPUvpAS1OF_6HwAaJpnHw535oNJaRHoTE_j-XWrw0z04OUXi63fIn7bMbeMopf",
+        vault: true,
+      }}
+    >
       {showConfetti && <Confetti />}
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           {renderSubscriptionContent()}
         </DialogContent>
       </Dialog>
-    </>
+    </PayPalScriptProvider>
   );
 };
 
