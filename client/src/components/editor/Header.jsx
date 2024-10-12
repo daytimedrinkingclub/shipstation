@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ExternalLink, Undo2, Redo2, Eye, Share, Share2 } from "lucide-react";
+import { ExternalLink, Undo2, Redo2, Eye, Share2, User } from "lucide-react";
 import ViewOptions from "./ViewOptions";
 import UserAccountMenu from "./UserAccountMenu";
 import { AuthContext } from "@/context/AuthContext";
@@ -22,7 +22,7 @@ const Header = ({
   showMobilePreview,
   setShowMobilePreview,
 }) => {
-  const { user, handleLogout } = useContext(AuthContext);
+  const { user, handleLogout, userLoading } = useContext(AuthContext);
 
   const handleLogoutClick = async () => {
     await handleLogout();
@@ -79,8 +79,15 @@ const Header = ({
               <ExternalLink className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Preview Live Site</span>
             </Button>
-            <div className="sm:hidden">
-              <UserAccountMenu user={user} onLogout={handleLogoutClick} />
+            {/* Mobile menu */}
+            <div className="md:hidden flex items-center space-x-2">
+              {user && (
+                <UserAccountMenu
+                  user={user}
+                  onLogout={handleLogoutClick}
+                  isMobile={true}
+                />
+              )}
             </div>
           </>
         )}
@@ -156,10 +163,13 @@ const Header = ({
               <ExternalLink className="w-4 h-4 md:mr-2" />
               <span className="hidden md:inline">Preview Live Site</span>
             </Button>
+          </div>
 
-            <div className="hidden sm:flex">
+          {/* Desktop menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user && (
               <UserAccountMenu user={user} onLogout={handleLogoutClick} />
-            </div>
+            )}
           </div>
         </div>
       )}
