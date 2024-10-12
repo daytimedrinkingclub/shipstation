@@ -80,7 +80,7 @@ npm run build
 The websites are stored in s3 bucket and served on the path
 https://shipstation.ai/site/website-slug
 
-# Deploying to Heroku
+# Deploying
 1. Build the client project
 ```bash
 cd client
