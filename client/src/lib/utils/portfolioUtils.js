@@ -1,24 +1,42 @@
 import { supabase } from "@/lib/supabaseClient";
 
-export const fetchGeneratedWebsites = async (pageNumber = 1, pageSize = 15) => {
-  try {
-    const { data, error } = await supabase
-      .from("ships")
-      .select("prompt, slug, portfolio_type, id")
-      .order("id", { ascending: false })
-      .range((pageNumber - 1) * pageSize, pageNumber * pageSize - 1);
+async function fetchGeneratedWebsites(page = 1, limit = 15, userId = null) {
+  const offset = (page - 1) * limit;
 
-    if (error) {
-      console.error(error);
-      throw error;
-    }
+  let query = supabase
+    .from("ships")
+    .select(
+      `
+      *,
+      website_likes (id, user_id)
+    `,
+      { count: "exact" }
+    )
+    .eq("status", "completed")
+    .order("likes_count", { ascending: false })
+    .range(offset, offset + limit - 1);
 
-    return {
-      websites: data,
-      hasMore: data.length === pageSize,
-    };
-  } catch (error) {
+  const { data: websites, count, error } = await query;
+
+  if (error) {
     console.error("Error fetching generated websites:", error);
     throw error;
   }
-};
+
+  const formattedWebsites = websites.map((website) => ({
+    ...website,
+    likes_count: website.likes_count || 0,
+    is_liked_by_user: userId
+      ? website.website_likes.some((like) => like.user_id === userId)
+      : false,
+  }));
+
+  return {
+    websites: formattedWebsites,
+    totalCount: count,
+    hasMore: count > offset + limit,
+    nextPage: page + 1,
+  };
+}
+
+export { fetchGeneratedWebsites };

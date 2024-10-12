@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import useDisclosure from "@/hooks/useDisclosure";
 import ChoosePaymentOptionDialog from "../ChoosePaymentOptionDialog";
 
-import { DraftingCompass, Fuel, Loader2, Sparkles } from "lucide-react";
+import { DraftingCompass, Fuel, Loader2, Sparkles, Heart } from "lucide-react";
 import { pluralize } from "@/lib/utils";
 import {
   Tooltip,
@@ -35,6 +35,7 @@ import {
 import { useInView } from "react-intersection-observer";
 import { fetchGeneratedWebsites } from "@/lib/utils/portfolioUtils";
 import MobilePortfolioBuilder from "./MobilePortfolioBuilder";
+import { useProject } from "@/hooks/useProject";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -52,13 +53,16 @@ export default function PortfolioBuilder() {
   const [isPaymentRequired, setIsPaymentRequired] = useState(false);
   const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const [isKeyValidating, setIsKeyValidating] = useState(false);
-  const [generatedWebsites, setGeneratedWebsites] = useState([]);
-  const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const [allGeneratedWebsites, setAllGeneratedWebsites] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const { ref, inView } = useInView({
     threshold: 0,
   });
+
+  const { likeWebsite, unlikeWebsite } = useProject();
 
   const baseUrl = import.meta.env.VITE_MAIN_URL; //https://shipstation.ai
 
@@ -76,40 +80,74 @@ export default function PortfolioBuilder() {
 
   const navigate = useNavigate();
 
-  const loadGeneratedWebsites = async (pageNumber = 1) => {
-    if (!hasMore && pageNumber !== 1) return;
+  const loadGeneratedWebsites = useCallback(
+    async (pageNumber = 1) => {
+      if (!hasMore && pageNumber !== 1) return;
 
-    setIsLoading(true);
-    try {
-      const data = await fetchGeneratedWebsites(pageNumber);
+      setIsLoading(true);
+      try {
+        const data = await fetchGeneratedWebsites(pageNumber, 15, user?.id);
 
-      if (pageNumber === 1) {
-        setGeneratedWebsites(data.websites);
-      } else {
-        setGeneratedWebsites((prev) => [...prev, ...data.websites]);
+        setAllGeneratedWebsites((prev) => ({
+          ...prev,
+          [pageNumber]: data.websites,
+        }));
+
+        setHasMore(data.hasMore);
+        setCurrentPage(pageNumber);
+      } catch (error) {
+        console.error("Error fetching generated websites:", error);
+        toast.error("Failed to load generated websites");
+      } finally {
+        setIsLoading(false);
       }
-
-      setHasMore(data.hasMore);
-      setPage(pageNumber);
-    } catch (error) {
-      console.error("Error fetching generated websites:", error);
-      toast.error("Failed to load generated websites");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [user?.id, hasMore]
+  );
 
   useEffect(() => {
     if (isWebsitesDialogOpen) {
-      loadGeneratedWebsites();
+      loadGeneratedWebsites(1);
     }
-  }, [isWebsitesDialogOpen]);
+  }, [isWebsitesDialogOpen, loadGeneratedWebsites]);
 
   useEffect(() => {
     if (inView && !isLoading && hasMore) {
-      loadGeneratedWebsites(page + 1);
+      loadGeneratedWebsites(currentPage + 1);
     }
-  }, [inView, isLoading, hasMore, page]);
+  }, [inView, isLoading, hasMore, currentPage, loadGeneratedWebsites]);
+
+  const handleLikeWebsite = async (website, pageNumber) => {
+    if (!user) {
+      toast.error("Please log in to like websites");
+      return;
+    }
+
+    try {
+      const isLiked = website.is_liked_by_user;
+      const action = isLiked ? unlikeWebsite : likeWebsite;
+
+      await action(website.slug);
+
+      setAllGeneratedWebsites((prev) => ({
+        ...prev,
+        [pageNumber]: prev[pageNumber].map((w) =>
+          w.slug === website.slug
+            ? {
+                ...w,
+                likes_count: isLiked ? w.likes_count - 1 : w.likes_count + 1,
+                is_liked_by_user: !isLiked,
+              }
+            : w
+        ),
+      }));
+
+      toast.success(isLiked ? "Website unliked" : "Website liked");
+    } catch (error) {
+      console.error("Error updating like:", error);
+      toast.error("Failed to update like");
+    }
+  };
 
   const handleWebsiteSelection = (website) => {
     setCustomDesignPrompt(website.prompt);
@@ -384,15 +422,42 @@ export default function PortfolioBuilder() {
           </DialogTitle>
           <div className="flex-grow overflow-y-auto pr-4">
             <FocusCards
-              cards={generatedWebsites.map((website) => ({
-                src: `${
-                  import.meta.env.VITE_SUPABASE_URL
-                }/storage/v1/object/public/shipstation-websites/websites/${
-                  website.slug
-                }/screenshot.png`,
-                url: `${baseUrl}/site/${website.slug}`,
-                onClick: () => handleWebsiteSelection(website),
-              }))}
+              cards={Object.entries(allGeneratedWebsites).flatMap(
+                ([pageNumber, websites]) =>
+                  websites.map((website) => ({
+                    key: `${website.slug}-${pageNumber}`,
+                    src: `${
+                      import.meta.env.VITE_SUPABASE_URL
+                    }/storage/v1/object/public/shipstation-websites/websites/${
+                      website.slug
+                    }/screenshot.png`,
+                    url: `${baseUrl}/site/${website.slug}`,
+                    onClick: () => handleWebsiteSelection(website),
+                    likeButton: (
+                      <Button
+                        key={`like-${website.slug}-${pageNumber}`}
+                        size="sm"
+                        variant="ghost"
+                        className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleLikeWebsite(website, pageNumber);
+                        }}
+                      >
+                        <Heart
+                          className={`h-5 w-5 ${
+                            website.is_liked_by_user
+                              ? "fill-current text-red-500"
+                              : "text-gray-500"
+                          }`}
+                        />
+                        <span className="ml-1 text-gray-700 dark:text-gray-300">
+                          {website.likes_count}
+                        </span>
+                      </Button>
+                    ),
+                  }))
+              )}
             />
             {isLoading && (
               <div className="flex justify-center items-center mt-4">
