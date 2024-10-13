@@ -1,5 +1,5 @@
 import axios from "axios";
-import { supabase } from "./supabaseClient"; // Import your Supabase client
+import { supabase } from "./supabaseClient";
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
