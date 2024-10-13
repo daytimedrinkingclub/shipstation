@@ -244,7 +244,7 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
         <div className="mt-auto">
           <FileUpload onFileUpload={handleFileUpload} type={shipType} />
           <div className="flex justify-between items-center mt-4">
-            <TooltipProvider>
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <p
@@ -270,7 +270,7 @@ const ShipForm = ({ reset, isGenerating, onFileUpload }) => {
                   equal to 1 individual project.
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
           </div>
         </div>
       </div>

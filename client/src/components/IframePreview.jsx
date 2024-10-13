@@ -118,8 +118,13 @@ const IframePreview = forwardRef(
       return (
         <div ref={containerRef} className={wrapperClass}>
           <div className="w-full h-full flex items-center justify-center">
-            <div className="scale-[0.7]">
-              <DeviceFrameset device={device}>{content}</DeviceFrameset>
+            <div className="max-w-full max-h-full overflow-hidden">
+              <div
+                className="transform-gpu"
+                style={{ transform: 'scale(0.8)', transformOrigin: 'center' }}
+              >
+                <DeviceFrameset device={device}>{content}</DeviceFrameset>
+              </div>
             </div>
           </div>
         </div>

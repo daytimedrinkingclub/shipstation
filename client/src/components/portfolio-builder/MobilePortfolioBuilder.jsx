@@ -191,12 +191,12 @@ export default function MobilePortfolioBuilder({
         )}
       </div>
 
-      <div className="flex items-center">
+      {/* <div className="flex items-center">
         <Fuel className="mr-2 h-4 w-4" />
         <span className="text-sm">
           {availableShips} container{availableShips !== 1 && "s"} available
         </span>
-      </div>
+      </div> */}
     </div>
   );
 }

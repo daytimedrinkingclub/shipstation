@@ -327,8 +327,8 @@ export default function PortfolioBuilder() {
             </Card>
           </div>
 
-          <div className="flex justify-between items-center mt-auto pt-4">
-            <TooltipProvider>
+          <div className="flex justify-between items-end mt-auto pt-4">
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <p
@@ -354,7 +354,8 @@ export default function PortfolioBuilder() {
                   equal to 1 individual portfolio.
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
+            <div />
             <Button
               onClick={handleSubmit}
               disabled={availableShips <= 0 || isGenerating}

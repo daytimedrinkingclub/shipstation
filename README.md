@@ -1,15 +1,13 @@
 # [ShipStation](https://shipstation.ai)
 
-ShipStation, https://shipstation.ai is an AI based code generation platform.
-Currently, it is optimised for generating simple landing pages, portfolios, email templates, etc. with more complex features to follow.
+ShipStation, https://shipstation.ai is an AI based portfolio management service.
+You can generate a personal website of your design requirements and manage/update it in natural langauge with chat mode.
 
-## Features of ShipStation
+## Features of ShipStation.ai
 
 - User authentication (login/signup) via SupaBase
-- Dashboard to generate new projects
-- View previously generated projects with code editor to edit the generated website
-- Option to use personal Anthropic API key for free usage
-- Integrated payment options via PayPal and Razorpay for purchasing credits.
+- Dashboard to generate portfolio
+- View previously generated portfolio with code editor to edit the generated website
 - Real-time progress tracking during website generation on websocket
 
 ## Project Architecture
@@ -77,13 +75,12 @@ npm run build
 
 1. Access the application through the browser (default: `http://localhost:5173`)
 2. Sign up or log in to your account
-3. Choose between creating a landing page or portfolio
-4. Add the details for getting a website as output.
+3. Provide portfolio details like name, profession and a design prompt
 
 The websites are stored in s3 bucket and served on the path
 https://shipstation.ai/site/website-slug
 
-# Deploying to Heroku
+# Deploying
 1. Build the client project
 ```bash
 cd client
