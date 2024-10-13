@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import PortfolioTypeSelector from "./PortfolioTypeSelector";
 import CustomDesignPrompt from "./CustomDesignPrompt";
+import { toast } from "sonner";
 
 const steps = [
   { title: "Your Name", description: "Enter your full name", label: "Name" },
@@ -42,6 +43,10 @@ export default function MobilePortfolioBuilder({
   const [currentStep, setCurrentStep] = useState(0);
 
   const nextStep = () => {
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -53,6 +58,12 @@ export default function MobilePortfolioBuilder({
     }
   };
 
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      nextStep();
+    }
+  };
+
   const renderStepContent = () => {
     switch (currentStep) {
       case 0:
@@ -61,6 +72,7 @@ export default function MobilePortfolioBuilder({
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyPress={handleKeyPress}
             placeholder="Enter your name"
             className="w-full"
             disabled={isGenerating}
@@ -73,6 +85,7 @@ export default function MobilePortfolioBuilder({
             setPortfolioType={setPortfolioType}
             isGenerating={isGenerating}
             isMobile={true}
+            onKeyPress={handleKeyPress}
           />
         );
       case 2:
@@ -82,6 +95,7 @@ export default function MobilePortfolioBuilder({
               customDesignPrompt={customDesignPrompt}
               setCustomDesignPrompt={setCustomDesignPrompt}
               isGenerating={isGenerating}
+              onKeyPress={handleKeyPress}
             />
             <Button
               onClick={onOpenPromptGallery}

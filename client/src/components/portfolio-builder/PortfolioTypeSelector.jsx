@@ -9,6 +9,7 @@ import {
   Palette,
   Music,
   Briefcase,
+  Check,
 } from "lucide-react";
 import {
   Select,
@@ -31,6 +32,7 @@ export default function PortfolioTypeSelector({
   setPortfolioType,
   isGenerating,
   isMobile = false,
+  onKeyPress,
 }) {
   const [customType, setCustomType] = useState("");
 
@@ -41,6 +43,20 @@ export default function PortfolioTypeSelector({
       setCustomType(portfolioType);
     }
   }, [portfolioType]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (onKeyPress) {
+        onKeyPress(event);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onKeyPress]);
 
   const handlePortfolioTypeChange = (value) => {
     setPortfolioType(value);
@@ -143,12 +159,23 @@ export default function PortfolioTypeSelector({
           <SelectValue placeholder="Select your profession" />
         </SelectTrigger>
         <SelectContent>
-          {portfolioTypes.map(({ id }) => (
-            <SelectItem key={id} value={id}>
-              {id}
-            </SelectItem>
-          ))}
-          <SelectItem value="Other">Other</SelectItem>
+          {portfolioTypes.map(({ id, icon }) => {
+            const IconComponent = icon;
+            return (
+              <SelectItem key={id} value={id}>
+                <div className="flex items-center">
+                  <IconComponent className="h-4 w-4 mr-2" />
+                  {id}
+                </div>
+              </SelectItem>
+            );
+          })}
+          <SelectItem value="Other">
+            <div className="flex items-center">
+              <Briefcase className="h-4 w-4 mr-2" />
+              Other
+            </div>
+          </SelectItem>
         </SelectContent>
       </Select>
       {(portfolioType === "Other" || customType !== "") && (
