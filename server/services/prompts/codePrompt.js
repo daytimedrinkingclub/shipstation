@@ -303,7 +303,7 @@ Provide a complete index.html file with the following structure:
 
 ### Image Guidelines:
 1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, including:
-   - Profile or personal photos
+   - Profile or personal photos: strictly use headshot images only
    - Project screenshots or thumbnails
    - Background images for any section
    - Icons or small illustrative images

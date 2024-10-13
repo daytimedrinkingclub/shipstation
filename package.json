@@ -41,6 +41,7 @@
     "nanoid": "^3.3.7",
     "path": "^0.12.7",
     "paypal-rest-sdk": "^1.8.1",
+    "playwright-core": "^1.48.0",
     "puppeteer": "^23.1.0",
     "razorpay": "^2.9.4",
     "socket.io": "^4.7.5",
