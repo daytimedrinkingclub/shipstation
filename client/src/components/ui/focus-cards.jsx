@@ -12,8 +12,7 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
     onMouseLeave={() => setHovered(null)}
     onClick={card.onClick}
     className={cn(
-      "rounded-lg relative bg-gray-100 dark:bg-neutral-900 overflow-hidden aspect-[16/9] w-full transition-all duration-300 ease-out cursor-pointer",
-      hovered !== null && hovered !== index && "blur-sm scale-[0.98]"
+      "rounded-lg relative bg-gray-100 dark:bg-neutral-900 overflow-hidden aspect-[16/9] w-full transition-all duration-300 ease-out cursor-pointer"
     )}
   >
     <LazyLoadImage
@@ -26,7 +25,7 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
     <div
       className={cn(
         "absolute inset-0 bg-black/50 flex items-end py-4 px-4 transition-opacity duration-300",
-        hovered === index ? "opacity-100" : "opacity-0"
+        "opacity-100 md:opacity-0 md:hover:opacity-100"
       )}
     >
       <div
@@ -44,7 +43,7 @@ export const Card = React.memo(({ card, index, hovered, setHovered }) => (
       </div>
     </div>
     {card.likeButton && (
-      <div className="absolute top-2 right-2 z-20">{card.likeButton}</div>
+      <div className="absolute top-2 right-2 z-10">{card.likeButton}</div>
     )}
   </div>
 ));

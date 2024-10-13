@@ -115,7 +115,7 @@ export default function MobilePortfolioBuilder({
   };
 
   return (
-    <div className="space-y-10 w-full px-2">
+    <div className="space-y-10 w-full px-2 mt-1">
       <div className="flex justify-between items-center">
         {steps.map((step, index) => (
           <motion.div
