@@ -441,6 +441,28 @@ async function unlikeWebsite(userId, slug) {
   }
 }
 
+async function updateShipPrompt(shipId, prompt) {
+  try {
+    const { data, error } = await supabaseClient
+      .from("ships")
+      .upsert(
+        { slug: shipId, prompt: prompt },
+        { onConflict: "slug", returning: "minimal" }
+      );
+
+    if (error) {
+      console.error("Error upserting ship prompt:", error);
+      throw error;
+    }
+
+    console.log(`Successfully upserted prompt for ship ${shipId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error upserting ship prompt:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -466,4 +488,5 @@ module.exports = {
   getDesignPresetPrompt,
   likeWebsite,
   unlikeWebsite,
+  updateShipPrompt,
 };

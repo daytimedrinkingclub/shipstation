@@ -23,9 +23,9 @@ const {
 } = require("./codeRefinementService");
 const { generateSiteContent } = require("./siteContentService");
 const ScreenshotService = require("./screenshotService");
+const { updatePrompt } = require("./promptUpdateService");
 
 const screenshotService = new ScreenshotService();
-
 
 async function processConversation({
   client,
@@ -319,7 +319,12 @@ function handleOnboardingSocketEvents(io) {
 
         if (result.updatedCode) {
           socket.emit("codeUpdate", result.updatedCode);
-          await screenshotService.saveScreenshot(shipId);
+          // await screenshotService.saveScreenshot(shipId);
+
+          await updatePrompt(shipId, socket.userId, [
+            { role: "user", content: message },
+            { role: "assistant", content: result.updatedMessage },
+          ]);
         }
       } catch (error) {
         console.error("Error processing chat message:", error);

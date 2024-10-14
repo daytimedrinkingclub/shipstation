@@ -31,6 +31,9 @@ const FileService = require("./server/services/fileService");
 const { addDomainMapping } = require("./server/services/domainService");
 const fileService = new FileService();
 
+const AnalyzeAndRepairService = require("./server/services/analyzeAndRepairService");
+const analyzeAndRepairService = new AnalyzeAndRepairService();
+
 require("dotenv").config();
 
 const app = express();
@@ -486,6 +489,27 @@ app.delete("/like/:slug", authMiddleware, async (req, res) => {
   } catch (error) {
     console.error("Error unliking website:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/analyze/:shipId", async (req, res) => {
+  const { shipId } = req.params;
+
+  if (!shipId) {
+    return res.status(400).json({ error: "Missing shipId" });
+  }
+
+  try {
+    console.log(`Starting analysis for shipId: ${shipId}`);
+    const result = await analyzeAndRepairService.analyzeAndRepairSite(shipId);
+    console.log(`Analysis completed for shipId: ${shipId}`);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(`Error analyzing shipId ${shipId}:`, error);
+    res.status(500).json({
+      error: "Failed to analyze and repair site",
+      details: error.message,
+    });
   }
 });
 
