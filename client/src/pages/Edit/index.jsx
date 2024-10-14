@@ -97,6 +97,23 @@ const Edit = () => {
   const [customDomainStatus, setCustomDomainStatus] = useState(null);
   const [domainStatus, setDomainStatus] = useState("not_connected");
 
+  const [leftPanelSize, setLeftPanelSize] = useState(30);
+  const resizablePanelRef = useRef(null);
+
+  useEffect(() => {
+    if (currentView === "mobile") {
+      setLeftPanelSize(50);
+    } else if (currentView === "horizontal") {
+      setLeftPanelSize(30);
+    }
+  }, [currentView]);
+
+  useEffect(() => {
+    if (resizablePanelRef.current) {
+      resizablePanelRef.current.resize(leftPanelSize);
+    }
+  }, [leftPanelSize]);
+
   useEffect(() => {
     const fetchShipId = async () => {
       if (!userLoading && user && !shipId) {
@@ -327,7 +344,7 @@ const Edit = () => {
     setCurrentDevice(newDevice);
     toast(`Congratulations! 🎉`, {
       description: `You've changed the device to ${newDevice}`,
-      position: "bottom-right",
+      position: "top-right",
       duration: 1500,
     });
   };
@@ -498,7 +515,11 @@ const Edit = () => {
             className="flex-1 overflow-hidden rounded-lg border border-border"
           >
             {currentView !== "fullscreen" && (
-              <ResizablePanel defaultSize={30} minSize={30}>
+              <ResizablePanel
+                ref={resizablePanelRef}
+                defaultSize={leftPanelSize}
+                minSize={currentView === "mobile" ? 50 : 30}
+              >
                 <Tabs
                   value={activeTab}
                   onValueChange={setActiveTab}
@@ -572,7 +593,13 @@ const Edit = () => {
             )}
             {currentView !== "fullscreen" && <ResizableHandle withHandle />}
             <ResizablePanel
-              defaultSize={currentView === "fullscreen" ? 100 : 70}
+              defaultSize={
+                currentView === "fullscreen"
+                  ? 100
+                  : currentView === "mobile"
+                  ? 50
+                  : 70
+              }
             >
               <PreviewPanel
                 currentView={currentView}

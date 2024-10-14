@@ -10,15 +10,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 const LoginForm = ({ onSubmit, isLoading }) => {
-  const params = useParams();
-  const showSignup = !params.logout;
+  const [searchParams] = useSearchParams();
+  const isLogout = searchParams.get("logout") === "true";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSigningUp, setIsSigningUp] = useState(showSignup);
+  const [isSigningUp, setIsSigningUp] = useState(!isLogout);
   const [passwordError, setPasswordError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -40,11 +40,15 @@ const LoginForm = ({ onSubmit, isLoading }) => {
           {isSigningUp ? "Create an account" : "Sign in to your account"}
         </CardTitle>
         <CardDescription className="text-muted-foreground">
-          {isSigningUp
-            ? "Enter your email address and password to continue."
-            : "Enter your email address and password to continue."}
-          <br />
-          An account will be created for you if none exists.
+          {isSigningUp ? (
+            "Enter your email and create a password to get started."
+          ) : (
+            <>
+              Enter your email address and password to continue.
+              <br />
+              An account will be created for you if none exists.
+            </>
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -70,7 +74,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
             <Input
               id="password"
               type="password"
-              placeholder="Please enter your password"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -108,7 +112,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
             >
               {isSigningUp
                 ? "Already have an account?"
-                : "Create a new account?"}
+                : "Create a new account"}
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (

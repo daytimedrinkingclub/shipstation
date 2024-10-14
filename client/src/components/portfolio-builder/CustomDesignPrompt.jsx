@@ -1,6 +1,11 @@
 import { Textarea } from "@/components/ui/textarea";
 
-const CustomDesignPrompt = ({ customDesignPrompt, setCustomDesignPrompt, isGenerating }) => {
+export default function CustomDesignPrompt({
+  customDesignPrompt,
+  setCustomDesignPrompt,
+  isGenerating,
+  onKeyPress,
+}) {
   return (
     <Textarea
       placeholder="Describe your ideal portfolio design..."
@@ -8,8 +13,7 @@ const CustomDesignPrompt = ({ customDesignPrompt, setCustomDesignPrompt, isGener
       onChange={(e) => setCustomDesignPrompt(e.target.value)}
       disabled={isGenerating}
       className="w-full h-[150px] resize-none"
+      onKeyDown={onKeyPress}
     />
   );
-};
-
-export default CustomDesignPrompt;
+}
