@@ -127,35 +127,34 @@ Provide a complete index.html file with the following structure:
 7. Implement a responsive navbar that collapses into a hamburger menu on mobile devices
 
 ### Image Guidelines:
-1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, including:
+1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
    - Hero section images
    - Featured product or service images
    - Background images for any section
    - Icons or small illustrative images
-   - Testimonial profile pictures
 2. When using the placeholder_image_tool, be specific about the image requirements. Use descriptions like:
    - "professional landing page hero image for [industry/service]"
    - "high-quality image of [product/service] for landing page"
-   - "professional headshot for customer testimonial"
-3. For sections with multiple images:
-   - Use the placeholder_image_tool to generate a unique, appropriate image for each item
-   - Do not include any instructions or comments about using the placeholder_image_tool in the final HTML
-4. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the placeholder_image_tool first
-5. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
-6. For optimal performance:
+3. For profile pictures and testimonials, ALWAYS use the headshot_tool to generate appropriate images
+4. For sections with multiple images:
+   - Use the placeholder_image_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
+   - Do not include any instructions or comments about using the placeholder_image_tool or headshot_tool in the final HTML
+5. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the appropriate tool first
+6. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
+7. For optimal performance:
    - Use appropriate image sizes and formats
    - Implement lazy loading for images below the fold
    - Consider using responsive images with multiple sizes for different screen widths
-7. When the placeholder_image_tool returns an array of image URLs:
+8. When the placeholder_image_tool or headshot_tool returns an array of image URLs:
    - Use different images from the array for each instance where an image is needed
    - Do not always use the first image in the array
    - Distribute the usage of images across the array to ensure variety
    - If multiple images are needed in a single component, use different indices from the array for each image
-8. For logo images:
+9. For logo images:
    - Use placeholder_image_tool with "logo" in the description when a logo is required
    - Set appropriate height and width based on the logo's intended size and placement
    - Use classes like 'object-contain' to preserve aspect ratio
-9. IMPORTANT: After using the placeholder_image_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+10. IMPORTANT: After using the placeholder_image_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
 
 ### Additional Notes:
 - Implement the latest best practices for Tailwind CSS
@@ -163,7 +162,7 @@ Provide a complete index.html file with the following structure:
 - Adapt the content and structure based on specific landing page requirements while maintaining the single-file approach
 - Do not include any explanatory comments or introductory text in the generated HTML code
 
-CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
 const portfolioPrompt = `
@@ -301,36 +300,40 @@ Provide a complete index.html file with the following structure:
 6. Ensure interactive elements are easily tappable on mobile (min-height of 44px for buttons)
 7. Implement a responsive navbar that collapses into a hamburger menu on mobile devices
 
+### Headshot and Profile Image Guidelines:
+1. ALWAYS use the headshot_tool for generating images of people, including:
+   - Profile or personal photos in the "About Me" section
+   - Portfolio hero images featuring the individual
+   - Team member photos (if applicable)
+   - Testimonial profile pictures
+
 ### Image Guidelines:
-1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, including:
-   - Profile or personal photos
+1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
    - Project screenshots or thumbnails
-   - Background images for any section
-   - Icons or small illustrative images
-   - Skill or technology logos
 2. When using the placeholder_image_tool, be specific about the image requirements. Use descriptions like:
-   - "professional headshot for portfolio website"
    - "screenshot of web application for portfolio project"
-   - "icon for [skill/technology] for portfolio skills section"
 3. For sections with multiple images:
-   - Use the placeholder_image_tool to generate a unique, appropriate image for each item
-   - Do not include any instructions or comments about using the placeholder_image_tool in the final HTML
-4. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the placeholder_image_tool first
+   - Use the placeholder_image_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
+   - Do not include any instructions or comments about using the placeholder_image_tool or headshot_tool in the final HTML
+4. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the appropriate tool first
 5. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
 6. For optimal performance:
    - Use appropriate image sizes and formats
    - Implement lazy loading for images below the fold
    - Consider using responsive images with multiple sizes for different screen widths
-7. When the placeholder_image_tool returns an array of image URLs:
+7. When the placeholder_image_tool or headshot_tool returns an array of image URLs:
    - Use different images from the array for each instance where an image is needed
    - Do not always use the first image in the array
    - Distribute the usage of images across the array to ensure variety
    - If multiple images are needed in a single component, use different indices from the array for each image
-8. For logo images:
-   - Use placeholder_image_tool with "logo" in the description when a logo is required
-   - Set appropriate height and width based on the logo's intended size and placement
-   - Use classes like 'object-contain' to preserve aspect ratio
-9. IMPORTANT: After using the placeholder_image_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+8. IMPORTANT: After using the placeholder_image_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+9. Use background images only if absolutely necessary for specific sections. In most cases, prefer using structural HTML elements with appropriate styling for layout and design purposes.
+
+For logos and icons, use Font Awesome via CDN instead of images:
+   - Include the Font Awesome CDN link in the <head> section of the HTML
+   - Use Font Awesome classes to add icons and logos where needed
+   - Customize icon appearance using Tailwind CSS classes for color, size, and positioning
+   - Ensure accessibility by providing appropriate aria-labels for icons used as interactive elements
 
 ### Additional Notes:
 - Implement the latest best practices for Tailwind CSS
@@ -338,7 +341,7 @@ Provide a complete index.html file with the following structure:
 - Adapt the content and structure based on specific portfolio website requirements while maintaining the single-file approach
 - Do not include any explanatory comments or introductory text in the generated HTML code
 
-CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the placeholder_image_tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
 const emailTemplatePrompt = `
@@ -441,7 +444,7 @@ When generating the email template:
 - Use table-based layouts wrapped in a container for consistency
 - Implement media queries for responsiveness if necessary
 
-IMPORTANT: Generate only the HTML code without any explanations or comments outside the code. Ensure all image sources use the placeholder_image_tool as per the CTO's guidelines. The final output should be a complete, production-ready HTML email template with creatively styled images and Google Fonts implemented.
+IMPORTANT: Generate only the HTML code without any explanations or comments outside the code. Ensure all image sources use the placeholder_image_tool as per the CTO's guidelines, except for profile pictures and testimonials which should use the headshot_tool. The final output should be a complete, production-ready HTML email template with creatively styled images and Google Fonts implemented.
 `;
 
 module.exports = {

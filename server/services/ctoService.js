@@ -10,8 +10,10 @@ const ctoPrompt = require("./prompts/ctoPrompt");
 
 require("dotenv").config();
 const ScreenshotService = require("./screenshotService");
+const AnalyzeAndRepairService = require("./analyzeAndRepairService");
 
 const screenshotService = new ScreenshotService();
+const analyzeAndRepairService = new AnalyzeAndRepairService();
 
 async function ctoService({
   query,
@@ -30,7 +32,6 @@ async function ctoService({
     {
       type: "text",
       text: ctoPrompt.prompt,
-      // cache_control: { type: "ephemeral" },
     },
   ];
 
@@ -75,7 +76,9 @@ async function ctoService({
           break;
         }
 
-        console.log("Sending request to Anthropic API with updated messages");
+        console.log(
+          "ctoService: Sending request to Anthropic API with updated messages"
+        );
 
         msg = await client.sendMessage({
           system: systemPrompt,
@@ -95,10 +98,35 @@ async function ctoService({
       slug,
     });
 
-    await screenshotService.saveScreenshot(slug);
+    // After website deployment, run analyze and repair
+    console.log("Starting analyze and repair process...");
+    try {
+      const analyzeAndRepairResult =
+        await analyzeAndRepairService.analyzeAndRepairSite(slug);
+      console.log(
+        "Analyze and repair process completed:",
+        analyzeAndRepairResult
+      );
+
+      await screenshotService.saveScreenshot(slug);
+
+      // use this to send event after analyzing and repairing, if needed
+
+      // if (
+      //   analyzeAndRepairResult.repairResult &&
+      //   analyzeAndRepairResult.repairResult.repaired
+      // ) {
+      //   sendEvent("site_repaired", {
+      //     slug: slug,
+      //     issuesSummary: analyzeAndRepairResult.repairResult.issuesSummary,
+      //   });
+      // }
+    } catch (error) {
+      console.error("Error in analyze and repair process:", error);
+    }
 
     return {
-      message: `Website successfully built, deployed, slug: ${slug}`,
+      message: `Website successfully built, deployed, and analyzed. Slug: ${slug}`,
       slug,
     };
   } catch (error) {
