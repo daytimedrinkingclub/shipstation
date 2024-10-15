@@ -8,10 +8,9 @@ const {
   updateConversation,
 } = require("../services/dbService");
 const { TOOLS } = require("../config/tools");
-
 const { nanoid } = require("nanoid");
-
 const FileService = require("../services/fileService");
+
 const fileService = new FileService();
 
 const generateProjectFolderName = (projectName) => {
@@ -202,7 +201,7 @@ async function handleOnboardingToolUse({
     const mode = client.isCustomKey ? "self-key" : "paid";
     const endTimestamp = Date.now();
     const duration = (endTimestamp - client.startTimestamp) / 1000; // Convert to seconds
-    console.log("Time taken for CTO tool (in seconds):", duration);
+    console.log("Total time taken (in seconds):", duration);
 
     const ship = {
       user_id: userId,

@@ -1,0 +1,27 @@
+{
+  "name": "headshot_tool",
+  "description": "Provides source URL(s) to random headshot(s) or profile picture(s) based on profession, gender, and desired number of images. Suitable for various website sections including hero banners, team member profiles, testimonials, or any area requiring professional portrait(s) or profile image(s).",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "profession": {
+        "type": "string",
+        "enum": ["developer", "designer", "other"],
+        "description": "The profession for the headshot(s)"
+      },
+      "gender": {
+        "type": "string",
+        "enum": ["male", "female", "random"],
+        "description": "The gender for the headshot(s)"
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10,
+        "default": 1,
+        "description": "The number of headshot URLs to return (1-10)"
+      }
+    },
+    "required": ["profession", "gender"]
+  }
+}

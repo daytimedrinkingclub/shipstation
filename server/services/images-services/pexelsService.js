@@ -3,65 +3,64 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
-console.log("Unsplash Access Key:", UNSPLASH_ACCESS_KEY);
-const UNSPLASH_API_URL = "https://api.unsplash.com";
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
+console.log("Pexels API Key:", PEXELS_API_KEY);
+const PEXELS_API_URL = "https://api.pexels.com/v1";
 
-const unsplashService = {
+const pexelsService = {
   searchPhotos: async (query, page = 1, perPage = 3) => {
     try {
-      const response = await axios.get(`${UNSPLASH_API_URL}/search/photos`, {
+      const response = await axios.get(`${PEXELS_API_URL}/search`, {
         params: {
           query,
           page,
           per_page: perPage,
-          orientation: "squarish", // This parameter requests square images
+          orientation: "square", // This parameter requests square images
         },
         headers: {
-          Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+          Authorization: PEXELS_API_KEY,
         },
       });
 
       return response.data;
     } catch (error) {
-      console.error("Error in unsplashService.searchPhotos:", error.message);
+      console.error("Error in pexelsService.searchPhotos:", error.message);
       throw error;
     }
   },
 
   getRandomPhoto: async (query, options = {}) => {
     try {
-      const response = await axios.get(`${UNSPLASH_API_URL}/photos/random`, {
+      const response = await axios.get(`${PEXELS_API_URL}/search`, {
         params: {
           query,
           ...options,
-          orientation: "squarish", // This parameter requests square images
+          per_page: 1,
+          page: Math.floor(Math.random() * 10) + 1, // Random page between 1 and 10
         },
         headers: {
-          Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,
+          Authorization: PEXELS_API_KEY,
         },
       });
 
-      return response.data;
+      return response.data.photos[0];
     } catch (error) {
-      console.error("Error in unsplashService.getRandomPhoto:", error.message);
+      console.error("Error in pexelsService.getRandomPhoto:", error.message);
       throw error;
     }
   },
 
-  // Test function for searchPhotos
+  // Test function
   testSearchPhotos: async () => {
     try {
       const query = "professional headshot portrait of a man";
       console.log(`Searching for: "${query}" (square images)`);
-      const results = await unsplashService.searchPhotos(query);
+      const results = await pexelsService.searchPhotos(query);
       console.log("Search results:");
-      results.results.forEach((photo, index) => {
-        console.log(
-          `${index + 1}. ${photo.description || photo.alt_description}`
-        );
-        console.log(`   URL: ${photo.urls.full}`);
-        console.log(`   Photographer: ${photo.user.name}`);
+      results.photos.forEach((photo, index) => {
+        console.log(`${index + 1}. ${photo.alt}`);
+        console.log(`   URL: ${photo.src.large2x}`);
+        console.log(`   Photographer: ${photo.photographer}`);
         console.log(`   Dimensions: ${photo.width}x${photo.height}`);
         console.log("---");
       });
@@ -75,18 +74,18 @@ const unsplashService = {
     }
   },
 
-  // test function for getRandomPhoto
+  // New test function for getRandomPhoto
   testGetRandomPhoto: async () => {
     try {
       const query = "professional headshot portrait of a man";
       console.log(`Getting a random photo for: "${query}"`);
-      const photo = await unsplashService.getRandomPhoto(query, {
-        orientation: "squarish",
+      const photo = await pexelsService.getRandomPhoto(query, {
+        orientation: "square",
       });
       console.log("Random photo result:");
-      console.log(`Description: ${photo.description || photo.alt_description}`);
-      console.log(`URL: ${photo.urls.full}`);
-      console.log(`Photographer: ${photo.user.name}`);
+      console.log(`Alt: ${photo.alt}`);
+      console.log(`URL: ${photo.src.large2x}`);
+      console.log(`Photographer: ${photo.photographer}`);
       console.log(`Dimensions: ${photo.width}x${photo.height}`);
     } catch (error) {
       console.error("Error in test function:", error.message);
@@ -99,7 +98,8 @@ const unsplashService = {
   },
 };
 
-// unsplashService.testSearchPhotos();
-unsplashService.testGetRandomPhoto();
+// Run both test functions
+// pexelsService.testSearchPhotos();
+// pexelsService.testGetRandomPhoto();
 
-module.exports = unsplashService;
+module.exports = pexelsService;

@@ -43,6 +43,24 @@ async function handleCodeRefinementToolUse({ tool, client }) {
         ],
       },
     ];
+  } else if (tool.name === TOOLS.HEADSHOT) {
+    const { profession, gender, count } = tool.input;
+    console.log("using headshot_tool: ", profession, gender, count);
+
+    const headshotUrls = getRandomHeadshots(profession, gender, count);
+
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(headshotUrls, null, 2),
+          },
+        ],
+      },
+    ];
   }
 
   console.log(`No matching tool found for: ${tool.name}`);

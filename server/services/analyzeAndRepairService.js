@@ -3,12 +3,17 @@ const { AnthropicService } = require("./anthropicService");
 const FileService = require("./fileService");
 const {
   analysisPrompt,
-  repairPrompt,
+  prepareRepairPrompt,
 } = require("./prompts/analyzeAndRepairPrompt");
-const { placeholderImageTool, searchTool } = require("../config/tools");
+const {
+  placeholderImageTool,
+  searchTool,
+  headshotTool,
+} = require("../config/tools");
 const {
   handleCodeRefinementToolUse,
 } = require("../controllers/codeRefinementToolController");
+const sharp = require("sharp");
 
 class AnalyzeAndRepairService {
   constructor() {
@@ -32,86 +37,16 @@ class AnalyzeAndRepairService {
         `Navigation completed in ${(Date.now() - navigationStart) / 1000}s`
       );
 
-      // Take desktop screenshot
-      console.log("Taking desktop screenshot...");
-      const desktopStart = Date.now();
-      await page.setViewportSize({ width: 1920, height: 1080 });
-      const desktopScreenshot = await page.screenshot({
-        fullPage: true,
-        type: "png",
-        scale: "device",
-      });
-      console.log(
-        `Desktop screenshot taken in ${(Date.now() - desktopStart) / 1000}s`
-      );
-
-      // Take mobile screenshot
-      console.log("Taking mobile screenshot...");
-      const mobileStart = Date.now();
-      await page.setViewportSize({ width: 390, height: 844 });
-      await page.evaluate(() => {
-        window.devicePixelRatio = 3;
-      });
-      const mobileScreenshot = await page.screenshot({
-        fullPage: true,
-        type: "png",
-        scale: "device",
-      });
-      console.log(
-        `Mobile screenshot taken in ${(Date.now() - mobileStart) / 1000}s`
-      );
+      // Take desktop and mobile screenshots
+      const { desktopScreenshot, mobileScreenshot } =
+        await this.takeScreenshots(page);
 
       // Send screenshots to Anthropic for analysis
       console.log("Sending screenshots to Anthropic for analysis...");
       const analysisStart = Date.now();
 
-      const images = [
-        {
-          caption: "Desktop view",
-          base64: desktopScreenshot.toString("base64"),
-          mediaType: "image/png",
-        },
-        {
-          caption: "Mobile view",
-          base64: mobileScreenshot.toString("base64"),
-          mediaType: "image/png",
-        },
-      ];
-
-      let content = [];
-      images.forEach((img, index) => {
-        content.push(
-          {
-            type: "text",
-            text: `Image ${index + 1}: ${img.caption}`,
-          },
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: img.mediaType,
-              data: img.base64,
-            },
-          }
-        );
-      });
-
-      content.push({
-        type: "text",
-        text: "Please analyze these screenshots based on the given instructions.",
-      });
-
-      const messages = [
-        {
-          role: "user",
-          content: content,
-        },
-      ];
-
-      const analysisResult = await this.anthropicService.sendMessage({
-        system: analysisPrompt,
-        messages: messages,
-      });
+      const images = this.prepareImages(desktopScreenshot, mobileScreenshot);
+      const analysisResult = await this.performAnalysis(images);
 
       const analysisResultParsed = JSON.parse(analysisResult.content[0].text);
       console.log("Analysis result:", analysisResultParsed);
@@ -119,7 +54,11 @@ class AnalyzeAndRepairService {
       let repairResult = null;
       if (analysisResultParsed.repairRequired) {
         console.log("Repairs required. Initiating repair process...");
-        repairResult = await this.repairWebsite(shipId, analysisResultParsed);
+        repairResult = await this.repairWebsite(
+          shipId,
+          analysisResultParsed,
+          images
+        );
       } else {
         console.log("No repairs required.");
       }
@@ -141,7 +80,115 @@ class AnalyzeAndRepairService {
     }
   }
 
-  async repairWebsite(shipId, analysisResult) {
+  async takeScreenshots(page) {
+    // Take desktop screenshot
+    console.log("Taking desktop screenshot...");
+    const desktopStart = Date.now();
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    const desktopScreenshot = await page.screenshot({
+      fullPage: true,
+      type: "png",
+    });
+    console.log(
+      `Desktop screenshot taken in ${(Date.now() - desktopStart) / 1000}s`
+    );
+
+    // Take mobile screenshot
+    console.log("Taking mobile screenshot...");
+    const mobileStart = Date.now();
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileScreenshot = await page.screenshot({
+      fullPage: true,
+      type: "png",
+    });
+    console.log(
+      `Mobile screenshot taken in ${(Date.now() - mobileStart) / 1000}s`
+    );
+
+    // Compress screenshots, anthropic has a limit of 5mb per image
+    const compressedDesktopScreenshot = await this.compressImage(
+      desktopScreenshot
+    );
+    const compressedMobileScreenshot = await this.compressImage(
+      mobileScreenshot
+    );
+
+    return {
+      desktopScreenshot: compressedDesktopScreenshot,
+      mobileScreenshot: compressedMobileScreenshot,
+    };
+  }
+
+  async compressImage(imageBuffer) {
+    try {
+      const compressedImage = await sharp(imageBuffer)
+        .resize(1280, null, { withoutEnlargement: true }) // Resize to max width of 1280px
+        .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+        .toBuffer();
+
+      console.log(
+        `Image compressed from ${imageBuffer.length} to ${compressedImage.length} bytes`
+      );
+      return compressedImage;
+    } catch (error) {
+      console.error("Error compressing image:", error);
+      return imageBuffer; // Return original image if compression fails
+    }
+  }
+
+  prepareImages(desktopScreenshot, mobileScreenshot) {
+    return [
+      {
+        caption: "Desktop view",
+        base64: desktopScreenshot.toString("base64"),
+        mediaType: "image/jpeg",
+      },
+      {
+        caption: "Mobile view",
+        base64: mobileScreenshot.toString("base64"),
+        mediaType: "image/jpeg",
+      },
+    ];
+  }
+
+  async performAnalysis(images) {
+    let content = [];
+    images.forEach((img, index) => {
+      content.push(
+        {
+          type: "text",
+          text: `Image ${index + 1}: ${img.caption}`,
+        },
+        {
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: img.mediaType,
+            data: img.base64,
+          },
+        }
+      );
+    });
+
+    content.push({
+      type: "text",
+      text: "Please analyze these screenshots based on the given instructions.",
+    });
+
+    const messages = [
+      {
+        role: "user",
+        content: content,
+      },
+    ];
+
+    return await this.anthropicService.sendMessage({
+      system: analysisPrompt,
+      messages: messages,
+    });
+  }
+
+  async repairWebsite(shipId, analysisResult, images) {
     console.log("Repairing website for shipId:", shipId);
     const repairStartTime = Date.now();
 
@@ -149,15 +196,41 @@ class AnalyzeAndRepairService {
       const filePath = `${shipId}/index.html`;
       const currentHtml = await this.fileService.getFile(filePath);
 
+      // Use the prepareRepairPrompt function from analyzeAndRepairPrompt.js
+      const repairPromptContent = prepareRepairPrompt(
+        analysisResult,
+        currentHtml
+      );
+
+      let content = [
+        {
+          type: "text",
+          text: repairPromptContent,
+        },
+      ];
+
+      // Add images to the repair prompt
+      images.forEach((img) => {
+        content.push(
+          {
+            type: "text",
+            text: `Image: ${img.caption}`,
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: img.mediaType,
+              data: img.base64,
+            },
+          }
+        );
+      });
+
       let messages = [
         {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: repairPrompt(analysisResult, currentHtml),
-            },
-          ],
+          content: content,
         },
       ];
 
@@ -167,7 +240,7 @@ class AnalyzeAndRepairService {
       console.log("Sending initial request to Anthropic API...");
       const initialResponse = await this.anthropicService.sendMessage({
         messages: messages,
-        tools: [searchTool, placeholderImageTool],
+        tools: [searchTool, placeholderImageTool, headshotTool],
         tool_choice: { type: "auto" },
       });
       console.log(
@@ -215,7 +288,7 @@ class AnalyzeAndRepairService {
           console.log("Sending request to Anthropic API...");
           currentMessage = await this.anthropicService.sendMessage({
             messages: messages,
-            tools: [searchTool, placeholderImageTool],
+            tools: [searchTool, placeholderImageTool, headshotTool],
             tool_choice: { type: "auto" },
           });
           console.log("Received response from Anthropic API", currentMessage);
@@ -254,9 +327,12 @@ class AnalyzeAndRepairService {
       return {
         repaired: true,
         message: "Website repaired successfully",
-        repairedHtml,
         anthropicTime,
         totalRepairTime,
+        issuesSummary: analysisResult.issues.map((issue) => ({
+          description: issue.description,
+          affectedView: issue.affectedView,
+        })),
       };
     } catch (error) {
       console.error("Error repairing website:", error);
@@ -270,10 +346,3 @@ class AnalyzeAndRepairService {
 }
 
 module.exports = AnalyzeAndRepairService;
-
-// Test the analysis and repair process
-const service = new AnalyzeAndRepairService();
-service
-  .analyzeAndRepairSite("ndjama-seyi-karl-alex-uF7EUSUX")
-  .then((result) => console.log("Analysis and repair completed:", result))
-  .catch((error) => console.error("Error in analysis and repair:", error));

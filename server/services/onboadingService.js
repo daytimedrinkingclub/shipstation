@@ -319,7 +319,7 @@ function handleOnboardingSocketEvents(io) {
 
         if (result.updatedCode) {
           socket.emit("codeUpdate", result.updatedCode);
-          // await screenshotService.saveScreenshot(shipId);
+          await screenshotService.saveScreenshot(shipId);
 
           await updatePrompt(shipId, socket.userId, [
             { role: "user", content: message },
