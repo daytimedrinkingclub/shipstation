@@ -97,6 +97,7 @@ async function ctoService({
     sendEvent("websiteDeployed", {
       slug,
     });
+    await screenshotService.saveScreenshot(slug);
 
     // After website deployment, run analyze and repair
     console.log("Starting analyze and repair process...");

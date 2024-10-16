@@ -15,7 +15,7 @@ class ScreenshotService {
           options: {
             type: "png",
           },
-          waitForTimeout: 3000, // Wait for 3000 milliseconds (3 seconds)
+          waitForTimeout: 6000, // Wait for 6000 milliseconds (6 seconds)
         },
         {
           responseType: "arraybuffer",
