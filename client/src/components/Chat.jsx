@@ -504,10 +504,12 @@ const Chat = ({
             placeholder="Type your message here..."
             className={cn(
               "w-full p-2 mb-2 bg-background text-foreground resize-none overflow-hidden",
-              input.trim() ? "pr-10" : ""
+              input.trim() ? "pr-10" : "",
+              (isLoading || isDeploying) ? "opacity-50 cursor-not-allowed" : ""
             )}
-            maxHeight={300} // Adjust this value as needed
-            minHeight={96}  // Adjust this value as needed
+            maxHeight={300}
+            minHeight={96}
+            disabled={isLoading || isDeploying}
           />
           {input.trim() && (
             <Button
