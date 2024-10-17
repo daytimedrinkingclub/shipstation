@@ -446,7 +446,20 @@ app.post("/add-custom-domain", async (req, res) => {
 
   try {
     await addDomainMapping(domain, shipSlug);
-    res.status(200).json({ message: "Custom domain added successfully" });
+    const webhookPayload = {
+      content: "Custom domain request!",
+      embeds: [
+        {
+          title: "Domain Details",
+          fields: [
+            { name: "Domain", value: domain },
+            { name: "Ship Slug", value: shipSlug },
+          ],
+        },
+      ],
+    };
+    postToDiscordWebhook(webhookPayload);
+    res.status(200).json({ message: "Custom domain submitted for verification" });
   } catch (error) {
     console.error("Error adding custom domain:", error);
     res.status(500).json({ error: "Failed to add custom domain" });
