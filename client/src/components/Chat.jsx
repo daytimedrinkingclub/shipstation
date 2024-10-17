@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,8 +10,6 @@ import ChatSuggestions from "@/components/ChatSuggestions";
 import { useSocket } from "@/context/SocketProvider";
 import { supabase } from "@/lib/supabaseClient";
 import {
-  Copy,
-  Send,
   Paperclip,
   X,
   File as FileIcon,
@@ -20,6 +17,7 @@ import {
   LoaderCircle,
   Info,
   CheckCheck,
+  SendHorizonal,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -184,7 +182,7 @@ const Chat = ({
   };
 
   const fetchInitialUserMessage = async () => {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("ships")
       .select("prompt")
       .eq("slug", shipId)
@@ -475,14 +473,14 @@ const Chat = ({
         </div>
       )}
       <div className="p-4">
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex items-center justify-between group">
           <div className="flex items-center">
             <label
               htmlFor="file-upload"
-              className="cursor-pointer flex items-center text-sm text-gray-600 hover:text-gray-800"
+              className="cursor-pointer flex items-center text-sm text-primary hover:text-primary/80"
             >
               <Paperclip className="w-4 h-4 mr-1" />
-              Add assets
+              Attach files
             </label>
             <input
               id="file-upload"
@@ -493,17 +491,17 @@ const Chat = ({
               disabled={isLoading || isDeploying}
             />
           </div>
-          <span className="text-xs text-gray-500 hidden md:block">
-            You can also drag and drop files here
+          <span className="text-xs text-gray-500 hidden md:block opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            You can also drag and drop files in the chat window
           </span>
         </div>
         <div className="relative">
           <AutosizeTextarea
             value={input}
             onChange={handleInputChange}
-            placeholder="Type your message here..."
+            placeholder="Describe portfolio changes or design changes you want to make."
             className={cn(
-              "w-full p-2 mb-2 bg-background text-foreground resize-none overflow-hidden",
+              "w-full p-2 bg-background text-foreground resize-none overflow-hidden",
               input.trim() ? "pr-10" : "",
               (isLoading || isDeploying) ? "opacity-50 cursor-not-allowed" : ""
             )}
@@ -514,14 +512,20 @@ const Chat = ({
           {input.trim() && (
             <Button
               onClick={handleSend}
+              variant="ghost"
               disabled={isLoading || isDeploying}
               size="sm"
-              className="absolute bottom-2 right-2"
+              className="absolute bottom-2 right-2 bg-shimmer-gradient hover:animate-gradient text-primary"
             >
               {isLoading ? (
                 <LoaderCircle className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-4 h-4" />
+                <div className="flex items-center group">
+                  <SendHorizonal className="w-4 h-4 group-hover:mr-2 transition-all duration-500" />
+                  <span className="overflow-hidden w-0 group-hover:w-auto transition-all duration-500 whitespace-nowrap">
+                    Apply Changes
+                  </span>
+                </div>
               )}
             </Button>
           )}
@@ -566,13 +570,11 @@ const Chat = ({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-5xl">
           <DialogHeader>
-            <DialogTitle className="mb-2">Enter asset details</DialogTitle>
+            <DialogTitle className="mb-2">Enter media details</DialogTitle>
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
               <Info className="mx-2 h-5 w-5 text-primary flex-shrink-0" />
               <p className="px-2">
-                Describe your assets and set their usage to help our AI
-                understand and use them effectively in your project. All
-                descriptions are required.
+                If you want to show an image in your portfolio, select "Add to Portfolio". If you want to use it as design reference, select "Use as Reference".
               </p>
             </div>
           </DialogHeader>
@@ -596,7 +598,7 @@ const Chat = ({
                   </div>
                   <div className="space-y-2">
                     <Input
-                      placeholder="Enter description"
+                      placeholder="Describe this asset"
                       value={file.description}
                       onChange={(e) =>
                         handleDescriptionChange(file.file.name, e.target.value)

@@ -60,13 +60,13 @@ const Header = ({
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 space-y-2 md:space-y-0">
       <div className="flex items-center justify-between sm:space-x-4 w-full md:w-auto">
         <h1 className="hidden md:block text-xl font-semibold">
-          Customise your portfolio
+          Customise your site
         </h1>
         <h1 className="md:hidden text-xl font-semibold">Customise portfolio</h1>
         {!isDeploying && (
           <>
             <Button
-              variant="default"
+              variant="ghost"
               size="icon"
               className="w-10 h-10 hidden md:flex md:w-auto md:px-2"
               onClick={() => {
@@ -76,8 +76,8 @@ const Header = ({
                 );
               }}
             >
-              <ExternalLink className="w-4 h-4 md:mr-2" />
-              <span className="hidden md:inline">Preview Live Site</span>
+              <span className="hidden md:inline">View my site</span>
+              <ExternalLink className="w-4 h-4 md:ml-2" />
             </Button>
             {/* Mobile menu */}
             <div className="md:hidden flex items-center space-x-2">

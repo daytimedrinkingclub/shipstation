@@ -13,11 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Loader2, LogIn } from "lucide-react";
 import { toast } from "sonner";
 
-const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
+const LoginDialog = ({ isOpen, onClose, createAccount = false }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { handleLogin, isLoading, sendLoginLink, isSendingLoginLink } =
-    useContext(AuthContext);
+  const { handleLogin, isLoading, sendLoginLink } = useContext(AuthContext);
 
   const [isSigningUp, setIsSigningUp] = useState(createAccount);
 
@@ -29,10 +28,6 @@ const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
     e.preventDefault();
     const result = await handleLogin(email, password);
     if (result.success) {
-      toast("Welcome back 👋", {
-        description: "Lets start creating something beautiful!",
-        position: "bottom-right",
-      });
       onClose();
     } else {
       toast.error("Unable to proceed", {
@@ -58,7 +53,7 @@ const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-foreground">
-            {isSigningUp ? "Sign up for free" : "Identify yourself"}
+            {isSigningUp ? "Sign up for free" : "Login to your account"}
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
             {isSigningUp ? (
@@ -74,7 +69,9 @@ const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-foreground">Email</Label>
+            <Label htmlFor="email" className="text-foreground">
+              Email
+            </Label>
             <Input
               id="email"
               type="email"
@@ -87,7 +84,9 @@ const LoginDialog = ({ isOpen, onClose, createAccount = true }) => {
           </div>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor="password" className="text-foreground">Password</Label>
+              <Label htmlFor="password" className="text-foreground">
+                Password
+              </Label>
               {/* <Button
                 variant="link"
                 type="button"

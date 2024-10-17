@@ -41,10 +41,6 @@ const Portfolio = () => {
     setIsLoggingIn(true);
     const result = await handleLogin(email, password);
     if (result.success) {
-      toast("Welcome back 👋", {
-        description: "Let's make your portfolio shine!",
-        position: "bottom-right",
-      });
       try {
         const latestShipId = await getLatestShipIdForUser(result.user.id);
         if (latestShipId) {

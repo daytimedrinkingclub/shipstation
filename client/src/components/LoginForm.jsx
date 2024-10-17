@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
+  CardFooter,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
     <Card className="w-full max-w-lg border-none sm:border">
       <CardHeader>
         <CardTitle className="text-foreground">
-          {isSigningUp ? "Create an account" : "Sign in to your account"}
+          {isSigningUp ? "Sign up for free" : "Login to your account"}
         </CardTitle>
         <CardDescription className="text-muted-foreground">
           {isSigningUp ? (
@@ -46,7 +47,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
             <>
               Enter your email address and password to continue.
               <br />
-              An account will be created for you if none exists.
+              {/* An account will be created for you if none exists. */}
             </>
           )}
         </CardDescription>
@@ -105,6 +106,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
               variant="link"
               type="button"
               size="sm"
+              className="p-0"
               onClick={() => {
                 setIsSigningUp(!isSigningUp);
                 setPasswordError("");
@@ -123,13 +125,33 @@ const LoginForm = ({ onSubmit, isLoading }) => {
               ) : (
                 <>
                   <LogIn className="mr-2 h-4 w-4" />
-                  {isSigningUp ? "Create account" : "Sign in"}
+                  {isSigningUp ? "Create account" : "Log in"}
                 </>
               )}
             </Button>
           </div>
         </form>
       </CardContent>
+      <CardFooter className="text-muted-foreground text-xs">
+        <p>
+          By continuing, you agree to ShipStation.ai's{" "}
+          <a
+            href="https://shipstation.ai/terms.html"
+            className="hover:text-primary"
+            target="_blank"
+          >
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a
+            href="https://shipstation.ai/privacy-policy.html"
+            className="hover:text-primary"
+            target="_blank"
+          >
+            Privacy Policy
+          </a>
+        </p>
+      </CardFooter>
     </Card>
   );
 };

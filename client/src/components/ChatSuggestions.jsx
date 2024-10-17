@@ -1,10 +1,9 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 
 const suggestions = [
-  "Could you please update the color theme to a purple palette?",
-  "I'd like to change the font to Inter throughout the website.",
-  "Can you remove the contact form from the page?",
+  "Redesign the layout using a bento grid style for a modern look.",
+  "Apply a neubrutalism design language with bold colors and sharp contrasts.",
+  "Implement a glassmorphism effect on card elements for a sleek appearance.",
 ];
 
 const ChatSuggestions = ({ onSuggestionClick }) => {
@@ -19,7 +18,7 @@ const ChatSuggestions = ({ onSuggestionClick }) => {
             key={index}
             variant="outline"
             size="sm"
-            className="h-auto py-2 px-3 text-left text-wrap inline-flex items-center justify-start"
+            className="h-auto py-2 px-3 text-left text-wrap inline-flex items-center justify-start hover:bg-shimmer-gradient hover:animate-gradient"
             onClick={() => onSuggestionClick(suggestion)}
           >
             <span className="text-sm">{suggestion}</span>
