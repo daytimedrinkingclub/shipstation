@@ -10,7 +10,7 @@ const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
-async function refineCode(shipId, message, userId, assets, assetInfo) {
+async function refineCode(shipId, message, userId, assets, assetInfo, aiReferenceFiles) {
   console.log(`Starting code refinement for shipId: ${shipId}`);
 
   const client = new AnthropicService({ userId });
@@ -30,17 +30,41 @@ async function refineCode(shipId, message, userId, assets, assetInfo) {
 
   let dbMessages = conversation?.messages || [];
 
+  const aiReferenceFilesCount = aiReferenceFiles.length;
   console.log("assets received", assets.length);
+  console.log("aiReferenceFiles received", aiReferenceFilesCount);
 
   const messagesToSaveInDB = [
     ...dbMessages,
     { role: "user", content: message, assetInfo: assetInfo },
   ];
 
-  const systemPrompt = getSystemPrompt(assets, assetInfo);
-  const userMessage = `Current HTML code:\n${currentCode}\n\nUser request: ${message}`;
+  const systemPrompt = getSystemPrompt(assets, assetInfo, aiReferenceFiles);
 
-  messages.push({ role: "user", content: userMessage });
+  let userMessageContent = [
+    { type: "text", text: `Current HTML code:\n${currentCode}\n\nUser request: ${message}` }
+  ];
+
+  // Add aiReferenceFiles to the user message content only if there are any
+  if (aiReferenceFilesCount > 0) {
+    aiReferenceFiles.forEach((file, index) => {
+      userMessageContent.push(
+        { type: "text", text: `Reference Image ${index + 1}: ${file.description || "No description provided"}` },
+        {
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: file.type,
+            data: file.base64,
+          },
+        }
+      );
+    });
+
+    userMessageContent.push({ type: "text", text: "Please consider these reference images when making the requested changes." });
+  }
+
+  messages.push({ role: "user", content: userMessageContent });
 
   console.log(`Sending request to Anthropic API for code refinement`);
   const initialResponse = await client.sendMessage({
@@ -155,11 +179,13 @@ async function saveNewVersion(shipId, currentCode) {
   return newVersion;
 }
 
-function getSystemPrompt(assets, assetInfo) {
+function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
+  const aiReferenceFilesCount = aiReferenceFiles.length;
+  
   let prompt = `
     Current date: ${getCurrentDate()}
 
-    You are an AI assistant specialized in refining HTML code. Analyze the current HTML code and the user's request, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
+    You are an AI assistant specialized in refining HTML code. Analyze the current HTML code, the user's request, and any provided reference images, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
 
     Important rules:
     1. **Always return the entire HTML code**: When responding to a user's request, return the full HTML code, including unchanged sections. Do not omit or summarize any part of the code. 
@@ -167,6 +193,7 @@ function getSystemPrompt(assets, assetInfo) {
     3. If the request is unclear or could cause issues, ask for clarification.
     4. **Never use ellipsis or placeholders**: Always include the entire HTML code, even parts that haven't changed. Do not use "..." or any other shorthand to represent unchanged code.
     5. **Do not use comments to indicate unchanged sections**: Never add comments like "<!-- Rest of the sections remain unchanged -->". Always include the full code for all sections.
+    6. **Pay close attention to reference images**: When provided, carefully analyze any reference images and incorporate their design elements, layout, or style into your code changes as appropriate.
   `;
 
   if (assets.length > 0) {
@@ -189,6 +216,18 @@ function getSystemPrompt(assets, assetInfo) {
     2. Place the assets in appropriate sections based on their descriptions.
     3. If an asset's purpose is not clear, use your best judgment to place it where it fits best in the context of the website.
     4. Ensure all assets are used in the HTML code.
+    `;
+  }
+
+  if (aiReferenceFilesCount > 0) {
+    prompt += `\n\nReference Images:
+    The user has provided ${aiReferenceFilesCount} reference image${aiReferenceFilesCount > 1 ? 's' : ''} for this request. These images are intended to guide your changes. Please pay close attention to:
+    1. The overall design style and elements shown in the reference images.
+    2. Color schemes, layouts, and specific features highlighted in these images.
+    3. Any text or annotations provided with the images.
+    4. How these reference images relate to the user's specific request.
+
+    Incorporate relevant aspects from these reference images into your code changes, ensuring they align with the user's request and the existing website structure.
     `;
   }
 
