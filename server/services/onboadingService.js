@@ -301,10 +301,11 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message, assets, assetInfo } = data;
+      const { shipId, message, assets, assetInfo, aiReferenceFiles } = data;
       console.log("Received chat message:", message, "\nfor ship:", shipId);
       console.log("Message:", message);
       console.log("Assets:", assets.length, assetInfo);
+      console.log("AI Reference Files:", aiReferenceFiles.length);
 
       try {
         const result = await refineCode(
@@ -312,7 +313,8 @@ function handleOnboardingSocketEvents(io) {
           message,
           socket.userId,
           assets,
-          assetInfo
+          assetInfo,
+          aiReferenceFiles
         );
 
         socket.emit("chatResponse", { message: result.updatedMessage });

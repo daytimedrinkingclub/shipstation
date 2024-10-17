@@ -42,6 +42,9 @@ import {
 
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
 import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
+import { fileToBase64 } from "@/lib/utils/fileToBase64"; 
+import { AutosizeTextarea } from "@/components/ui/AutosizeTextarea";
+import { cn } from "@/lib/utils";
 
 const Chat = ({
   shipId,
@@ -215,37 +218,58 @@ const Chat = ({
       setIsLoading(true);
       try {
         let uploadedAssets = [];
+        let aiReferenceFiles = [];
+
         if (filesToUpload.length > 0) {
-          const assetsToUpload = filesToUpload.map((file) => ({
-            file: file.file,
-            comment: file.description || "",
-            forAI: file.forAI,
-            forWebsite: file.forWebsite,
-          }));
-          uploadedAssets = await uploadAssets(assetsToUpload);
+          const websiteFiles = filesToUpload.filter(file => file.forWebsite);
+          const aiFiles = filesToUpload.filter(file => file.forAI);
+
+          if (websiteFiles.length > 0) {
+            const assetsToUpload = websiteFiles.map((file) => ({
+              file: file.file,
+              comment: file.description || "",
+              forAI: false,
+              forWebsite: true,
+            }));
+            uploadedAssets = await uploadAssets(assetsToUpload);
+          }
+
+          for (const file of aiFiles) {
+            const base64 = await fileToBase64(file.file);
+            aiReferenceFiles.push({
+              name: file.file.name,
+              type: file.file.type,
+              base64: base64,
+              description: file.description,
+            });
+          }
         }
 
         onAssetsUpdate(uploadedAssets);
 
-        const assetInfo =
-          uploadedAssets.length > 0
-            ? `${uploadedAssets.length} asset${
-                uploadedAssets.length === 1 ? "" : "s"
-              } added`
-            : "";
+        const assetInfo = uploadedAssets.length > 0
+          ? `${uploadedAssets.length} asset${uploadedAssets.length === 1 ? "" : "s"} added to website`
+          : "";
+
+        const aiReferenceInfo = aiReferenceFiles.length > 0
+          ? `${aiReferenceFiles.length} image${aiReferenceFiles.length === 1 ? "" : "s"} added as AI reference`
+          : "";
+
+        const combinedAssetInfo = [assetInfo, aiReferenceInfo].filter(Boolean).join(", ");
 
         const userMessage = {
           text: input,
           sender: "user",
-          assetInfo: assetInfo,
+          assetInfo: combinedAssetInfo,
         };
         setMessages((prevMessages) => [...prevMessages, userMessage]);
 
         socket.emit("chatMessage", {
           shipId,
           message: input,
-          assetInfo: assetInfo,
+          assetInfo: combinedAssetInfo,
           assets: uploadedAssets,
+          aiReferenceFiles: aiReferenceFiles,
         });
 
         setInput("");
@@ -301,6 +325,20 @@ const Chat = ({
     );
   };
 
+  const handleTabChange = (fileName, value) => {
+    setTempFiles((prevFiles) =>
+      prevFiles.map((file) =>
+        file.file.name === fileName
+          ? {
+              ...file,
+              forWebsite: value === "portfolio",
+              forAI: value === "reference",
+            }
+          : file
+      )
+    );
+  };
+
   const toggleUse = (fileName, use) => {
     setTempFiles((prevFiles) =>
       prevFiles.map((file) =>
@@ -313,7 +351,20 @@ const Chat = ({
     setInput(suggestion);
   };
 
+  const isSupportedImageFormat = (file) => {
+    const supportedFormats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    return supportedFormats.includes(file.type);
+  };
+
   const handleDialogConfirm = () => {
+    const unsupportedFiles = tempFiles.filter(file => file.forAI && !isSupportedImageFormat(file.file));
+    
+    if (unsupportedFiles.length > 0) {
+      const fileNames = unsupportedFiles.map(file => file.file.name).join(', ');
+      toast.error(`Unsupported file format for AI reference: ${fileNames}. Use JPEG, PNG, GIF, or WebP for images.`);
+      return;
+    }
+
     dispatch(addFilesToUpload(tempFiles));
     console.log("Updated filesToUpload:", filesToUpload);
     setTempFiles([]);
@@ -447,11 +498,18 @@ const Chat = ({
           </span>
         </div>
         <div className="relative">
-          <Textarea
+          <AutosizeTextarea
             value={input}
             onChange={handleInputChange}
             placeholder="Type your message here..."
-            className="w-full p-2 mb-2 bg-background text-foreground"
+            className={cn(
+              "w-full p-2 mb-2 bg-background text-foreground resize-none overflow-hidden",
+              input.trim() ? "pr-10" : "",
+              (isLoading || isDeploying) ? "opacity-50 cursor-not-allowed" : ""
+            )}
+            maxHeight={300}
+            minHeight={96}
+            disabled={isLoading || isDeploying}
           />
           {input.trim() && (
             <Button
@@ -545,7 +603,11 @@ const Chat = ({
                       }
                       className="text-xs"
                     />
-                    <Tabs defaultValue="portfolio" className="w-full">
+                    <Tabs 
+                      defaultValue="portfolio" 
+                      className="w-full"
+                      onValueChange={(value) => handleTabChange(file.file.name, value)}
+                    >
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="portfolio">
                           Add to Portfolio
@@ -556,12 +618,12 @@ const Chat = ({
                       </TabsList>
                       <TabsContent value="portfolio">
                         <p className="text-xs text-muted-foreground">
-                          This image will be added to your portfolio.
+                          This file will be added to your portfolio.
                         </p>
                       </TabsContent>
                       <TabsContent value="reference">
                         <p className="text-xs text-muted-foreground">
-                          This image will be used as a reference for AI.
+                          This file will be used as a reference for AI.
                         </p>
                       </TabsContent>
                     </Tabs>
