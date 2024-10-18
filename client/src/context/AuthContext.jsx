@@ -133,25 +133,22 @@ export const AuthProvider = ({ children }) => {
   const handleGoogleLogin = useCallback(
     async (response) => {
       console.log("response", response);
-      setIsLoading(true);
       try {
-        const { error } = await supabase.auth.signInWithIdToken({
+        const { data, error } = await supabase.auth.signInWithIdToken({
           provider: "google",
           token: response.credential,
         });
 
         if (error) throw error;
 
-        await checkUser();
+        setUser(data.user);
         toast.success("Logged in successfully with Google!");
       } catch (error) {
         console.error("Error during Google login:", error);
         toast.error("Failed to log in with Google. Please try again.");
-      } finally {
-        setIsLoading(false);
       }
     },
-    [supabase.auth, checkUser]
+    [supabase.auth]
   );
 
   useEffect(() => {

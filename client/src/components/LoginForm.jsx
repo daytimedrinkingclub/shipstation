@@ -41,18 +41,19 @@ const LoginForm = ({ onSubmit, isLoading }) => {
   }, []);
 
   useEffect(() => {
-    // Initialize Google One-Tap
-    window.google?.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      handleGoogleLogin,
-    });
+    if (window.google) {
+      window.google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: handleGoogleLogin,
+      });
 
-    window.google?.accounts.id.renderButton(
-      document.getElementById("googleOneTap"),
-      { theme: "outline", size: "large" }
-    );
+      window.google.accounts.id.renderButton(
+        document.getElementById("googleOneTap"),
+        { theme: "outline", size: "large" }
+      );
 
-    window.google?.accounts.id.prompt();
+      window.google.accounts.id.prompt();
+    }
   }, [handleGoogleLogin]);
 
   const handleSubmit = async (e) => {
