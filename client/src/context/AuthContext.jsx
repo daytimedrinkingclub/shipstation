@@ -58,10 +58,6 @@ export const AuthProvider = ({ children }) => {
     setMyProjectsLoading(false);
   };
 
-  const getWebsitesCount = async () => {
-    // implement
-  };
-
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast("You have been logged out successfully!");
@@ -132,7 +128,6 @@ export const AuthProvider = ({ children }) => {
 
   const handleGoogleLogin = useCallback(
     async (response) => {
-      console.log("response", response);
       try {
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: "google",

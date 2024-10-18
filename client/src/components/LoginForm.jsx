@@ -165,12 +165,12 @@ const LoginForm = ({ onSubmit, isLoading }) => {
             </Button>
           </div>
         </form>
-        <div className="my-4">
+        {/* <div className="my-4">
           <Separator />
         </div>
         <div className="mt-4 flex justify-center">
           <div id="googleOneTap"></div>
-        </div>
+        </div> */}
       </CardContent>
       <CardFooter className="text-muted-foreground text-xs">
         <p>
