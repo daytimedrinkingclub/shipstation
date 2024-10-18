@@ -1,15 +1,14 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
-export const AuthContext = createContext();
+export const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
   const [anthropicKey, setAnthropicKey] = useState("");
-  const [websitesCount, setWebsitesCount] = useState(0);
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const [supabase] = useState(() => createClient(supabaseUrl, supabaseKey));
@@ -117,9 +116,9 @@ export const AuthProvider = ({ children }) => {
   const checkCustomDomain = async (shipId) => {
     try {
       const { data, error } = await supabase
-        .from('custom_domains')
-        .select('*')
-        .eq('ship_slug', shipId)
+        .from("custom_domains")
+        .select("*")
+        .eq("ship_slug", shipId)
         .single();
 
       if (error) throw error;
@@ -131,9 +130,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const handleGoogleLogin = useCallback(
+    async (response) => {
+      console.log("response", response);
+      setIsLoading(true);
+      try {
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "google",
+          token: response.credential,
+        });
+
+        if (error) throw error;
+
+        await checkUser();
+        toast.success("Logged in successfully with Google!");
+      } catch (error) {
+        console.error("Error during Google login:", error);
+        toast.error("Failed to log in with Google. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [supabase.auth, checkUser]
+  );
+
   useEffect(() => {
     checkUser();
-    getWebsitesCount();
   }, []);
 
   return (
@@ -146,14 +168,13 @@ export const AuthProvider = ({ children }) => {
         recentlyShipped,
         handleLogout,
         handleLogin,
+        handleGoogleLogin,
         sendLoginLink,
         isSendingLoginLink,
         isLoading,
         myProjectsLoading,
         anthropicKey,
         setAnthropicKey,
-        websitesCount,
-        getWebsitesCount,
         checkCustomDomain,
       }}
     >
