@@ -27,34 +27,34 @@ const LoginForm = ({ onSubmit, isLoading }) => {
 
   const { handleGoogleLogin } = useContext(AuthContext);
 
-  useEffect(() => {
-    // Load Google One-Tap script
-    const script = document.createElement("script");
-    script.src = "https://accounts.google.com/gsi/client";
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+  // useEffect(() => {
+  //   // Load Google One-Tap script
+  //   const script = document.createElement("script");
+  //   script.src = "https://accounts.google.com/gsi/client";
+  //   script.async = true;
+  //   script.defer = true;
+  //   document.body.appendChild(script);
 
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
+  //   return () => {
+  //     document.body.removeChild(script);
+  //   };
+  // }, []);
 
-  useEffect(() => {
-    if (window.google) {
-      window.google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback: handleGoogleLogin,
-      });
+  // useEffect(() => {
+  //   if (window.google) {
+  //     window.google.accounts.id.initialize({
+  //       client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+  //       callback: handleGoogleLogin,
+  //     });
 
-      window.google.accounts.id.renderButton(
-        document.getElementById("googleOneTap"),
-        { theme: "outline", size: "large" }
-      );
+  //     window.google.accounts.id.renderButton(
+  //       document.getElementById("googleOneTap"),
+  //       { theme: "outline", size: "large" }
+  //     );
 
-      window.google.accounts.id.prompt();
-    }
-  }, [handleGoogleLogin]);
+  //     window.google.accounts.id.prompt();
+  //   }
+  // }, [handleGoogleLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
