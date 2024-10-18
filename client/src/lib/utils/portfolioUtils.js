@@ -14,6 +14,7 @@ async function fetchGeneratedWebsites(page = 1, limit = 15, userId = null) {
     )
     .eq("status", "completed")
     .order("likes_count", { ascending: false })
+    .order("id", { ascending: false })
     .range(offset, offset + limit - 1);
 
   const { data: websites, count, error } = await query;
