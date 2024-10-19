@@ -127,34 +127,34 @@ Provide a complete index.html file with the following structure:
 7. Implement a responsive navbar that collapses into a hamburger menu on mobile devices
 
 ### Image Guidelines:
-1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
+1. ALWAYS use the stock_images_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
    - Hero section images
    - Featured product or service images
    - Background images for any section
    - Icons or small illustrative images
-2. When using the placeholder_image_tool, be specific about the image requirements. Use descriptions like:
+2. When using the stock_images_tool, be specific about the image requirements. Use descriptions like:
    - "professional landing page hero image for [industry/service]"
    - "high-quality image of [product/service] for landing page"
 3. For profile pictures and testimonials, ALWAYS use the headshot_tool to generate appropriate images
 4. For sections with multiple images:
-   - Use the placeholder_image_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
-   - Do not include any instructions or comments about using the placeholder_image_tool or headshot_tool in the final HTML
+   - Use the stock_images_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
+   - Do not include any instructions or comments about using the stock_images_tool or headshot_tool in the final HTML
 5. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the appropriate tool first
 6. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
 7. For optimal performance:
    - Use appropriate image sizes and formats
    - Implement lazy loading for images below the fold
    - Consider using responsive images with multiple sizes for different screen widths
-8. When the placeholder_image_tool or headshot_tool returns an array of image URLs:
+8. When the stock_images_tool or headshot_tool returns an array of image URLs:
    - Use different images from the array for each instance where an image is needed
    - Do not always use the first image in the array
    - Distribute the usage of images across the array to ensure variety
    - If multiple images are needed in a single component, use different indices from the array for each image
 9. For logo images:
-   - Use placeholder_image_tool with "logo" in the description when a logo is required
+   - Use stock_images_tool with "logo" in the description when a logo is required
    - Set appropriate height and width based on the logo's intended size and placement
    - Use classes like 'object-contain' to preserve aspect ratio
-10. IMPORTANT: After using the placeholder_image_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+10. IMPORTANT: After using the stock_images_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
 
 ### Additional Notes:
 - Implement the latest best practices for Tailwind CSS
@@ -162,7 +162,7 @@ Provide a complete index.html file with the following structure:
 - Adapt the content and structure based on specific landing page requirements while maintaining the single-file approach
 - Do not include any explanatory comments or introductory text in the generated HTML code
 
-CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the stock_images_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
 const portfolioPrompt = `
@@ -308,26 +308,49 @@ Provide a complete index.html file with the following structure:
    - Testimonial profile pictures
 
 ### Image Guidelines:
-1. ALWAYS use the placeholder_image_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
+1. ALWAYS use the stock_images_tool to find suitable, high-quality images for ALL image elements, except for profile pictures and testimonials, including:
    - Project screenshots or thumbnails
-2. When using the placeholder_image_tool, be specific about the image requirements. Use descriptions like:
+   - Background images for any section, if absolutely necessary
+
+2. Use the stock_images_tool judiciously, only when an image would significantly enhance the UI:
+   - Avoid overusing stock images; use them sparingly and only when they add value
+   - Consider using stock images for:
+     * Hero section background (if a striking visual is necessary)
+     * Occasional section backgrounds to break up text-heavy areas
+   - Do not use stock images for:
+     * Decorative purposes where they don't add meaningful content
+     * Every section or component; prioritize clean, text-based designs
+     * Replacing actual project screenshots or personal photos
+
+3. When using stock images (only if necessary), adhere to these guidelines:
+   - Ensure the image strongly relates to the content and enhances understanding
+   - Optimize all images for web use to maintain fast loading times
+   - Use appropriate image sizes and aspect ratios for their specific purpose
+   - Always provide descriptive alt text for accessibility
+
+4. Prioritize other design elements over stock images:
+   - Use color, typography, and layout to create visual interest
+   - Implement icons (via Font Awesome) instead of images where appropriate
+   - Focus on showcasing actual work, skills, or personal brand elements
+
+5. When using the stock_images_tool, be specific about the image requirements. Use descriptions like:
    - "screenshot of web application for portfolio project"
-3. For sections with multiple images:
-   - Use the placeholder_image_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
-   - Do not include any instructions or comments about using the placeholder_image_tool or headshot_tool in the final HTML
-4. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the appropriate tool first
-5. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
-6. For optimal performance:
+6. For sections with multiple images:
+   - Use the stock_images_tool or headshot_tool as appropriate to generate a unique, appropriate image for each item
+   - Do not include any instructions or comments about using the stock_images_tool or headshot_tool in the final HTML
+7. If no suitable image is found, use a colored div with appropriate dimensions as a placeholder, but still attempt to use the appropriate tool first
+8. Always provide descriptive alt text for accessibility, including specific details about the image content when applicable
+9. For optimal performance:
    - Use appropriate image sizes and formats
    - Implement lazy loading for images below the fold
    - Consider using responsive images with multiple sizes for different screen widths
-7. When the placeholder_image_tool or headshot_tool returns an array of image URLs:
+10. When the stock_images_tool or headshot_tool returns an array of image URLs:
    - Use different images from the array for each instance where an image is needed
    - Do not always use the first image in the array
    - Distribute the usage of images across the array to ensure variety
    - If multiple images are needed in a single component, use different indices from the array for each image
-8. IMPORTANT: After using the placeholder_image_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
-9. Use background images only if absolutely necessary for specific sections. In most cases, prefer using structural HTML elements with appropriate styling for layout and design purposes.
+11. IMPORTANT: After using the stock_images_tool or headshot_tool, do not include any comments, explanations, or extra text. Insert the image URLs directly into the HTML code without any surrounding commentary.
+12. Use background images only if absolutely necessary for specific sections. In most cases, prefer using structural HTML elements with appropriate styling for layout and design purposes.
 
 For logos and icons, use Font Awesome via CDN instead of images:
    - Include the Font Awesome CDN link in the <head> section of the HTML
@@ -341,7 +364,7 @@ For logos and icons, use Font Awesome via CDN instead of images:
 - Adapt the content and structure based on specific portfolio website requirements while maintaining the single-file approach
 - Do not include any explanatory comments or introductory text in the generated HTML code
 
-CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the stock_images_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
 `;
 
 const emailTemplatePrompt = `
@@ -444,7 +467,7 @@ When generating the email template:
 - Use table-based layouts wrapped in a container for consistency
 - Implement media queries for responsiveness if necessary
 
-IMPORTANT: Generate only the HTML code without any explanations or comments outside the code. Ensure all image sources use the placeholder_image_tool as per the CTO's guidelines, except for profile pictures and testimonials which should use the headshot_tool. The final output should be a complete, production-ready HTML email template with creatively styled images and Google Fonts implemented.
+IMPORTANT: Generate only the HTML code without any explanations or comments outside the code. Ensure all image sources use the stock_images_tool as per the CTO's guidelines, except for profile pictures and testimonials which should use the headshot_tool. The final output should be a complete, production-ready HTML email template with creatively styled images and Google Fonts implemented.
 `;
 
 module.exports = {

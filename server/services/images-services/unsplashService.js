@@ -4,7 +4,6 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
-console.log("Unsplash Access Key:", UNSPLASH_ACCESS_KEY);
 const UNSPLASH_API_URL = "https://api.unsplash.com";
 
 const unsplashService = {

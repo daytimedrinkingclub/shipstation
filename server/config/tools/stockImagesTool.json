@@ -1,0 +1,26 @@
+{
+  "name": "stock_images_tool",
+  "description": "Search for high-quality stock images from a vast library. Retrieve professional photographs based on a specific query, optional orientation preference, and desired number of images. This tool allows for precise image selection to match your project needs.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "The search query for the images (e.g., 'nature', 'office', 'technology')"
+      },
+      "orientation": {
+        "type": "string",
+        "enum": ["landscape", "portrait", "square"],
+        "description": "Desired photo orientation"
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20,
+        "default": 10,
+        "description": "Number of images to return (1-20)"
+      }
+    },
+    "required": ["query", "orientation"]
+  }
+}

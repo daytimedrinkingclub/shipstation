@@ -246,7 +246,15 @@ function handleOnboardingSocketEvents(io) {
         customDesignPrompt,
         images,
       } = data;
-      console.log("startProject", roomId, userId, apiKey, shipType, name);
+      console.log(
+        "startProject",
+        roomId,
+        userId,
+        apiKey,
+        shipType,
+        name,
+        portfolioType
+      );
 
       const clientParams = { userId };
       if (apiKey) {

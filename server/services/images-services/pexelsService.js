@@ -4,18 +4,26 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const PEXELS_API_KEY = process.env.PEXELS_API_KEY;
-console.log("Pexels API Key:", PEXELS_API_KEY);
 const PEXELS_API_URL = "https://api.pexels.com/v1";
 
 const pexelsService = {
-  searchPhotos: async (query, page = 1, perPage = 3) => {
+  searchFlexiblePhotos: async (options) => {
     try {
+      const {
+        query,
+        orientation,
+        size = "medium",
+        count = 10,
+        page = 1,
+      } = options;
+
       const response = await axios.get(`${PEXELS_API_URL}/search`, {
         params: {
           query,
           page,
-          per_page: perPage,
-          orientation: "square", // This parameter requests square images
+          per_page: count,
+          orientation,
+          size,
         },
         headers: {
           Authorization: PEXELS_API_KEY,
@@ -24,7 +32,10 @@ const pexelsService = {
 
       return response.data;
     } catch (error) {
-      console.error("Error in pexelsService.searchPhotos:", error.message);
+      console.error(
+        "Error in pexelsService.searchFlexiblePhotos:",
+        error.message
+      );
       throw error;
     }
   },
@@ -49,57 +60,27 @@ const pexelsService = {
       throw error;
     }
   },
-
-  // Test function
-  testSearchPhotos: async () => {
-    try {
-      const query = "professional headshot portrait of a man";
-      console.log(`Searching for: "${query}" (square images)`);
-      const results = await pexelsService.searchPhotos(query);
-      console.log("Search results:");
-      results.photos.forEach((photo, index) => {
-        console.log(`${index + 1}. ${photo.alt}`);
-        console.log(`   URL: ${photo.src.large2x}`);
-        console.log(`   Photographer: ${photo.photographer}`);
-        console.log(`   Dimensions: ${photo.width}x${photo.height}`);
-        console.log("---");
-      });
-    } catch (error) {
-      console.error("Error in test function:", error.message);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-      }
-    }
-  },
-
-  // New test function for getRandomPhoto
-  testGetRandomPhoto: async () => {
-    try {
-      const query = "professional headshot portrait of a man";
-      console.log(`Getting a random photo for: "${query}"`);
-      const photo = await pexelsService.getRandomPhoto(query, {
-        orientation: "square",
-      });
-      console.log("Random photo result:");
-      console.log(`Alt: ${photo.alt}`);
-      console.log(`URL: ${photo.src.large2x}`);
-      console.log(`Photographer: ${photo.photographer}`);
-      console.log(`Dimensions: ${photo.width}x${photo.height}`);
-    } catch (error) {
-      console.error("Error in test function:", error.message);
-      if (error.response) {
-        console.error("Response data:", error.response.data);
-        console.error("Response status:", error.response.status);
-        console.error("Response headers:", error.response.headers);
-      }
-    }
-  },
 };
 
-// Run both test functions
-// pexelsService.testSearchPhotos();
-// pexelsService.testGetRandomPhoto();
+async function testSearchFlexiblePhotos() {
+  try {
+    const options = {
+      query: "nature",
+      orientation: "landscape",
+      size: "medium",
+      count: 5,
+      page: 1,
+    };
+
+    const result = await pexelsService.searchFlexiblePhotos(options);
+    console.log("Raw response from searchFlexiblePhotos:");
+    console.log(JSON.stringify(result, null, 2));
+  } catch (error) {
+    console.error("Error in testSearchFlexiblePhotos:", error.message);
+  }
+}
+
+// Uncomment the following line to run the test
+// testSearchFlexiblePhotos();
 
 module.exports = pexelsService;

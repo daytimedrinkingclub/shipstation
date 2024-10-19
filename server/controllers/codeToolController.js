@@ -3,6 +3,7 @@ const searchService = require("../services/searchService");
 const {
   getRandomHeadshots,
 } = require("../services/images-services/headshotImageService");
+const pexelsService = require("../services/images-services/pexelsService");
 
 async function handleCodeToolUse({ tool, client }) {
   if (tool.name === TOOLS.PLACEHOLDER_IMAGE) {
@@ -42,6 +43,35 @@ async function handleCodeToolUse({ tool, client }) {
           {
             type: "text",
             text: JSON.stringify(headshotUrls, null, 2),
+          },
+        ],
+      },
+    ];
+  } else if (tool.name === TOOLS.STOCK_IMAGES) {
+    const { query, orientation, count } = tool.input;
+    console.log("using stock_images_tool: ", query, orientation, count);
+
+    const stockImages = await pexelsService.searchFlexiblePhotos({
+      query,
+      orientation,
+      count,
+    });
+
+    const formattedImages = stockImages.photos.map((photo) => ({
+      height: photo.height,
+      width: photo.width,
+      src: photo.src.original,
+      alt: photo.alt,
+    }));
+
+    return [
+      {
+        type: "tool_result",
+        tool_use_id: tool.id,
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(formattedImages, null, 2),
           },
         ],
       },

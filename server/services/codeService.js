@@ -2,6 +2,7 @@ const {
   codeWriterTool,
   placeholderImageTool,
   headshotTool,
+  stockImagesTool,
 } = require("../config/tools");
 const { handleCodeToolUse } = require("../controllers/codeToolController");
 const codePrompt = require("./prompts/codePrompt");
@@ -101,7 +102,7 @@ async function codeAssistant({
       const currentMessage = await client.sendMessage({
         system: systemPrompt,
         messages: messages,
-        tools: [placeholderImageTool, headshotTool],
+        tools: [stockImagesTool, headshotTool],
         tool_choice: { type: "auto" },
       });
       console.log(
