@@ -90,6 +90,10 @@ app.get("/home", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+app.get("/editor", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 app.get("/project/:projectId", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
