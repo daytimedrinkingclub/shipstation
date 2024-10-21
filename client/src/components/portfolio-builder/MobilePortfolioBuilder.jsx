@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Fuel,
   DraftingCompass,
   Check,
 } from "lucide-react";
@@ -39,6 +38,8 @@ export default function MobilePortfolioBuilder({
   handleSubmit,
   availableShips,
   onOpenPromptGallery,
+  assets,
+  setAssets,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -62,6 +63,10 @@ export default function MobilePortfolioBuilder({
     if (event.key === "Enter") {
       nextStep();
     }
+  };
+
+  const handleAssetsUpdate = (newAssets) => {
+    setAssets(newAssets);
   };
 
   const renderStepContent = () => {
@@ -96,13 +101,15 @@ export default function MobilePortfolioBuilder({
               setCustomDesignPrompt={setCustomDesignPrompt}
               isGenerating={isGenerating}
               onKeyPress={handleKeyPress}
+              onAssetsUpdate={handleAssetsUpdate}
+              assets={assets}
             />
             <Button
               onClick={onOpenPromptGallery}
               disabled={isGenerating}
               size="sm"
               variant="outline"
-              className="mt-2 w-full"
+              className="mt-4 w-full"
             >
               <DraftingCompass className="mr-2 h-4 w-4" />
               Open Prompt Gallery
