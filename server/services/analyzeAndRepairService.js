@@ -12,7 +12,7 @@ const {
 } = require("../config/tools");
 const {
   handleCodeRefinementToolUse,
-} = require("../controllers/codeRefinementToolController");
+} = require("../tool-controllers/codeRefinementToolController");
 const sharp = require("sharp");
 
 class AnalyzeAndRepairService {
@@ -343,6 +343,49 @@ class AnalyzeAndRepairService {
       };
     }
   }
+
+  async testAnalyzeAndRepairSite(testShipId) {
+    console.log(
+      `Starting test for analyzeAndRepairSite with shipId: ${testShipId}`
+    );
+
+    try {
+      const result = await this.analyzeAndRepairSite(testShipId);
+
+      console.log("Test Result:");
+      console.log(
+        "Analysis Result:",
+        JSON.stringify(result.analysisResult, null, 2)
+      );
+      console.log(
+        "Repair Result:",
+        JSON.stringify(result.repairResult, null, 2)
+      );
+      console.log(`Total Time: ${result.totalTime.toFixed(2)}s`);
+
+      return result;
+    } catch (error) {
+      console.error("Test failed with error:", error);
+      throw error;
+    }
+  }
 }
+
+// if (require.main === module) {
+//   const runTest = async () => {
+//     const service = new AnalyzeAndRepairService();
+//     const testShipId = "levixia-capital-2zcFees_";
+
+//     try {
+//       console.log("Starting self-test...");
+//       const testResult = await service.testAnalyzeAndRepairSite(testShipId);
+//       console.log("Self-test completed successfully:", testResult);
+//     } catch (error) {
+//       console.error("Self-test failed:", error);
+//     }
+//   };
+
+//   runTest();
+// }
 
 module.exports = AnalyzeAndRepairService;

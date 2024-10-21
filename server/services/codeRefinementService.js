@@ -4,13 +4,20 @@ const FileService = require("../services/fileService");
 const dbService = require("../services/dbService");
 const {
   handleCodeRefinementToolUse,
-} = require("../controllers/codeRefinementToolController");
+} = require("../tool-controllers/codeRefinementToolController");
 const { getCurrentDate } = require("../utils/date");
 const fileService = new FileService();
 
 const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
-async function refineCode(shipId, message, userId, assets, assetInfo, aiReferenceFiles) {
+async function refineCode(
+  shipId,
+  message,
+  userId,
+  assets,
+  assetInfo,
+  aiReferenceFiles
+) {
   console.log(`Starting code refinement for shipId: ${shipId}`);
 
   const client = new AnthropicService({ userId });
@@ -42,14 +49,22 @@ async function refineCode(shipId, message, userId, assets, assetInfo, aiReferenc
   const systemPrompt = getSystemPrompt(assets, assetInfo, aiReferenceFiles);
 
   let userMessageContent = [
-    { type: "text", text: `Current HTML code:\n${currentCode}\n\nUser request: ${message}` }
+    {
+      type: "text",
+      text: `Current HTML code:\n${currentCode}\n\nUser request: ${message}`,
+    },
   ];
 
   // Add aiReferenceFiles to the user message content only if there are any
   if (aiReferenceFilesCount > 0) {
     aiReferenceFiles.forEach((file, index) => {
       userMessageContent.push(
-        { type: "text", text: `Reference Image ${index + 1}: ${file.description || "No description provided"}` },
+        {
+          type: "text",
+          text: `Reference Image ${index + 1}: ${
+            file.description || "No description provided"
+          }`,
+        },
         {
           type: "image",
           source: {
@@ -61,7 +76,10 @@ async function refineCode(shipId, message, userId, assets, assetInfo, aiReferenc
       );
     });
 
-    userMessageContent.push({ type: "text", text: "Please consider these reference images when making the requested changes." });
+    userMessageContent.push({
+      type: "text",
+      text: "Please consider these reference images when making the requested changes.",
+    });
   }
 
   messages.push({ role: "user", content: userMessageContent });
@@ -181,7 +199,7 @@ async function saveNewVersion(shipId, currentCode) {
 
 function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
   const aiReferenceFilesCount = aiReferenceFiles.length;
-  
+
   let prompt = `
     Current date: ${getCurrentDate()}
 
@@ -221,7 +239,9 @@ function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
 
   if (aiReferenceFilesCount > 0) {
     prompt += `\n\nReference Images:
-    The user has provided ${aiReferenceFilesCount} reference image${aiReferenceFilesCount > 1 ? 's' : ''} for this request. These images are intended to guide your changes. Please pay close attention to:
+    The user has provided ${aiReferenceFilesCount} reference image${
+      aiReferenceFilesCount > 1 ? "s" : ""
+    } for this request. These images are intended to guide your changes. Please pay close attention to:
     1. The overall design style and elements shown in the reference images.
     2. Color schemes, layouts, and specific features highlighted in these images.
     3. Any text or annotations provided with the images.
