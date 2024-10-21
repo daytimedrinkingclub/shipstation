@@ -12,7 +12,7 @@ const {
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
-} = require("../controllers/onboardingToolController");
+} = require("../tool-controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");

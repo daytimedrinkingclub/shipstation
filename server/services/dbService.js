@@ -132,7 +132,7 @@ async function getCodeRefiningConversation(shipId) {
   const { data, error } = await supabaseClient
     .from("code_refining_conversations")
     .select("*")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .single();
 
   if (error && error.code !== "PGRST116") {
@@ -147,8 +147,8 @@ async function upsertCodeRefiningConversation(shipId, userId, messages) {
   const { data, error } = await supabaseClient
     .from("code_refining_conversations")
     .upsert(
-      { ship_slug: shipId, user_id: userId, messages, updated_at: new Date() },
-      { onConflict: "ship_slug" }
+      { ship_id: shipId, user_id: userId, messages, updated_at: new Date() },
+      { onConflict: "ship_id" }
     )
     .select();
 
@@ -166,7 +166,7 @@ async function saveCodeVersion(shipId, filePath) {
     await supabaseClient
       .from("code_versions")
       .select("version")
-      .eq("ship_slug", shipId)
+      .eq("ship_id", shipId)
       .order("version", { ascending: false })
       .limit(1)
       .single();
@@ -182,7 +182,7 @@ async function saveCodeVersion(shipId, filePath) {
   // Insert the new version into the database
   const { data, error } = await supabaseClient
     .from("code_versions")
-    .insert({ ship_slug: shipId, version: newVersion, file_path: filePath });
+    .insert({ ship_id: shipId, version: newVersion, file_path: filePath });
 
   if (error) {
     console.error("Error saving code version:", error);
@@ -196,7 +196,7 @@ async function getCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("file_path")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .eq("version", version)
     .single();
 
@@ -212,7 +212,7 @@ async function getLatestCodeVersion(shipId) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("version")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .order("version", { ascending: false })
     .limit(1)
     .single();
@@ -258,7 +258,7 @@ async function getAllCodeVersions(shipId) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("*")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .order("version", { ascending: true });
 
   if (error) {
@@ -273,7 +273,7 @@ async function deleteCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .delete()
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .eq("version", version);
 
   if (error) {
@@ -402,15 +402,14 @@ async function getDesignPresetPrompt(shipType, designName) {
   return data;
 }
 
-async function likeWebsite(userId, slug) {
+async function likeWebsite(userId, shipId) {
   try {
     const { data, error } = await supabaseClient
       .from("website_likes")
-      .insert({ user_id: userId, ship_slug: slug });
+      .insert({ user_id: userId, ship_id: shipId });
 
     if (error) {
       if (error.code === "23505") {
-        // Unique constraint violation
         throw new Error("Already liked");
       }
       throw error;
@@ -423,12 +422,12 @@ async function likeWebsite(userId, slug) {
   }
 }
 
-async function unlikeWebsite(userId, slug) {
+async function unlikeWebsite(userId, shipId) {
   try {
     const { data, error } = await supabaseClient
       .from("website_likes")
       .delete()
-      .match({ user_id: userId, ship_slug: slug });
+      .match({ user_id: userId, ship_id: shipId });
 
     if (error) {
       throw error;

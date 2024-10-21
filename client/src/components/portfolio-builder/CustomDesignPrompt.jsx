@@ -162,7 +162,7 @@ export default function CustomDesignPrompt({
       onDrop={handleDrop}
     >
       <Textarea
-        placeholder="Describe your ideal portfolio design..."
+        placeholder="Describe your ideal portfolio design. You can also drag and drop your profile photo and resume here to personalize your portfolio."
         value={customDesignPrompt}
         onChange={(e) => setCustomDesignPrompt(e.target.value)}
         disabled={isGenerating}

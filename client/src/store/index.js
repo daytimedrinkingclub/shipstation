@@ -4,6 +4,7 @@ import storage from "redux-persist/lib/storage";
 import onboardingReducer from "./onboardingSlice";
 import fileUploadReducer from "./fileUploadSlice";
 import deploymentReducer from "./deploymentSlice";
+import shipReducer from "./shipSlice";
 const persistConfig = {
   key: "root",
   storage,
@@ -19,6 +20,7 @@ export const store = configureStore({
     onboarding: persistedReducer,
     fileUpload: fileUploadReducer,
     deployment: deploymentReducer,
+    ship: shipReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

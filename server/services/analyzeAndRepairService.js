@@ -14,6 +14,14 @@ const {
   handleCodeRefinementToolUse,
 } = require("../tool-controllers/codeRefinementToolController");
 const sharp = require("sharp");
+const fs = require("fs").promises;
+const path = require("path");
+
+const dotenv = require("dotenv");
+dotenv.config();
+
+// You can set this to true to save the screenshots locally for debugging/testing.
+const SAVE_LOCAL_SCREENSHOTS = false;
 
 class AnalyzeAndRepairService {
   constructor() {
@@ -37,27 +45,22 @@ class AnalyzeAndRepairService {
         `Navigation completed in ${(Date.now() - navigationStart) / 1000}s`
       );
 
-      // Take desktop and mobile screenshots
-      const { desktopScreenshot, mobileScreenshot } =
-        await this.takeScreenshots(page);
+      const screenshots = await this.takeScreenshots(page, shipId);
 
       // Send screenshots to Anthropic for analysis
       console.log("Sending screenshots to Anthropic for analysis...");
       const analysisStart = Date.now();
 
-      const images = this.prepareImages(desktopScreenshot, mobileScreenshot);
-      const analysisResult = await this.performAnalysis(images);
-
-      const analysisResultParsed = JSON.parse(analysisResult.content[0].text);
-      console.log("Analysis result:", analysisResultParsed);
+      const analysisResult = await this.performAnalysis(screenshots);
+      console.log("Analysis result:", analysisResult);
 
       let repairResult = null;
-      if (analysisResultParsed.repairRequired) {
+      if (analysisResult.repairRequired) {
         console.log("Repairs required. Initiating repair process...");
         repairResult = await this.repairWebsite(
           shipId,
-          analysisResultParsed,
-          images
+          analysisResult,
+          screenshots
         );
       } else {
         console.log("No repairs required.");
@@ -67,7 +70,7 @@ class AnalyzeAndRepairService {
       console.log(`Total analyze and repair time: ${totalTime.toFixed(2)}s`);
 
       return {
-        analysisResult: analysisResultParsed,
+        analysisResult: analysisResult,
         repairResult,
         totalTime,
       };
@@ -80,49 +83,171 @@ class AnalyzeAndRepairService {
     }
   }
 
-  async takeScreenshots(page) {
-    // Take desktop screenshot
-    console.log("Taking desktop screenshot...");
-    const desktopStart = Date.now();
+  async takeScreenshots(page, shipId) {
+    const screenshots = {};
+    const screenshotDir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "screenshots",
+      shipId
+    );
+
+    // Ensure the screenshot directory exists
+    await fs.mkdir(screenshotDir, { recursive: true });
+
+    // Take full page screenshots
+    console.log("Taking full page screenshots...");
+    screenshots.desktop = await this.takeFullPageScreenshot(
+      page,
+      1920,
+      1080,
+      "Desktop",
+      screenshotDir
+    );
+    screenshots.mobile = await this.takeFullPageScreenshot(
+      page,
+      390,
+      844,
+      "Mobile",
+      screenshotDir
+    );
+
+    // Take screenshots of semantic sections for both desktop and mobile
+    const semanticTags = [
+      "header",
+      "main",
+      "footer",
+      "section",
+      "nav",
+      "article",
+    ];
+
+    // Desktop element screenshots
     await page.setViewportSize({ width: 1920, height: 1080 });
-    const desktopScreenshot = await page.screenshot({
-      fullPage: true,
-      type: "png",
-    });
-    console.log(
-      `Desktop screenshot taken in ${(Date.now() - desktopStart) / 1000}s`
+    await this.takeElementScreenshots(
+      page,
+      semanticTags,
+      screenshots,
+      "desktop",
+      screenshotDir
     );
 
-    // Take mobile screenshot
-    console.log("Taking mobile screenshot...");
-    const mobileStart = Date.now();
+    // Prioritize main content section screenshots for desktop
+    const desktopMain = await page.$("main");
+    if (desktopMain) {
+      screenshots.desktop_main_priority = await this.takeElementScreenshot(
+        page,
+        desktopMain,
+        "desktop_main_priority",
+        screenshotDir
+      );
+    }
+
+    // Mobile element screenshots
     await page.setViewportSize({ width: 390, height: 844 });
-    const mobileScreenshot = await page.screenshot({
-      fullPage: true,
-      type: "png",
-    });
-    console.log(
-      `Mobile screenshot taken in ${(Date.now() - mobileStart) / 1000}s`
+    await this.takeElementScreenshots(
+      page,
+      semanticTags,
+      screenshots,
+      "mobile",
+      screenshotDir
     );
 
-    // Compress screenshots, anthropic has a limit of 5mb per image
-    const compressedDesktopScreenshot = await this.compressImage(
-      desktopScreenshot
-    );
-    const compressedMobileScreenshot = await this.compressImage(
-      mobileScreenshot
-    );
+    // Prioritize main content section screenshots for mobile
+    const mobileMain = await page.$("main");
+    if (mobileMain) {
+      screenshots.mobile_main_priority = await this.takeElementScreenshot(
+        page,
+        mobileMain,
+        "mobile_main_priority",
+        screenshotDir
+      );
+    }
 
-    return {
-      desktopScreenshot: compressedDesktopScreenshot,
-      mobileScreenshot: compressedMobileScreenshot,
-    };
+    return screenshots;
+  }
+
+  async takeElementScreenshots(
+    page,
+    semanticTags,
+    screenshots,
+    viewportType,
+    screenshotDir
+  ) {
+    for (const tag of semanticTags) {
+      const elements = await page.$$(tag);
+      for (let i = 0; i < elements.length; i++) {
+        const elementScreenshot = await this.takeElementScreenshot(
+          page,
+          elements[i],
+          `${viewportType}_${tag}_${i + 1}`,
+          screenshotDir
+        );
+        if (elementScreenshot) {
+          screenshots[`${viewportType}_${tag}_${i + 1}`] = elementScreenshot;
+        }
+      }
+    }
+  }
+
+  async takeFullPageScreenshot(page, width, height, label, screenshotDir) {
+    console.log(`Taking ${label} screenshot...`);
+    const start = Date.now();
+    await page.setViewportSize({ width, height });
+    const screenshot = await page.screenshot({ fullPage: true, type: "png" });
+    console.log(`${label} screenshot taken in ${(Date.now() - start) / 1000}s`);
+
+    const compressedScreenshot = await this.compressImage(screenshot);
+
+    // Save the screenshot locally only if SAVE_LOCAL_SCREENSHOTS is true
+    if (SAVE_LOCAL_SCREENSHOTS) {
+      const filename = `${label.toLowerCase()}_full.jpg`;
+      await this.saveScreenshotLocally(
+        compressedScreenshot,
+        screenshotDir,
+        filename
+      );
+    }
+
+    return compressedScreenshot;
+  }
+
+  async takeElementScreenshot(page, element, label, screenshotDir) {
+    try {
+      console.log(`Taking screenshot of ${label}...`);
+      const start = Date.now();
+
+      await element.scrollIntoViewIfNeeded();
+
+      const screenshot = await element.screenshot({ type: "png" });
+      console.log(
+        `${label} screenshot taken in ${(Date.now() - start) / 1000}s`
+      );
+
+      const compressedScreenshot = await this.compressImage(screenshot);
+
+      // Save the screenshot locally only if SAVE_LOCAL_SCREENSHOTS is true
+      if (SAVE_LOCAL_SCREENSHOTS) {
+        const filename = `${label}.jpg`;
+        await this.saveScreenshotLocally(
+          compressedScreenshot,
+          screenshotDir,
+          filename
+        );
+      }
+
+      return compressedScreenshot;
+    } catch (error) {
+      console.error(`Error taking screenshot of ${label}:`, error);
+      return null;
+    }
   }
 
   async compressImage(imageBuffer) {
     try {
       const compressedImage = await sharp(imageBuffer)
-        .resize(1280, null, { withoutEnlargement: true }) // Resize to max width of 1280px
+        .resize(2000, 2000, { fit: "inside", withoutEnlargement: true }) // Resize to max 2000x2000
         .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
         .toBuffer();
 
@@ -136,43 +261,60 @@ class AnalyzeAndRepairService {
     }
   }
 
-  prepareImages(desktopScreenshot, mobileScreenshot) {
-    return [
-      {
-        caption: "Desktop view",
-        base64: desktopScreenshot.toString("base64"),
-        mediaType: "image/jpeg",
-      },
-      {
-        caption: "Mobile view",
-        base64: mobileScreenshot.toString("base64"),
-        mediaType: "image/jpeg",
-      },
-    ];
-  }
-
-  async performAnalysis(images) {
+  async performAnalysis(screenshots) {
     let content = [];
-    images.forEach((img, index) => {
-      content.push(
-        {
-          type: "text",
-          text: `Image ${index + 1}: ${img.caption}`,
-        },
-        {
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: img.mediaType,
-            data: img.base64,
+
+    // Prioritize main content screenshots
+    const priorityScreenshots = [
+      "desktop_main_priority",
+      "mobile_main_priority",
+      "desktop",
+      "mobile",
+    ];
+
+    // Add priority screenshots first
+    for (const key of priorityScreenshots) {
+      if (screenshots[key]) {
+        content.push(
+          {
+            type: "text",
+            text: `Priority Screenshot: ${key}`,
           },
-        }
-      );
-    });
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: "image/jpeg",
+              data: screenshots[key].toString("base64"),
+            },
+          }
+        );
+      }
+    }
+
+    // Add remaining screenshots
+    for (const [key, screenshot] of Object.entries(screenshots)) {
+      if (!priorityScreenshots.includes(key) && screenshot) {
+        content.push(
+          {
+            type: "text",
+            text: `Screenshot: ${key}`,
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: "image/jpeg",
+              data: screenshot.toString("base64"),
+            },
+          }
+        );
+      }
+    }
 
     content.push({
       type: "text",
-      text: "Please analyze these screenshots based on the given instructions.",
+      text: "Please analyze these screenshots based on the given instructions, paying special attention to the main content sections in both desktop and mobile views.",
     });
 
     const messages = [
@@ -182,13 +324,31 @@ class AnalyzeAndRepairService {
       },
     ];
 
-    return await this.anthropicService.sendMessage({
+    const response = await this.anthropicService.sendMessage({
       system: analysisPrompt,
       messages: messages,
     });
+
+    // Extract the JSON from the XML tags
+    const analysisResultMatch = response.content[0].text.match(
+      /<analysis_result>([\s\S]*?)<\/analysis_result>/
+    );
+
+    if (!analysisResultMatch) {
+      throw new Error("Failed to extract analysis result from the response");
+    }
+
+    const analysisResultJson = analysisResultMatch[1].trim();
+
+    try {
+      return JSON.parse(analysisResultJson);
+    } catch (error) {
+      console.error("Error parsing analysis result JSON:", error);
+      throw new Error("Invalid JSON in analysis result");
+    }
   }
 
-  async repairWebsite(shipId, analysisResult, images) {
+  async repairWebsite(shipId, analysisResult, screenshots) {
     console.log("Repairing website for shipId:", shipId);
     const repairStartTime = Date.now();
 
@@ -209,23 +369,25 @@ class AnalyzeAndRepairService {
         },
       ];
 
-      // Add images to the repair prompt
-      images.forEach((img) => {
-        content.push(
-          {
-            type: "text",
-            text: `Image: ${img.caption}`,
-          },
-          {
-            type: "image",
-            source: {
-              type: "base64",
-              media_type: img.mediaType,
-              data: img.base64,
+      // Add all screenshots to the repair prompt
+      for (const [key, screenshot] of Object.entries(screenshots)) {
+        if (screenshot) {
+          content.push(
+            {
+              type: "text",
+              text: `Screenshot: ${key}`,
             },
-          }
-        );
-      });
+            {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/jpeg",
+                data: screenshot.toString("base64"),
+              },
+            }
+          );
+        }
+      }
 
       let messages = [
         {
@@ -243,10 +405,7 @@ class AnalyzeAndRepairService {
         tools: [searchTool, placeholderImageTool, headshotTool],
         tool_choice: { type: "auto" },
       });
-      console.log(
-        "Received initial response from Anthropic API",
-        initialResponse
-      );
+      console.log("Received initial response from Anthropic API");
 
       let currentMessage = initialResponse;
       messages.push({
@@ -332,6 +491,7 @@ class AnalyzeAndRepairService {
         issuesSummary: analysisResult.issues.map((issue) => ({
           description: issue.description,
           affectedView: issue.affectedView,
+          severity: issue.severity,
         })),
       };
     } catch (error) {
@@ -369,12 +529,21 @@ class AnalyzeAndRepairService {
       throw error;
     }
   }
+
+  async saveScreenshotLocally(screenshot, dir, filename) {
+    if (SAVE_LOCAL_SCREENSHOTS) {
+      const filePath = path.join(dir, filename);
+      await fs.writeFile(filePath, screenshot);
+      console.log(`Screenshot saved: ${filePath}`);
+    }
+  }
 }
 
+// Uncomment to run self-test, change the testShipId to the one you want to test
 // if (require.main === module) {
 //   const runTest = async () => {
 //     const service = new AnalyzeAndRepairService();
-//     const testShipId = "levixia-capital-2zcFees_";
+//     const testShipId = "savya-tUUb2yUE";
 
 //     try {
 //       console.log("Starting self-test...");

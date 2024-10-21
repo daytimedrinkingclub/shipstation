@@ -45,6 +45,7 @@ import { AutosizeTextarea } from "@/components/ui/AutosizeTextarea";
 import { cn } from "@/lib/utils";
 
 const Chat = ({
+  shipSlug,
   shipId,
   onCodeUpdate,
   onAssetsUpdate,
@@ -52,7 +53,7 @@ const Chat = ({
   isDeploying,
 }) => {
   const { socket } = useSocket();
-  const { uploadAssets } = useProject(shipId);
+  const { uploadAssets } = useProject(shipSlug);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -80,6 +81,12 @@ const Chat = ({
   };
 
   const initChat = async () => {
+    console.log(
+      "Initializing chat with shipId:",
+      shipId,
+      "and shipSlug:",
+      shipSlug
+    );
     setIsLoadingMessages(true);
     if (isDeploying && initialPrompt) {
       setMessages([
@@ -98,16 +105,19 @@ const Chat = ({
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
     setIsInitialized(true);
+    console.log("Chat initialized. Messages:", combinedMessages);
   };
 
   useEffect(() => {
-    if (!isInitialized || isDeploying) {
+    if (shipId && shipSlug && !isInitialized) {
+      console.log("Calling initChat from useEffect");
       initChat();
     }
-  }, [isInitialized, isDeploying, initialPrompt]);
+  }, [shipId, shipSlug, isInitialized]);
 
   useEffect(() => {
     if (isInitialized && !isDeploying) {
+      console.log("Reinitializing chat due to isDeploying change");
       initChat();
     }
   }, [isDeploying]);
@@ -136,11 +146,12 @@ const Chat = ({
   }, [socket, onCodeUpdate, shipId]);
 
   const fetchConversationHistory = async () => {
+    console.log("Fetching conversation history for shipId:", shipId);
     try {
       const { data, error } = await supabase
         .from("code_refining_conversations")
         .select("messages")
-        .eq("ship_slug", shipId)
+        .eq("ship_id", shipId)
         .maybeSingle();
 
       if (error) {
@@ -171,8 +182,10 @@ const Chat = ({
               };
             }
           });
+        console.log("Fetched conversation history:", displayMessages);
         return displayMessages;
       } else {
+        console.log("No conversation history found");
         return [];
       }
     } catch (error) {
@@ -182,10 +195,11 @@ const Chat = ({
   };
 
   const fetchInitialUserMessage = async () => {
+    console.log("Fetching initial user message for shipId:", shipId);
     const { data } = await supabase
       .from("ships")
       .select("prompt")
-      .eq("slug", shipId)
+      .eq("ship_id", shipId)
       .maybeSingle();
 
     if (data && data.prompt) {
@@ -193,11 +207,13 @@ const Chat = ({
       const aiMessage = {
         text: `Sure! Your website is live at ${
           import.meta.env.VITE_MAIN_URL
-        }/site/${shipId} \n\n How can I help you further with your project?`,
+        }/site/${shipSlug} \n\n How can I help you further with your project?`,
         sender: "assistant",
       };
+      console.log("Fetched initial user message:", [userMessage, aiMessage]);
       return [userMessage, aiMessage];
     }
+    console.log("No initial user message found");
     return [];
   };
 
@@ -377,25 +393,37 @@ const Chat = ({
     }
 
     // Check for PDF count
-    const existingPdfCount = filesToUpload.filter(file => file.file.type === 'application/pdf').length;
-    const newPdfCount = tempFiles.filter(file => file.file.type === 'application/pdf').length;
+    const existingPdfCount = filesToUpload.filter(
+      (file) => file.file.type === "application/pdf"
+    ).length;
+    const newPdfCount = tempFiles.filter(
+      (file) => file.file.type === "application/pdf"
+    ).length;
     if (existingPdfCount + newPdfCount > 1) {
       toast.error("You can upload only 1 PDF file.");
       return;
     }
 
     // Check file sizes
-    const oversizedFiles = tempFiles.filter(file => file.file.size > 5 * 1024 * 1024);
+    const oversizedFiles = tempFiles.filter(
+      (file) => file.file.size > 5 * 1024 * 1024
+    );
     if (oversizedFiles.length > 0) {
       toast.error("Each file must be 5MB or smaller.");
       return;
     }
 
     // Check for unsupported file formats for AI reference
-    const unsupportedFiles = tempFiles.filter(file => file.forAI && !isSupportedImageFormat(file.file));
+    const unsupportedFiles = tempFiles.filter(
+      (file) => file.forAI && !isSupportedImageFormat(file.file)
+    );
     if (unsupportedFiles.length > 0) {
-      const fileNames = unsupportedFiles.map(file => file.file.name).join(', ');
-      toast.error(`Unsupported file format for AI reference: ${fileNames}. Use JPEG, PNG, GIF, or WebP for images.`);
+      const fileNames = unsupportedFiles
+        .map((file) => file.file.name)
+        .join(", ");
+      toast.error(
+        `Unsupported file format for AI reference: ${fileNames}. Use JPEG, PNG, GIF, or WebP for images.`
+      );
       return;
     }
 
@@ -414,7 +442,9 @@ const Chat = ({
   };
 
   const handleRemoveFile = (fileName) => {
-    setTempFiles((prevFiles) => prevFiles.filter((file) => file.file.name !== fileName));
+    setTempFiles((prevFiles) =>
+      prevFiles.filter((file) => file.file.name !== fileName)
+    );
   };
 
   return (

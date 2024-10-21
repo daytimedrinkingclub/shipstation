@@ -41,27 +41,46 @@ import { Badge, Code, Globe, Save } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
+import { getLatestShipInfoForUser } from "@/lib/utils/editorUtils";
 
 import Lottie from "react-lottie-player";
 import shipAnimation from "@/assets/lottie/ship.json";
+import { setShipInfo } from "@/store/shipSlice";
 
 const Edit = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const { user, userLoading, checkCustomDomain } = useContext(AuthContext);
-  const [shipId, setShipId] = useState(location.state?.shipId || null);
-  const [isShipIdLoading, setIsShipIdLoading] = useState(
+  const shipInfo = useSelector((state) => state.ship);
+  const [isShipInfoLoading, setIsShipInfoLoading] = useState(
     !location.state?.shipId
   );
+
+  useEffect(() => {
+    if (location.state?.shipId && location.state?.shipSlug) {
+      dispatch(
+        setShipInfo({
+          id: location.state.shipId,
+          slug: location.state.shipSlug,
+        })
+      );
+    }
+  }, [location.state, dispatch]);
+
+  useEffect(() => {
+    console.log("Edit component - shipInfo updated:", shipInfo);
+  }, [shipInfo]);
+
   const initialPrompt = location.state?.initialPrompt || "";
 
   const previewContainerRef = useRef(null);
   const { socket } = useSocket();
 
-  const { readFile, updateFile, submitting, handledownloadzip } =
-    useProject(shipId);
+  const { readFile, updateFile, submitting, handledownloadzip } = useProject(
+    shipInfo.id
+  );
 
   const [fileContent, setFileContent] = useState("");
   const [isFileLoading, setIsFileLoading] = useState(true);
@@ -86,7 +105,6 @@ const Edit = () => {
   const [isWebsiteDeployed, setIsWebsiteDeployed] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  const dispatch = useDispatch();
   const isDeploying = useSelector((state) => state.deployment.isDeploying);
 
   const [customDomain, setCustomDomain] = useState("");
@@ -115,42 +133,47 @@ const Edit = () => {
   }, [leftPanelSize]);
 
   useEffect(() => {
-    const fetchShipId = async () => {
-      if (!userLoading && user && !shipId) {
-        setIsShipIdLoading(true);
+    const fetchShipInfo = async () => {
+      if (!userLoading && user && !shipInfo.id) {
+        setIsShipInfoLoading(true);
         try {
-          const latestShipId = await getLatestShipIdForUser(user.id);
-          if (latestShipId) {
-            setShipId(latestShipId);
+          const latestShipInfo = await getLatestShipInfoForUser(user.id);
+          if (latestShipInfo) {
+            dispatch(
+              setShipInfo({
+                id: latestShipInfo.id,
+                slug: latestShipInfo.slug,
+              })
+            );
           } else {
             toast.error("No projects found. Create a new project first.");
             navigate("/");
           }
         } catch (error) {
-          console.error("Error fetching ship ID:", error);
+          console.error("Error fetching ship info:", error);
           toast.error("An error occurred while loading your project.");
           navigate("/");
         } finally {
-          setIsShipIdLoading(false);
+          setIsShipInfoLoading(false);
         }
       } else if (!userLoading && !user) {
         navigate("/");
       }
     };
 
-    fetchShipId();
-  }, [user, userLoading, navigate, shipId]);
+    fetchShipInfo();
+  }, [user, userLoading, navigate, shipInfo.id, dispatch]);
 
   useEffect(() => {
     const fetchCustomDomainStatus = async () => {
-      if (shipId) {
-        const domainData = await checkCustomDomain(shipId);
+      if (shipInfo.id) {
+        const domainData = await checkCustomDomain(shipInfo.id);
         setCustomDomainStatus(domainData);
       }
     };
 
     fetchCustomDomainStatus();
-  }, [shipId, checkCustomDomain]);
+  }, [shipInfo.id, checkCustomDomain]);
 
   const fetchAssets = useCallback(async () => {
     if (isDeploying) return; // Don't fetch assets while deploying
@@ -159,7 +182,7 @@ const Edit = () => {
       const { data, error } = await supabase
         .from("ships")
         .select("assets")
-        .eq("slug", shipId)
+        .eq("id", shipInfo.id)
         .single();
 
       if (error) throw error;
@@ -184,13 +207,13 @@ const Edit = () => {
       setAssets([]);
       setAssetCount(0);
     }
-  }, [shipId, isDeploying]);
+  }, [shipInfo.id, isDeploying]);
 
   useEffect(() => {
-    if (!isDeploying && shipId) {
+    if (!isDeploying && shipInfo.id) {
       fetchAssets();
     }
-  }, [fetchAssets, isDeploying, shipId]);
+  }, [fetchAssets, isDeploying, shipInfo.id]);
 
   const updateAssets = useCallback((newAssets) => {
     setAssets(newAssets);
@@ -198,16 +221,23 @@ const Edit = () => {
   }, []);
 
   useEffect(() => {
-    if (!userLoading && !isShipIdLoading) {
+    if (!userLoading && !isShipInfoLoading) {
       if (!user) {
         navigate("/");
-      } else if (shipId && !isDeploying) {
+      } else if (shipInfo.id && !isDeploying) {
         loadIndexHtml();
-      } else if (!shipId) {
+      } else if (!shipInfo.id) {
         navigate("/");
       }
     }
-  }, [user, shipId, navigate, userLoading, isShipIdLoading, isDeploying]);
+  }, [
+    user,
+    shipInfo.id,
+    navigate,
+    userLoading,
+    isShipInfoLoading,
+    isDeploying,
+  ]);
 
   useEffect(() => {
     const preventScroll = (e) => {
@@ -229,11 +259,11 @@ const Edit = () => {
   }, [currentView]);
 
   const loadIndexHtml = async () => {
-    if (!shipId) return;
+    if (!shipInfo.slug) return;
     setIsFileLoading(true);
     setHasShownErrorToast(false); // Reset the flag before loading
     try {
-      const content = await readFile(`${shipId}/index.html`);
+      const content = await readFile(`${shipInfo.slug}/index.html`);
       setFileContent(content);
     } catch (error) {
       console.error("Failed to read index.html:", error);
@@ -253,7 +283,7 @@ const Edit = () => {
   };
 
   const handleFileSave = async () => {
-    updateFile(`${shipId}/index.html`, fileContent, () => {
+    updateFile(`${shipInfo.slug}/index.html`, fileContent, () => {
       toast.success("index.html updated!", {
         description: "Your changes are live 👍",
       });
@@ -266,12 +296,12 @@ const Edit = () => {
 
   const handleUndo = () => {
     setIsUndoing(true);
-    socket.emit("undoCodeChange", { shipId });
+    socket.emit("undoCodeChange", { shipId: shipInfo.id });
   };
 
   const handleRedo = () => {
     setIsRedoing(true);
-    socket.emit("redoCodeChange", { shipId });
+    socket.emit("redoCodeChange", { shipId: shipInfo.id });
   };
 
   const handleUndoResult = (result) => {
@@ -376,7 +406,7 @@ const Edit = () => {
         `${import.meta.env.VITE_BACKEND_URL}/add-custom-domain`,
         {
           domain: customDomain,
-          shipSlug: shipId,
+          shipSlug: shipInfo.slug,
         }
       );
 
@@ -395,7 +425,7 @@ const Edit = () => {
     }
   };
 
-  if (userLoading || isShipIdLoading) {
+  if (userLoading || isShipInfoLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
         <Lottie
@@ -408,7 +438,7 @@ const Edit = () => {
     );
   }
 
-  if (!user || !shipId) {
+  if (!user || !shipInfo.id) {
     return null;
   }
 
@@ -419,7 +449,7 @@ const Edit = () => {
 
         <Header
           isDeploying={isDeploying}
-          shipId={shipId}
+          shipSlug={shipInfo.slug}
           handleUndo={handleUndo}
           handleRedo={handleRedo}
           currentView={currentView}
@@ -458,7 +488,6 @@ const Edit = () => {
               </div>
               <TabsContent value="chat" className="flex-grow overflow-hidden">
                 <ChatPanel
-                  shipId={shipId}
                   onCodeUpdate={handleChatUpdate}
                   onAssetsUpdate={handleAssetsUpdate}
                   assets={assets}
@@ -497,7 +526,8 @@ const Edit = () => {
               currentView={currentView}
               currentDevice={currentDevice}
               iframeRef={iframeRef}
-              shipId={shipId}
+              shipSlug={shipInfo.slug}
+              shipId={shipInfo.id}
               isFileLoading={isFileLoading}
               isDeploying={isDeploying}
               isUndoing={isUndoing}
@@ -550,7 +580,6 @@ const Edit = () => {
                     className="flex-grow overflow-hidden"
                   >
                     <ChatPanel
-                      shipId={shipId}
                       onCodeUpdate={handleChatUpdate}
                       onAssetsUpdate={handleAssetsUpdate}
                       assets={assets}
@@ -605,7 +634,7 @@ const Edit = () => {
                 currentView={currentView}
                 currentDevice={currentDevice}
                 iframeRef={iframeRef}
-                shipId={shipId}
+                shipId={shipInfo.id}
                 isFileLoading={isFileLoading}
                 isDeploying={isDeploying}
                 isUndoing={isUndoing}

@@ -1,12 +1,13 @@
 import IframePreview from "@/components/IframePreview";
 import LoaderCircle from "./LoaderCircle";
 import Dice from "@/components/random/Dice";
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
 
 const PreviewPanel = ({
   currentView,
   currentDevice,
   iframeRef,
-  shipId,
   isFileLoading,
   isDeploying,
   isUndoing,
@@ -16,6 +17,7 @@ const PreviewPanel = ({
   shuffleDevice,
 }) => {
   const isMobileView = currentView === "mobile";
+  const { slug: shipSlug } = useSelector((state) => state.ship);
 
   return (
     <div className="h-full w-full overflow-hidden relative">
@@ -30,7 +32,7 @@ const PreviewPanel = ({
                 <IframePreview
                   device={currentDevice}
                   ref={iframeRef}
-                  slug={shipId}
+                  slug={shipSlug}
                   currentView={currentView}
                   isLoading={isFileLoading}
                   isDeploying={isDeploying}
@@ -45,7 +47,7 @@ const PreviewPanel = ({
       ) : (
         <IframePreview
           ref={iframeRef}
-          slug={shipId}
+          slug={shipSlug}
           currentView={currentView}
           isLoading={isFileLoading}
           isDeploying={isDeploying}

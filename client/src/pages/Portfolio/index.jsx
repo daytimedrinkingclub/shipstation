@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import PortfolioBuilder from "@/components/portfolio-builder/PortfolioBuilder";
 import { AuthContext } from "@/context/AuthContext";
 import AppLayout from "@/components/layout/AppLayout";
-import { getLatestShipIdForUser } from "@/lib/utils/editorUtils";
+import {
+  getLatestShipIdForUser,
+  getLatestShipInfoForUser,
+} from "@/lib/utils/editorUtils";
 import Lottie from "react-lottie-player";
 import shipAnimation from "@/assets/lottie/ship.json";
 import LoginForm from "@/components/LoginForm";
@@ -19,9 +22,14 @@ const Portfolio = () => {
     const checkExistingProject = async () => {
       if (!userLoading && user) {
         try {
-          const latestShipId = await getLatestShipIdForUser(user.id);
-          if (latestShipId) {
-            navigate("/editor", { state: { shipId: latestShipId } });
+          const latestShipInfo = await getLatestShipInfoForUser(user.id);
+          if (latestShipInfo) {
+            navigate("/editor", {
+              state: {
+                shipId: latestShipInfo.id,
+                shipSlug: latestShipInfo.slug,
+              },
+            });
           } else {
             setIsCheckingProject(false);
           }
@@ -42,9 +50,11 @@ const Portfolio = () => {
     const result = await handleLogin(email, password);
     if (result.success) {
       try {
-        const latestShipId = await getLatestShipIdForUser(result.user.id);
-        if (latestShipId) {
-          navigate("/editor", { state: { shipId: latestShipId } });
+        const latestShipInfo = await getLatestShipInfoForUser(result.user.id);
+        if (latestShipInfo) {
+          navigate("/editor", {
+            state: { shipId: latestShipInfo.id, shipSlug: latestShipInfo.slug },
+          });
         } else {
           setIsLoggingIn(false);
         }

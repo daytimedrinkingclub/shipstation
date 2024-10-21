@@ -13,7 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 
 const Header = ({
   isDeploying,
-  shipId,
+  shipSlug,
   handleUndo,
   handleRedo,
   currentView,
@@ -29,7 +29,7 @@ const Header = ({
   };
 
   const handleShare = async () => {
-    const shareUrl = `${import.meta.env.VITE_MAIN_URL}/site/${shipId}/`;
+    const shareUrl = `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`;
 
     if (navigator.share) {
       try {
@@ -71,7 +71,7 @@ const Header = ({
               className="w-10 h-10 hidden md:flex md:w-auto md:px-2"
               onClick={() => {
                 window.open(
-                  `${import.meta.env.VITE_MAIN_URL}/site/${shipId}/`,
+                  `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`,
                   "_blank"
                 );
               }}
@@ -155,7 +155,7 @@ const Header = ({
               className="w-10 h-10 hidden md:w-auto md:px-2"
               onClick={() => {
                 window.open(
-                  `${import.meta.env.VITE_MAIN_URL}/site/${shipId}/`,
+                  `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`,
                   "_blank"
                 );
               }}
