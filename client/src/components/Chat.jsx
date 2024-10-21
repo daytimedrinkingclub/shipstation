@@ -40,7 +40,7 @@ import {
 
 import convertUrlsToLinks from "@/lib/utils/urlsToLinks";
 import { sanitizeFileName } from "@/lib/utils/sanitizeFileName";
-import { fileToBase64 } from "@/lib/utils/fileToBase64"; 
+import { fileToBase64 } from "@/lib/utils/fileToBase64";
 import { AutosizeTextarea } from "@/components/ui/AutosizeTextarea";
 import { cn } from "@/lib/utils";
 
@@ -191,7 +191,9 @@ const Chat = ({
     if (data && data.prompt) {
       const userMessage = { text: data.prompt, sender: "user" };
       const aiMessage = {
-        text: `Sure! Your website is live at ${import.meta.env.VITE_MAIN_URL}/site/${shipId} \n\n How can I help you further with your project?`,
+        text: `Sure! Your website is live at ${
+          import.meta.env.VITE_MAIN_URL
+        }/site/${shipId} \n\n How can I help you further with your project?`,
         sender: "assistant",
       };
       return [userMessage, aiMessage];
@@ -219,8 +221,8 @@ const Chat = ({
         let aiReferenceFiles = [];
 
         if (filesToUpload.length > 0) {
-          const websiteFiles = filesToUpload.filter(file => file.forWebsite);
-          const aiFiles = filesToUpload.filter(file => file.forAI);
+          const websiteFiles = filesToUpload.filter((file) => file.forWebsite);
+          const aiFiles = filesToUpload.filter((file) => file.forAI);
 
           if (websiteFiles.length > 0) {
             const assetsToUpload = websiteFiles.map((file) => ({
@@ -245,15 +247,23 @@ const Chat = ({
 
         onAssetsUpdate(uploadedAssets);
 
-        const assetInfo = uploadedAssets.length > 0
-          ? `${uploadedAssets.length} asset${uploadedAssets.length === 1 ? "" : "s"} added to website`
-          : "";
+        const assetInfo =
+          uploadedAssets.length > 0
+            ? `${uploadedAssets.length} asset${
+                uploadedAssets.length === 1 ? "" : "s"
+              } added to website`
+            : "";
 
-        const aiReferenceInfo = aiReferenceFiles.length > 0
-          ? `${aiReferenceFiles.length} image${aiReferenceFiles.length === 1 ? "" : "s"} added as AI reference`
-          : "";
+        const aiReferenceInfo =
+          aiReferenceFiles.length > 0
+            ? `${aiReferenceFiles.length} image${
+                aiReferenceFiles.length === 1 ? "" : "s"
+              } added as AI reference`
+            : "";
 
-        const combinedAssetInfo = [assetInfo, aiReferenceInfo].filter(Boolean).join(", ");
+        const combinedAssetInfo = [assetInfo, aiReferenceInfo]
+          .filter(Boolean)
+          .join(", ");
 
         const userMessage = {
           text: input,
@@ -350,29 +360,61 @@ const Chat = ({
   };
 
   const isSupportedImageFormat = (file) => {
-    const supportedFormats = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const supportedFormats = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
     return supportedFormats.includes(file.type);
   };
 
   const handleDialogConfirm = () => {
+    // Check total number of files
+    if (filesToUpload.length + tempFiles.length > 5) {
+      toast.error("You can upload a maximum of 5 files in total.");
+      return;
+    }
+
+    // Check for PDF count
+    const existingPdfCount = filesToUpload.filter(file => file.file.type === 'application/pdf').length;
+    const newPdfCount = tempFiles.filter(file => file.file.type === 'application/pdf').length;
+    if (existingPdfCount + newPdfCount > 1) {
+      toast.error("You can upload only 1 PDF file.");
+      return;
+    }
+
+    // Check file sizes
+    const oversizedFiles = tempFiles.filter(file => file.file.size > 5 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      toast.error("Each file must be 5MB or smaller.");
+      return;
+    }
+
+    // Check for unsupported file formats for AI reference
     const unsupportedFiles = tempFiles.filter(file => file.forAI && !isSupportedImageFormat(file.file));
-    
     if (unsupportedFiles.length > 0) {
       const fileNames = unsupportedFiles.map(file => file.file.name).join(', ');
       toast.error(`Unsupported file format for AI reference: ${fileNames}. Use JPEG, PNG, GIF, or WebP for images.`);
       return;
     }
 
-    dispatch(addFilesToUpload(tempFiles));
-    console.log("Updated filesToUpload:", filesToUpload);
+    // If all checks pass, update the filesToUpload
+    const updatedFiles = [...filesToUpload, ...tempFiles];
+    dispatch(setFilesToUpload(updatedFiles));
     setTempFiles([]);
     setIsDialogOpen(false);
+    toast.success(`${tempFiles.length} asset(s) added successfully!`);
   };
 
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInput(value);
     setIsInputEmpty(value.trim() === "");
+  };
+
+  const handleRemoveFile = (fileName) => {
+    setTempFiles((prevFiles) => prevFiles.filter((file) => file.file.name !== fileName));
   };
 
   return (
@@ -503,7 +545,7 @@ const Chat = ({
             className={cn(
               "w-full p-2 bg-background text-foreground resize-none overflow-hidden",
               input.trim() ? "pr-10" : "",
-              (isLoading || isDeploying) ? "opacity-50 cursor-not-allowed" : ""
+              isLoading || isDeploying ? "opacity-50 cursor-not-allowed" : ""
             )}
             maxHeight={300}
             minHeight={96}
@@ -574,13 +616,23 @@ const Chat = ({
             <div className="text-sm text-muted-foreground bg-muted p-3 rounded-md flex items-center">
               <Info className="mx-2 h-5 w-5 text-primary flex-shrink-0" />
               <p className="px-2">
-                If you want to show an image in your portfolio, select "Add to Portfolio". If you want to use it as design reference, select "Use as Reference".
+                If you want to show an image in your portfolio, select "Add to
+                Portfolio". If you want to use it as design reference, select
+                "Use as Reference".
               </p>
             </div>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
             {tempFiles.map((file, index) => (
-              <Card key={index} className="bg-card">
+              <Card key={index} className="bg-card relative">
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6 z-10"
+                  onClick={() => handleRemoveFile(file.file.name)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
                 <CardContent className="p-4 space-y-4">
                   <div className="aspect-video bg-muted rounded-md overflow-hidden">
                     <FilePreview file={file.file} />
@@ -605,10 +657,12 @@ const Chat = ({
                       }
                       className="text-xs"
                     />
-                    <Tabs 
-                      defaultValue="portfolio" 
+                    <Tabs
+                      defaultValue="portfolio"
                       className="w-full"
-                      onValueChange={(value) => handleTabChange(file.file.name, value)}
+                      onValueChange={(value) =>
+                        handleTabChange(file.file.name, value)
+                      }
                     >
                       <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="portfolio">

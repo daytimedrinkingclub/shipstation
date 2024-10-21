@@ -30,7 +30,9 @@ async function handleOnboardingToolUse({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
+  console.log("inside handleOnboardingToolUse, tool name:", tool.name);
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [
@@ -196,6 +198,7 @@ async function handleOnboardingToolUse({
       selectedDesign,
       customDesignPrompt,
       images,
+      assets,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";

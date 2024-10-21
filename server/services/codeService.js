@@ -3,7 +3,7 @@ const {
   placeholderImageTool,
   headshotTool,
 } = require("../config/tools");
-const { handleCodeToolUse } = require("../controllers/codeToolController");
+const { handleCodeToolUse } = require("../tool-controllers/codeToolController");
 const codePrompt = require("./prompts/codePrompt");
 const { SHIP_TYPES } = require("./constants");
 require("dotenv").config();
@@ -26,6 +26,7 @@ async function codeAssistant({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
   console.log("codeAssistant received:", {
     name: name,
@@ -88,7 +89,8 @@ async function codeAssistant({
       designChoice,
       selectedDesign,
       customDesignPrompt,
-      images
+      images,
+      assets
     );
 
     messages.push({

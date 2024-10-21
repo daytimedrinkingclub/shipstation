@@ -2,7 +2,7 @@ const { searchTool } = require("../config/tools");
 const { AnthropicService } = require("../services/anthropicService");
 const {
   handleSiteContentToolUse,
-} = require("../controllers/siteContentToolController");
+} = require("../tool-controllers/siteContentToolController");
 const { getCurrentDate } = require("../utils/date");
 
 async function generateSiteContent(userId, prompt, type, portfolioType = null) {

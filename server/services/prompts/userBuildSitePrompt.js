@@ -8,7 +8,8 @@ const createUserBuildSitePrompt = async (
   portfolioType,
   designChoice,
   selectedDesign,
-  customDesignPrompt
+  customDesignPrompt,
+  assets
 ) => {
   let designPresetPrompt = "";
   let designLanguage = {};
@@ -60,6 +61,34 @@ const createUserBuildSitePrompt = async (
     return fontString;
   };
 
+  let assetPrompt = "";
+  if (assets && assets.length > 0) {
+    assetPrompt = `
+    User Assets:
+    The following assets have been provided by the user. You MUST incorporate these assets into the website as per their descriptions. This is a user requirement that should be fulfilled:
+
+    ${assets
+      .map(
+        (asset, index) => `
+    Asset ${index + 1}:
+    - File name: ${asset.fileName}
+    - Description: ${asset.comment || "No description provided"}
+    - URL: ${asset.url}
+    `
+      )
+      .join("\n")}
+
+    When incorporating these assets:
+    1. Use the provided URLs directly in the HTML code (e.g., in img src attributes).
+    2. Place the assets in appropriate sections based on their descriptions.
+    3. If an asset's purpose is not clear, use your best judgment to place it where it fits best in the context of the website.
+    4. Ensure all assets are used in the HTML code.
+    5. For images, use appropriate alt text based on the asset description.
+    6. For documents (e.g., PDFs), create download links or buttons in relevant sections.
+    7. Optimize the placement and presentation of assets for both desktop and mobile views.
+`;
+  }
+
   const basePrompt = `
   Current Date: ${getCurrentDate()}
   
@@ -93,6 +122,8 @@ const createUserBuildSitePrompt = async (
   `
       : ""
   }
+
+  ${assetPrompt}
 
   General Guidelines:
   - Implement the exact design language specified (${

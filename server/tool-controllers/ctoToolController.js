@@ -21,6 +21,7 @@ async function handleCTOToolUse({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
@@ -219,6 +220,7 @@ async function handleCTOToolUse({
       selectedDesign,
       customDesignPrompt,
       images,
+      assets,
     });
 
     sendEvent("progress", {
