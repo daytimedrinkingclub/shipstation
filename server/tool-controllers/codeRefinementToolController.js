@@ -1,4 +1,7 @@
 const { TOOLS } = require("../config/tools");
+const {
+  getRandomHeadshots,
+} = require("../services/images-services/headshotImageService");
 const searchService = require("../services/searchService");
 
 async function handleCodeRefinementToolUse({ tool, client }) {

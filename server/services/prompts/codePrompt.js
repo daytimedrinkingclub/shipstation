@@ -192,30 +192,29 @@ Generate complete, functional HTML code for a portfolio website following these 
 7. Use best judgment to create the optimal design output
 
 ### Portfolio Specific Guidelines:
-1. Include a prominent "About Me" section with a professional photo and brief biography
-2. Implement a skills section showcasing technical abilities and proficiencies
-3. Create a project gallery with filterable categories (if applicable)
-4. Include detailed project pages or modals with:
+1. If a PDF resume/CV is provided, use the pdf_parser_tool to extract relevant information such as education, experience, projects, email, and social media links. Incorporate this information into the portfolio content to make it more accurate and comprehensive, use whatever information from the resume/CV that makes the portfolio more impactful.
+2. Include a prominent "About Me" section with a professional photo and brief biography
+3. Implement a skills section showcasing technical abilities and proficiencies
+4. Create a project gallery with filterable categories (if applicable)
+5. Include detailed project pages or modals with:
    - Project descriptions
    - Technologies used
    - Challenges overcome
    - Results or outcomes
    - Links to live projects or GitHub repositories (use placeholder links)
-5. Add a resume or CV section, either as a downloadable file or an embedded page
-6. Implement a contact form or clear contact information
-7. Include links to professional social media profiles (LinkedIn, GitHub, etc.)
-8. Add testimonials or recommendations from clients or colleagues (if applicable)
-9. Implement a blog or articles section to showcase thought leadership (if applicable)
-10. Include a timeline or work history section
-11. Add a section for awards, certifications, or notable achievements
-12. Implement smooth scrolling between sections for better user experience
-13. Add subtle animations to enhance visual appeal without overwhelming the content
-14. Ensure the portfolio has a cohesive design that reflects the individual's personal brand
+6. Add a resume or CV section, either as a downloadable file or open in a new tab
+7. Implement a contact section with clear contact information if available from resume/CV, do not add a contact form without contact information
+8. Include links to professional social media profiles (LinkedIn, GitHub, etc.)
+9. Add testimonials or recommendations from clients or colleagues (if applicable)
+10. Implement a blog or articles section to showcase thought leadership (if applicable)
+11. Include a timeline or work history section
+12. Add a section for awards, certifications, or notable achievements
+13. Implement smooth scrolling between sections for better user experience
+14. Add subtle animations to enhance visual appeal without overwhelming the content
+15. Ensure the portfolio has a cohesive design that reflects the individual's personal brand
 
 ### HTML Structure:
-Provide a complete index.html file with the following structure:
-
-<!DOCTYPE html>
+Provide a complete index.html file with the following structure, always use semantic HTML tags:
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -341,7 +340,9 @@ For logos and icons, use Font Awesome via CDN instead of images:
 - Adapt the content and structure based on specific portfolio website requirements while maintaining the single-file approach
 - Do not include any explanatory comments or introductory text in the generated HTML code
 
-CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool or headshot_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+CRITICAL: When generating code, provide ONLY the entire index.html file content, starting with <!DOCTYPE html> and ending with </html>. Do not include any introductory text, explanations, or comments before, after, or within the HTML code. This applies to the entire generation process, including after using the placeholder_image_tool, headshot_tool, or pdf_parser_tool. Every single image on the website, whether static or dynamically generated, must be sourced using the appropriate tool. This ensures consistency, quality, and prevents empty src attributes or placeholder text across all visual elements. The final output should be clean, production-ready HTML with no extraneous text or comments.
+
+If a PDF resume/CV is provided, use the pdf_parser_tool to extract relevant information before generating the HTML. Incorporate the extracted information into the appropriate sections of the portfolio.
 `;
 
 const emailTemplatePrompt = `

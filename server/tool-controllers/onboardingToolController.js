@@ -32,7 +32,9 @@ async function handleOnboardingToolUse({
   images,
   assets,
 }) {
-  console.log("inside handleOnboardingToolUse, tool name:", tool.name);
+  console.log("onboarding tool controller received images:", images?.length);
+  console.log("onboarding tool controller received assets:", assets?.length);
+
   if (tool.name === TOOLS.GET_DATA_FOR_PORTFOLIO) {
     sendEvent("question", tool.input);
     // return [

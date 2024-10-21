@@ -11,6 +11,12 @@ const createUserBuildSitePrompt = async (
   customDesignPrompt,
   assets
 ) => {
+  console.log("createUserBuildSitePrompt received assets:", assets?.length);
+  console.log(
+    "createUserBuildSitePrompt received analysis:",
+    analysis?.substring(0, 100)
+  );
+
   let designPresetPrompt = "";
   let designLanguage = {};
 

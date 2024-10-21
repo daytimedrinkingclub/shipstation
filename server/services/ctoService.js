@@ -29,6 +29,8 @@ async function ctoService({
   images,
   assets,
 }) {
+  console.log("ctoService received images:", images?.length);
+  console.log("ctoService received assets:", assets?.length);
   const systemPrompt = [
     {
       type: "text",

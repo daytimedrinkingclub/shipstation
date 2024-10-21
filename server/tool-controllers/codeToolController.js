@@ -3,6 +3,9 @@ const searchService = require("../services/searchService");
 const {
   getRandomHeadshots,
 } = require("../services/images-services/headshotImageService");
+const PDFParserService = require("../services/pdfParserService");
+
+const pdfParserService = new PDFParserService();
 
 async function handleCodeToolUse({ tool, client }) {
   if (tool.name === TOOLS.PLACEHOLDER_IMAGE) {
@@ -46,6 +49,39 @@ async function handleCodeToolUse({ tool, client }) {
         ],
       },
     ];
+  } else if (tool.name === TOOLS.PDF_PARSER) {
+    const { pdf_url } = tool.input;
+    console.log("using pdf_parser_tool");
+
+    try {
+      const parsedText = await pdfParserService.parsePDF(pdf_url);
+      return [
+        {
+          type: "tool_result",
+          tool_use_id: tool.id,
+          content: [
+            {
+              type: "text",
+              text: parsedText,
+            },
+          ],
+        },
+      ];
+    } catch (error) {
+      console.error("Error parsing PDF:", error);
+      return [
+        {
+          type: "tool_result",
+          tool_use_id: tool.id,
+          content: [
+            {
+              type: "text",
+              text: "Error parsing PDF. Please check the URL and try again.",
+            },
+          ],
+        },
+      ];
+    }
   }
 
   // Handle other code-specific tools here if needed

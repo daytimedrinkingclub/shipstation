@@ -12,7 +12,7 @@ const {
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
-} = require("../tool-controllers/onboardingToolController");
+} = require("../controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
@@ -40,9 +40,11 @@ async function processConversation({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
   console.log("Entered processConversation function");
   console.log("processConversation received images:", images?.length);
+  console.log("processConversation received assets:", assets?.length);
 
   while (true) {
     if (abortSignal.aborted) {
@@ -167,7 +169,6 @@ async function processConversation({
           content: currentMessage.content,
         });
 
-        console.log("calling handleOnboardingToolUse");
         const toolResult = await handleOnboardingToolUse({
           tool,
           sendEvent,
@@ -184,8 +185,6 @@ async function processConversation({
           images,
           assets,
         });
-        console.log("tool result received from handleOnboardingToolUse");
-
         messages.push({ role: "user", content: toolResult });
 
         if (tool.name === TOOLS.CTO) {
@@ -258,12 +257,10 @@ function handleOnboardingSocketEvents(io) {
         apiKey,
         shipType,
         name,
-        portfolioType,
-        "images",
-        images?.length,
-        "assets",
-        assets?.length
+        portfolioType
       );
+      console.log("Images:", images?.length);
+      console.log("Assets:", assets?.length);
 
       const clientParams = { userId };
       if (apiKey) {

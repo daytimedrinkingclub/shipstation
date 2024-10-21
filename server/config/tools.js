@@ -21,6 +21,7 @@ const imageAnalysisTool = require("./tools/imageAnalysisTool.json");
 const placeholderImageTool = require("./tools/placeholderImageTool.json");
 const startShippingEmailTemplateTool = require("./tools/startShippingEmailTemplateTool.json");
 const headshotTool = require("./tools/headshotTool.json");
+const pdfParserTool = require("./tools/pdfParserTool.json");
 
 const TOOLS = {
   SEARCH: "search_tool",
@@ -39,6 +40,7 @@ const TOOLS = {
   PLACEHOLDER_IMAGE: "placeholder_image_tool",
   START_SHIPPING_EMAIL_TEMPLATE: "start_shipping_email_template_tool",
   HEADSHOT: "headshot_tool",
+  PDF_PARSER: "pdf_parser_tool",
 };
 
 module.exports = {
@@ -58,5 +60,6 @@ module.exports = {
   placeholderImageTool,
   startShippingEmailTemplateTool,
   headshotTool,
+  pdfParserTool,
   TOOLS,
 };
