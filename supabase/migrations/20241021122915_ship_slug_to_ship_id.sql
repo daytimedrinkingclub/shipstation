@@ -19,6 +19,10 @@ SET ship_id = s.id
 FROM public.ships s
 WHERE wl.ship_slug = s.slug;
 
+-- Step 2.5: Add unique constraint to code_refining_conversations
+ALTER TABLE public.code_refining_conversations
+ADD CONSTRAINT code_refining_conversations_ship_id_key UNIQUE (ship_id);
+
 -- Step 3: Drop the old foreign key constraints
 ALTER TABLE public.code_versions DROP CONSTRAINT fk_code_versions_ship_slug;
 ALTER TABLE public.code_refining_conversations DROP CONSTRAINT fk_code_refining_conversations_ship_slug;

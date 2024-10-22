@@ -88,24 +88,22 @@ const Chat = ({
       shipSlug
     );
     setIsLoadingMessages(true);
+    let combinedMessages = [];
     if (isDeploying && initialPrompt) {
-      setMessages([
+      combinedMessages = [
         { text: initialPrompt, sender: "user" },
         { text: "", sender: "assistant", isLoading: true },
-      ]);
+      ];
     } else {
       const conversationHistory = await fetchConversationHistory();
       const initialUserMessage = await fetchInitialUserMessage();
-
-      const combinedMessages = [...initialUserMessage, ...conversationHistory];
-
-      setMessages(combinedMessages);
-      setIsConversationHistoryFetched(true);
+      combinedMessages = [...initialUserMessage, ...conversationHistory];
     }
+    setMessages(combinedMessages);
+    setIsConversationHistoryFetched(true);
     setInitialMessageFetched(true);
     setIsLoadingMessages(false);
     setIsInitialized(true);
-    console.log("Chat initialized. Messages:", combinedMessages);
   };
 
   useEffect(() => {
@@ -199,7 +197,7 @@ const Chat = ({
     const { data } = await supabase
       .from("ships")
       .select("prompt")
-      .eq("ship_id", shipId)
+      .eq("id", shipId)
       .maybeSingle();
 
     if (data && data.prompt) {
@@ -290,6 +288,7 @@ const Chat = ({
 
         socket.emit("chatMessage", {
           shipId,
+          shipSlug,
           message: input,
           assetInfo: combinedAssetInfo,
           assets: uploadedAssets,
@@ -485,7 +484,7 @@ const Chat = ({
                   className="mb-2 flex justify-start"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="inline-block p-2 rounded max-w-[80%] bg-secondary text-secondary-foreground">
+                    <span className="inline-block p-2 h-10 flex items-center rounded max-w-[80%] bg-secondary text-secondary-foreground">
                       <ThreeDotLoader />
                     </span>
                   </div>

@@ -12,20 +12,21 @@ const MAX_VERSIONS = 2; // Maximum number of versions to keep
 
 async function refineCode(
   shipId,
+  shipSlug,
   message,
   userId,
   assets,
   assetInfo,
   aiReferenceFiles
 ) {
-  console.log(`Starting code refinement for shipId: ${shipId}`);
+  console.log(`Starting code refinement for shipSlug: ${shipSlug}`);
 
   const client = new AnthropicService({ userId });
-  const filePath = `${shipId}/index.html`;
+  const filePath = `${shipSlug}/index.html`;
 
   const currentCode = await readCurrentCode(filePath);
-  const newVersion = await saveNewVersion(shipId, currentCode);
-  await dbService.updateCurrentCodeVersion(shipId, newVersion);
+  const newVersion = await saveNewVersion(shipId, shipSlug, currentCode);
+  await dbService.updateCurrentCodeVersion(shipSlug, newVersion);
 
   const conversation = await dbService.getCodeRefiningConversation(shipId);
 
@@ -171,9 +172,9 @@ async function readCurrentCode(filePath) {
   return currentCode;
 }
 
-async function saveNewVersion(shipId, currentCode) {
+async function saveNewVersion(shipId, shipSlug, currentCode) {
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  const versionFilePath = `${shipId}/versions/${shipId}-${timestamp}.html`;
+  const versionFilePath = `${shipSlug}/versions/${shipSlug}-${timestamp}.html`;
 
   // Save the full current code
   await fileService.saveFile(versionFilePath, currentCode);
@@ -365,7 +366,7 @@ async function undoCodeChange(shipId) {
     );
     // Create a backup of the current version for potential redo
     const currentCode = await fileService.getFile(filePath);
-    const newVersion = await saveNewVersion(shipId, currentCode);
+    const newVersion = await saveNewVersion(shipId, shipSlug, currentCode);
     console.log(`Backup created with new version: ${newVersion}`);
   }
 

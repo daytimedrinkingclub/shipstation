@@ -229,7 +229,7 @@ async function getCurrentCodeVersion(shipId) {
   const { data, error } = await supabaseClient
     .from("ships")
     .select("current_version")
-    .eq("slug", shipId)
+    .eq("id", shipId)
     .single();
 
   if (error) {
@@ -244,7 +244,7 @@ async function updateCurrentCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("ships")
     .update({ current_version: version })
-    .eq("slug", shipId);
+    .eq("id", shipId);
 
   if (error) {
     console.error("Error updating current code version:", error);
@@ -366,7 +366,7 @@ async function getShipPrompt(shipId) {
     const { data, error } = await supabaseClient
       .from("ships")
       .select("prompt")
-      .eq("slug", shipId)
+      .eq("id", shipId)
       .single();
 
     if (error) {
@@ -445,8 +445,8 @@ async function updateShipPrompt(shipId, prompt) {
     const { data, error } = await supabaseClient
       .from("ships")
       .upsert(
-        { slug: shipId, prompt: prompt },
-        { onConflict: "slug", returning: "minimal" }
+        { id: shipId, prompt: prompt },
+        { onConflict: "id", returning: "minimal" }
       );
 
     if (error) {

@@ -37,6 +37,8 @@ async function updatePrompt(shipId, userId, chatMessages) {
       userId
     );
 
+    console.log("Updated prompt:", updatedPrompt);
+
     await updateShipPrompt(shipId, updatedPrompt);
 
     console.log(`Updated prompt for ship ${shipId}`);

@@ -316,8 +316,8 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message, assets, assetInfo, aiReferenceFiles } = data;
-      console.log("Received chat message:", message, "\nfor ship:", shipId);
+      const { shipId, shipSlug, message, assets, assetInfo, aiReferenceFiles } = data;
+      console.log("Received chat message:", message, "\nfor ship:", shipSlug);
       console.log("Message:", message);
       console.log("Assets:", assets.length, assetInfo);
       console.log("AI Reference Files:", aiReferenceFiles.length);
@@ -325,6 +325,7 @@ function handleOnboardingSocketEvents(io) {
       try {
         const result = await refineCode(
           shipId,
+          shipSlug,
           message,
           socket.userId,
           assets,
@@ -336,7 +337,7 @@ function handleOnboardingSocketEvents(io) {
 
         if (result.updatedCode) {
           socket.emit("codeUpdate", result.updatedCode);
-          await screenshotService.saveScreenshot(shipId);
+          await screenshotService.saveScreenshot(shipSlug);
 
           await updatePrompt(shipId, socket.userId, [
             { role: "user", content: message },
