@@ -294,14 +294,20 @@ const Edit = () => {
     });
   };
 
-  const handleUndo = () => {
+  const handleUndoConfirm = () => {
     setIsUndoing(true);
-    socket.emit("undoCodeChange", { shipId: shipInfo.id });
+    socket.emit("undoCodeChange", {
+      shipId: shipInfo.id,
+      shipSlug: shipInfo.slug,
+    });
   };
 
-  const handleRedo = () => {
+  const handleRedoConfirm = () => {
     setIsRedoing(true);
-    socket.emit("redoCodeChange", { shipId: shipInfo.id });
+    socket.emit("redoCodeChange", {
+      shipId: shipInfo.id,
+      shipSlug: shipInfo.slug,
+    });
   };
 
   const handleUndoResult = (result) => {
@@ -450,8 +456,8 @@ const Edit = () => {
         <Header
           isDeploying={isDeploying}
           shipSlug={shipInfo.slug}
-          handleUndo={handleUndo}
-          handleRedo={handleRedo}
+          handleUndo={handleUndoConfirm}
+          handleRedo={handleRedoConfirm}
           currentView={currentView}
           setCurrentView={setCurrentView}
           handledownloadzip={handledownloadzip}

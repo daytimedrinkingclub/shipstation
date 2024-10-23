@@ -316,7 +316,8 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, shipSlug, message, assets, assetInfo, aiReferenceFiles } = data;
+      const { shipId, shipSlug, message, assets, assetInfo, aiReferenceFiles } =
+        data;
       console.log("Received chat message:", message, "\nfor ship:", shipSlug);
       console.log("Message:", message);
       console.log("Assets:", assets.length, assetInfo);
@@ -353,11 +354,11 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("undoCodeChange", async (data) => {
-      const { shipId } = data;
+      const { shipId, shipSlug } = data;
       console.log("Received undo request for ship:", shipId);
 
       try {
-        const result = await undoCodeChange(shipId);
+        const result = await undoCodeChange(shipId, shipSlug);
 
         if (result.success) {
           socket.emit("undoResult", { success: true, message: result.message });
@@ -378,11 +379,11 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("redoCodeChange", async (data) => {
-      const { shipId } = data;
+      const { shipId, shipSlug } = data;
       console.log("Received redo request for ship:", shipId);
 
       try {
-        const result = await redoCodeChange(shipId);
+        const result = await redoCodeChange(shipId, shipSlug);
 
         if (result.success) {
           socket.emit("redoResult", { success: true, message: result.message });

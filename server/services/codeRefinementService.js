@@ -26,7 +26,7 @@ async function refineCode(
 
   const currentCode = await readCurrentCode(filePath);
   const newVersion = await saveNewVersion(shipId, shipSlug, currentCode);
-  await dbService.updateCurrentCodeVersion(shipSlug, newVersion);
+  await dbService.updateCurrentCodeVersion(shipId, newVersion);
 
   const conversation = await dbService.getCodeRefiningConversation(shipId);
 
@@ -326,7 +326,7 @@ async function updateShipVersion(shipId) {
   }
 }
 
-async function undoCodeChange(shipId) {
+async function undoCodeChange(shipId, shipSlug) {
   const currentVersion = await dbService.getCurrentCodeVersion(shipId);
   const allVersions = await dbService.getAllCodeVersions(shipId);
 
@@ -348,7 +348,7 @@ async function undoCodeChange(shipId) {
 
   console.log("previousVersion", previousVersion);
 
-  const filePath = `${shipId}/index.html`;
+  const filePath = `${shipSlug}/index.html`;
 
   // Check if the current version is not in our version history
   console.log(
@@ -383,7 +383,7 @@ async function undoCodeChange(shipId) {
   };
 }
 
-async function redoCodeChange(shipId) {
+async function redoCodeChange(shipId, shipSlug) {
   const currentVersion = await dbService.getCurrentCodeVersion(shipId);
   const allVersions = await dbService.getAllCodeVersions(shipId);
 
@@ -396,7 +396,7 @@ async function redoCodeChange(shipId) {
     .filter((v) => v.version > currentVersion)
     .sort((a, b) => a.version - b.version)[0];
 
-  const filePath = `${shipId}/index.html`;
+  const filePath = `${shipSlug}/index.html`;
   const nextCode = await fileService.getFile(nextVersion.file_path);
   await fileService.saveFile(filePath, nextCode);
 
