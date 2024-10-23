@@ -40,7 +40,11 @@ const SlugChangeDialog = ({ open, onOpenChange }) => {
       }
     } catch (error) {
       console.error("Error changing slug:", error);
-      toast.error(error.message || "Failed to change slug");
+      if (error.response && error.response.status === 400) {
+        toast.error("This slug is already in use. Please try another one.");
+      } else {
+        toast.error("Failed to change slug. Please try again later.");
+      }
     } finally {
       setIsChangingSlug(false);
     }

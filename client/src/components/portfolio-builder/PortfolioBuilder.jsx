@@ -43,6 +43,8 @@ export default function PortfolioBuilder() {
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
   const [assets, setAssets] = useState([]);
+  const [projectStarted, setProjectStarted] = useState(false);
+  const [projectData, setProjectData] = useState(null);
 
   const baseUrl = import.meta.env.VITE_MAIN_URL;
 
@@ -135,7 +137,6 @@ export default function PortfolioBuilder() {
     } catch (error) {
       console.error("Error uploading assets:", error);
       toast.error("Failed to upload assets");
-      setIsGenerating(false);
     }
   }, [
     name,
@@ -177,7 +178,8 @@ export default function PortfolioBuilder() {
       socket.on("project_started", (data) => {
         const { slug, prompt } = data;
         dispatch(setIsDeploying(true));
-        navigate("/editor", { state: { shipId: slug, initialPrompt: prompt } });
+        setProjectStarted(true);
+        setProjectData({ slug, prompt });
       });
 
       socket.on("websiteDeployed", () => {
@@ -190,9 +192,22 @@ export default function PortfolioBuilder() {
         socket.off("showPaymentOptions");
         socket.off("websiteDeployed");
         socket.off("needMoreInfo");
+        socket.off("project_started");
       };
     }
   }, [socket, isPaymentRequired, navigate]);
+
+  useEffect(() => {
+    if ( projectStarted && projectData) {
+      navigate("/editor", {
+        state: {
+          shipId: null,
+          shipSlug: projectData.slug,
+          initialPrompt: projectData.prompt,
+        },
+      });
+    }
+  }, [isGenerating, projectStarted, projectData, navigate]);
 
   const handleSubmitAnthropicKey = (apiKey) => {
     socket.emit("anthropicKey", { anthropicKey: apiKey });

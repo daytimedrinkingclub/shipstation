@@ -87,18 +87,22 @@ async function updateConversation(conversationId, conversation) {
 }
 
 async function getUserProfile(userId) {
-  const { data, error } = await supabaseClient
-    .from("user_profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
+  try {
+    const { data, error } = await supabaseClient
+      .from("user_profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-  if (error) {
-    console.error("Error getting user:", error);
+    if (error) {
+      console.error("Error getting user:", error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error in getUserProfile:", error);
     throw error;
   }
-
-  return data;
 }
 
 async function updateUserProfile(userId, profileData) {

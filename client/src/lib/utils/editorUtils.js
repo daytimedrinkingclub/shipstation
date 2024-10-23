@@ -11,6 +11,11 @@ export async function getLatestShipIdForUser(userId) {
       .single();
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows found
+        console.log("No ships found for user, possibly creating a new project");
+        return null;
+      }
       console.error("Error fetching ship:", error);
       return null;
     }
@@ -31,6 +36,11 @@ export async function getShipSlugFromId(shipId) {
       .single();
 
     if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows found
+        console.log("No ship found with this ID, possibly creating a new project");
+        return null;
+      }
       console.error("Error fetching ship slug:", error);
       return null;
     }

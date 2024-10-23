@@ -13,7 +13,9 @@ const paymentRoutes = require("./server/routes/paymentRoutes");
 const miscRoutes = require("./server/routes/miscRoutes");
 const reactRoutes = require("./server/routes/reactRoutes");
 
-const { handleOnboardingSocketEvents } = require("./server/services/onboadingService");
+const {
+  handleOnboardingSocketEvents,
+} = require("./server/services/onboadingService");
 
 require("dotenv").config();
 

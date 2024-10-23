@@ -13,7 +13,7 @@ exports.changeSlug = async (req, res) => {
     // Check if the new slug is available
     const isAvailable = await checkSlugAvailability(newSlug);
     if (!isAvailable) {
-      return res.status(400).json({ error: "Slug is already in use" });
+      return res.status(400).json({ error: "This slug is already in use. Please try another one." });
     }
 
     // Move files
@@ -24,7 +24,7 @@ exports.changeSlug = async (req, res) => {
     // Update the slug in the database
     await updateShipSlug(shipId, newSlug);
 
-    res.status(200).json({ message: "Slug changed successfully", newSlug });
+    res.status(200).json({ success: true, message: "Slug changed successfully", newSlug });
   } catch (error) {
     console.error("Error changing slug:", error);
     if (error.__isStorageError) {
@@ -37,6 +37,6 @@ exports.changeSlug = async (req, res) => {
     }
     res
       .status(500)
-      .json({ error: "Failed to change slug", details: error.message });
+      .json({ success: false, error: "Failed to change slug", details: error.message });
   }
 };

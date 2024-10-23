@@ -47,6 +47,7 @@ import { getLatestShipInfoForUser } from "@/lib/utils/editorUtils";
 import Lottie from "react-lottie-player";
 import shipAnimation from "@/assets/lottie/ship.json";
 import { setShipInfo } from "@/store/shipSlice";
+import { useShipInfo } from "@/hooks/useShipInfo";
 
 const Edit = () => {
   const navigate = useNavigate();
@@ -55,24 +56,6 @@ const Edit = () => {
 
   const { user, userLoading, checkCustomDomain } = useContext(AuthContext);
   const shipInfo = useSelector((state) => state.ship);
-  const [isShipInfoLoading, setIsShipInfoLoading] = useState(
-    !location.state?.shipId
-  );
-
-  useEffect(() => {
-    if (location.state?.shipId && location.state?.shipSlug) {
-      dispatch(
-        setShipInfo({
-          id: location.state.shipId,
-          slug: location.state.shipSlug,
-        })
-      );
-    }
-  }, [location.state, dispatch]);
-
-  useEffect(() => {
-    console.log("Edit component - shipInfo updated:", shipInfo);
-  }, [shipInfo]);
 
   const initialPrompt = location.state?.initialPrompt || "";
 
@@ -133,37 +116,17 @@ const Edit = () => {
     }
   }, [leftPanelSize]);
 
-  useEffect(() => {
-    const fetchShipInfo = async () => {
-      if (!userLoading && user && !shipInfo.id) {
-        setIsShipInfoLoading(true);
-        try {
-          const latestShipInfo = await getLatestShipInfoForUser(user.id);
-          if (latestShipInfo) {
-            dispatch(
-              setShipInfo({
-                id: latestShipInfo.id,
-                slug: latestShipInfo.slug,
-              })
-            );
-          } else {
-            toast.error("No projects found. Create a new project first.");
-            navigate("/");
-          }
-        } catch (error) {
-          console.error("Error fetching ship info:", error);
-          toast.error("An error occurred while loading your project.");
-          navigate("/");
-        } finally {
-          setIsShipInfoLoading(false);
-        }
-      } else if (!userLoading && !user) {
-        navigate("/");
-      }
-    };
+  const { isShipInfoLoading, fetchShipInfo } = useShipInfo(
+    user,
+    userLoading,
+    isDeploying
+  );
 
-    fetchShipInfo();
-  }, [user, userLoading, navigate, shipInfo.id, dispatch]);
+  useEffect(() => {
+    if (!userLoading && user && !isDeploying) {
+      fetchShipInfo();
+    }
+  }, [fetchShipInfo, userLoading, user, isDeploying]);
 
   useEffect(() => {
     const fetchCustomDomainStatus = async () => {
@@ -227,8 +190,6 @@ const Edit = () => {
         navigate("/");
       } else if (shipInfo.id && !isDeploying) {
         loadIndexHtml();
-      } else if (!shipInfo.id) {
-        navigate("/");
       }
     }
   }, [
@@ -262,7 +223,7 @@ const Edit = () => {
   const loadIndexHtml = async () => {
     if (!shipInfo.slug) return;
     setIsFileLoading(true);
-    setHasShownErrorToast(false); // Reset the flag before loading
+    setHasShownErrorToast(false);
     try {
       const content = await readFile(`${shipInfo.slug}/index.html`);
       setFileContent(content);
@@ -432,7 +393,7 @@ const Edit = () => {
     }
   };
 
-  if (userLoading || isShipInfoLoading) {
+  if (userLoading) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
         <Lottie
@@ -445,7 +406,8 @@ const Edit = () => {
     );
   }
 
-  if (!user || !shipInfo.id) {
+  if (!user) {
+    navigate("/");
     return null;
   }
 
