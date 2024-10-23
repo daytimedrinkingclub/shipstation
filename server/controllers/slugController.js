@@ -17,7 +17,9 @@ exports.changeSlug = async (req, res) => {
     }
 
     // Move files
+    console.log(`Attempting to move files from ${oldSlug} to ${newSlug}`);
     await fileService.moveFiles(oldSlug, newSlug);
+    console.log("Files moved successfully");
 
     // Update the slug in the database
     await updateShipSlug(shipId, newSlug);
@@ -25,6 +27,16 @@ exports.changeSlug = async (req, res) => {
     res.status(200).json({ message: "Slug changed successfully", newSlug });
   } catch (error) {
     console.error("Error changing slug:", error);
-    res.status(500).json({ error: "Failed to change slug" });
+    if (error.__isStorageError) {
+      console.error(
+        "Storage API Error:",
+        error.message,
+        "Status:",
+        error.status
+      );
+    }
+    res
+      .status(500)
+      .json({ error: "Failed to change slug", details: error.message });
   }
 };
