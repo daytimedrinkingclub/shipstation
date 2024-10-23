@@ -462,6 +462,38 @@ async function updateShipPrompt(shipId, prompt) {
   }
 }
 
+async function checkSlugAvailability(slug) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+
+  if (error && error.code === "PGRST116") {
+    // PGRST116 means no rows returned, so the slug is available
+    return true;
+  } else if (error) {
+    console.error("Error checking slug availability:", error);
+    throw error;
+  }
+
+  return false;
+}
+
+async function updateShipSlug(shipId, newSlug) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .update({ slug: newSlug })
+    .eq("id", shipId);
+
+  if (error) {
+    console.error("Error updating ship slug:", error);
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -488,4 +520,6 @@ module.exports = {
   likeWebsite,
   unlikeWebsite,
   updateShipPrompt,
+  checkSlugAvailability,
+  updateShipSlug,
 };

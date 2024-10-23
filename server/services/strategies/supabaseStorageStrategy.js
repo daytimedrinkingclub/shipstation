@@ -345,6 +345,37 @@ class SupabaseStorageStrategy {
       throw err;
     }
   }
+
+  async moveFiles(oldSlug, newSlug) {
+    try {
+      const oldPath = this._getFullPath(oldSlug);
+      const newPath = this._getFullPath(newSlug);
+
+      // List all files in the old directory
+      const { data, error } = await supabase.storage
+        .from(BUCKET_NAME)
+        .list(oldPath, { sortBy: { column: 'name', order: 'asc' } });
+
+      if (error) throw error;
+
+      // Move each file to the new directory
+      for (const item of data) {
+        const oldFilePath = `${oldPath}/${item.name}`;
+        const newFilePath = `${newPath}/${item.name}`;
+
+        const { data: moveData, error: moveError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .move(oldFilePath, newFilePath);
+
+        if (moveError) throw moveError;
+      }
+
+      console.log(`Successfully moved files from ${oldSlug} to ${newSlug}`);
+    } catch (err) {
+      console.error(`Error moving files from ${oldSlug} to ${newSlug}:`, err);
+      throw err;
+    }
+  }
 }
 
 module.exports = SupabaseStorageStrategy;

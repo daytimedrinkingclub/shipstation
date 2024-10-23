@@ -159,6 +159,28 @@ export function useProject(slug) {
     }
   };
 
+  const changeSlug = async (shipId, oldSlug, newSlug) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/change-slug`,
+        {
+          shipId,
+          oldSlug,
+          newSlug,
+        }
+      );
+
+      if (response.status === 200) {
+        return { success: true, newSlug: response.data.newSlug };
+      } else {
+        throw new Error(response.data.error || 'Failed to change slug');
+      }
+    } catch (error) {
+      console.error('Error changing slug:', error);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchDirectoryStructure();
   }, [slug]);
@@ -177,5 +199,6 @@ export function useProject(slug) {
     uploadTemporaryAssets,
     likeWebsite,
     unlikeWebsite,
+    changeSlug,
   };
 }

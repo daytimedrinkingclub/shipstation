@@ -5,7 +5,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ExternalLink, Undo2, Redo2, Eye, Share2, User } from "lucide-react";
+import {
+  ExternalLink,
+  Undo2,
+  Redo2,
+  Eye,
+  Share2,
+  User,
+  Pencil,
+} from "lucide-react";
 import ViewOptions from "./ViewOptions";
 import UserAccountMenu from "./UserAccountMenu";
 import { AuthContext } from "@/context/AuthContext";
@@ -20,6 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import SlugChangeDialog from "./SlugChangeDialog";
 
 const Header = ({
   isDeploying,
@@ -35,6 +44,7 @@ const Header = ({
   const { user, handleLogout, userLoading } = useContext(AuthContext);
   const [showUndoDialog, setShowUndoDialog] = useState(false);
   const [showRedoDialog, setShowRedoDialog] = useState(false);
+  const [showSlugDialog, setShowSlugDialog] = useState(false);
 
   const handleLogoutClick = async () => {
     await handleLogout();
@@ -93,7 +103,9 @@ const Header = ({
           <h1 className="hidden md:block text-xl font-semibold">
             Customise your site
           </h1>
-          <h1 className="md:hidden text-xl font-semibold">Customise portfolio</h1>
+          <h1 className="md:hidden text-xl font-semibold">
+            Customise portfolio
+          </h1>
           {!isDeploying && (
             <>
               <Button
@@ -194,6 +206,20 @@ const Header = ({
                 <ExternalLink className="w-4 h-4 md:mr-2" />
                 <span className="hidden md:inline">Preview Live Site</span>
               </Button>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowSlugDialog(true)}
+                    className="w-10 h-10 hidden md:flex"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Change Slug</TooltipContent>
+              </Tooltip>
             </div>
 
             {/* Desktop menu */}
@@ -235,6 +261,11 @@ const Header = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <SlugChangeDialog
+        open={showSlugDialog}
+        onOpenChange={setShowSlugDialog}
+      />
     </>
   );
 };
