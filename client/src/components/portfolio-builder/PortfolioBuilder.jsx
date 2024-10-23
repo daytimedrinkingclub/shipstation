@@ -58,7 +58,7 @@ export default function PortfolioBuilder() {
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  const { uploadTemporaryAssets } = useProject(roomId);
+  const { uploadTemporaryAssets } = useProject();
 
   const handleWebsiteSelection = (website) => {
     setCustomDesignPrompt(website.prompt);

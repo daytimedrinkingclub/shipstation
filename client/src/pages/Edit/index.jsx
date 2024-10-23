@@ -79,7 +79,7 @@ const Edit = () => {
   const { socket } = useSocket();
 
   const { readFile, updateFile, submitting, handledownloadzip } = useProject(
-    shipInfo.id
+    shipInfo.slug
   );
 
   const [fileContent, setFileContent] = useState("");
