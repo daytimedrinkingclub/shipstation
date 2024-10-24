@@ -5,7 +5,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSocket } from "@/context/SocketProvider";
 import { AuthContext } from "@/context/AuthContext";
 import { useProject } from "@/hooks/useProject";
@@ -392,6 +392,15 @@ const Edit = () => {
       setIsConnectingDomain(false);
     }
   };
+
+  useEffect(() => {
+    if (location.state) {
+      const { shipSlug } = location.state;
+      if (shipSlug) {
+        dispatch(setShipInfo({ slug: shipSlug }));
+      }
+    }
+  }, [location.state, dispatch]);
 
   if (userLoading) {
     return (

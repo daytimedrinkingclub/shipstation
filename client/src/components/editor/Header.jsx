@@ -13,6 +13,7 @@ import {
   Share2,
   User,
   Pencil,
+  Globe,
 } from "lucide-react";
 import ViewOptions from "./ViewOptions";
 import UserAccountMenu from "./UserAccountMenu";
@@ -213,9 +214,10 @@ const Header = ({
                     variant="outline"
                     size="icon"
                     onClick={() => setShowSlugDialog(true)}
-                    className="w-10 h-10 hidden md:flex"
+                    className="w-10 h-10 md:w-auto md:px-2"
                   >
-                    <Pencil className="w-4 h-4" />
+                    <Globe className="w-4 h-4 md:mr-2" />
+                    <span className="hidden md:inline"> Change Slug</span>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Change Slug</TooltipContent>

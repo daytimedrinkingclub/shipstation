@@ -11,6 +11,8 @@ const ChatPanel = ({
 }) => {
   const { id: shipId, slug: shipSlug } = useSelector((state) => state.ship);
 
+  console.log("ChatPanel", { shipId, shipSlug });
+
   return (
     <Chat
       shipSlug={shipSlug}

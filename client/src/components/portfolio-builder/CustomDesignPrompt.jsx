@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
-import { Paperclip, X, FileIcon, Image, Info } from "lucide-react";
+import { Paperclip, X, FileIcon, Image, Info, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -27,6 +27,7 @@ export default function CustomDesignPrompt({
   const [dragOver, setDragOver] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [tempFiles, setTempFiles] = useState([]);
+  const [resumeFile, setResumeFile] = useState(null);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -99,20 +100,6 @@ export default function CustomDesignPrompt({
       return;
     }
 
-    // Check for PDF count
-    const existingPdfCount = assets.filter(
-      (asset) => asset.file.type === "application/pdf"
-    ).length;
-    const newPdfCount = tempFiles.filter(
-      (file) => file.file.type === "application/pdf"
-    ).length;
-    if (existingPdfCount + newPdfCount > 1) {
-      toast.error(
-        `You can upload only 1 PDF file. Currently you have ${newPdfCount} PDF files.`
-      );
-      return;
-    }
-
     // Check file sizes
     const oversizedFiles = tempFiles.filter(
       (file) => file.file.size > 5 * 1024 * 1024
@@ -144,14 +131,46 @@ export default function CustomDesignPrompt({
   };
 
   const removeAsset = (index) => {
+    const assetToRemove = assets[index];
     const updatedAssets = assets.filter((_, i) => i !== index);
     onAssetsUpdate(updatedAssets);
+
+    // If the removed asset was the resume, also clear the resumeFile state
+    if (assetToRemove === resumeFile) {
+      setResumeFile(null);
+    }
   };
 
   const handleRemoveFile = (fileName) => {
     setTempFiles((prevFiles) =>
       prevFiles.filter((file) => file.file.name !== fileName)
     );
+  };
+
+  const handleResumeUpload = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === "application/pdf") {
+      const sanitizedName = sanitizeFileName(file.name);
+      const renamedFile = new File([file], sanitizedName, { type: file.type });
+      const newResumeFile = {
+        file: renamedFile,
+        forAI: false,
+        forWebsite: true,
+        preview: URL.createObjectURL(file),
+        description:
+          "User added a resume pdf, this can be used for content of the portfolio.",
+      };
+
+      setResumeFile(newResumeFile);
+
+      // Update assets by replacing the old resume (if any) with the new one
+      const updatedAssets = assets.filter((asset) => asset !== resumeFile);
+      onAssetsUpdate([...updatedAssets, newResumeFile]);
+
+      toast.success("Resume updated successfully!");
+    } else {
+      toast.error("Please upload a PDF file for your resume.");
+    }
   };
 
   return (
@@ -161,32 +180,54 @@ export default function CustomDesignPrompt({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      <Textarea
-        placeholder="Describe your ideal portfolio design. You can also drag and drop your profile photo and resume here to personalize your portfolio."
-        value={customDesignPrompt}
-        onChange={(e) => setCustomDesignPrompt(e.target.value)}
-        disabled={isGenerating}
-        className="w-full h-[150px] resize-none focus:ring-0 p-4"
-        onKeyDown={onKeyPress}
-      />
-      <input
-        type="file"
-        id="file-input"
-        className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
-        multiple
-      />
-      <button
-        onClick={() => document.getElementById("file-input").click()}
-        className="absolute bottom-2 right-2 text-primary hover:text-primary/80 p-2"
-        disabled={isGenerating}
-        type="button"
-      >
-        <span className="flex items-center gap-2 text-sm">
-          <Paperclip className="h-4 w-4" />
-          Add Assets
-        </span>
-      </button>
+      <div className="relative border border-input rounded-md overflow-hidden">
+        <Textarea
+          placeholder="Describe your ideal portfolio design. You can also drag and drop your profile photo and resume here to personalize your portfolio."
+          value={customDesignPrompt}
+          onChange={(e) => setCustomDesignPrompt(e.target.value)}
+          disabled={isGenerating}
+          className="w-full h-[150px] resize-none focus:ring-0 p-4 border-none"
+          onKeyDown={onKeyPress}
+        />
+        <div className="flex flex-col sm:flex-row justify-between bg-muted p-2 gap-2">
+          <input
+            type="file"
+            id="resume-input"
+            className="hidden"
+            onChange={handleResumeUpload}
+            accept=".pdf"
+          />
+          <button
+            onClick={() => document.getElementById("resume-input").click()}
+            className="flex-1 text-primary hover:text-primary/80 p-2 bg-background hover:bg-accent rounded-md shadow-sm transition-colors"
+            disabled={isGenerating}
+            type="button"
+          >
+            <span className="flex items-center justify-center gap-2 text-sm">
+              <FileText className="h-4 w-4" />
+              Add Resume
+            </span>
+          </button>
+          <input
+            type="file"
+            id="file-input"
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+            multiple
+          />
+          <button
+            onClick={() => document.getElementById("file-input").click()}
+            className="flex-1 text-primary hover:text-primary/80 p-2 bg-background hover:bg-accent rounded-md shadow-sm transition-colors"
+            disabled={isGenerating}
+            type="button"
+          >
+            <span className="flex items-center justify-center gap-2 text-sm">
+              <Paperclip className="h-4 w-4" />
+              Add Assets
+            </span>
+          </button>
+        </div>
+      </div>
       {dragOver && (
         <div className="absolute inset-0 bg-blue-100 bg-opacity-90 border-2 border-blue-500 rounded-md flex items-center justify-center z-10 backdrop-blur-sm px-4">
           <FileIcon className="w-6 h-6 text-blue-700 transform rotate-12 mr-2" />
@@ -247,16 +288,16 @@ export default function CustomDesignPrompt({
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
             {tempFiles.map((file, index) => (
-              <Card key={index} className="bg-card relative">
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6 z-10"
-                  onClick={() => handleRemoveFile(file.file.name)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+              <Card key={index} className="bg-card relative pt-2">
                 <CardContent className="p-4 space-y-4">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6 z-10"
+                    onClick={() => handleRemoveFile(file.file.name)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                   <div className="aspect-video bg-muted rounded-md overflow-hidden">
                     <FilePreview file={file.file} />
                   </div>

@@ -98,12 +98,8 @@ async function ctoService({
     }
 
     const slug = projectFolderName;
-    sendEvent("websiteDeployed", {
-      slug,
-    });
-    await screenshotService.saveScreenshot(slug);
 
-    // After website deployment, run analyze and repair
+    // Run analyze and repair after cto calls deploy tool
     console.log("Starting analyze and repair process...");
     try {
       const analyzeAndRepairResult =
@@ -112,23 +108,16 @@ async function ctoService({
         "Analyze and repair process completed:",
         analyzeAndRepairResult
       );
-
-      await screenshotService.saveScreenshot(slug);
-
-      // use this to send event after analyzing and repairing, if needed
-
-      // if (
-      //   analyzeAndRepairResult.repairResult &&
-      //   analyzeAndRepairResult.repairResult.repaired
-      // ) {
-      //   sendEvent("site_repaired", {
-      //     slug: slug,
-      //     issuesSummary: analyzeAndRepairResult.repairResult.issuesSummary,
-      //   });
-      // }
     } catch (error) {
       console.error("Error in analyze and repair process:", error);
     }
+
+    await screenshotService.saveScreenshot(slug);
+
+    // Send websiteDeployed event after the repair
+    sendEvent("websiteDeployed", {
+      slug,
+    });
 
     return {
       message: `Website successfully built, deployed, and analyzed. Slug: ${slug}`,
