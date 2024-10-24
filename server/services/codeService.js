@@ -2,8 +2,9 @@ const {
   codeWriterTool,
   placeholderImageTool,
   headshotTool,
+  pdfParserTool,
 } = require("../config/tools");
-const { handleCodeToolUse } = require("../controllers/codeToolController");
+const { handleCodeToolUse } = require("../tool-controllers/codeToolController");
 const codePrompt = require("./prompts/codePrompt");
 const { SHIP_TYPES } = require("./constants");
 require("dotenv").config();
@@ -26,10 +27,12 @@ async function codeAssistant({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
   console.log("codeAssistant received:", {
     name: name,
-    images: images?.length,
+    "inspiration/reference images": images?.length,
+    "website assets": assets?.length,
     portfolioType: portfolioType,
     designChoice: designChoice,
     selectedDesign: selectedDesign,
@@ -45,7 +48,7 @@ async function codeAssistant({
     console.log(
       `Received code write request for ${shipType} with ${
         images ? images.length : 0
-      } images`
+      } images and ${assets ? assets.length : 0} assets`
     );
 
     const webDesignAnalysisService = new WebDesignAnalysisService(client);
@@ -88,7 +91,7 @@ async function codeAssistant({
       designChoice,
       selectedDesign,
       customDesignPrompt,
-      images
+      assets
     );
 
     messages.push({
@@ -101,7 +104,7 @@ async function codeAssistant({
       const currentMessage = await client.sendMessage({
         system: systemPrompt,
         messages: messages,
-        tools: [placeholderImageTool, headshotTool],
+        tools: [placeholderImageTool, headshotTool, pdfParserTool],
         tool_choice: { type: "auto" },
       });
       console.log(

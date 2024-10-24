@@ -345,6 +345,92 @@ class SupabaseStorageStrategy {
       throw err;
     }
   }
+
+  async moveFiles(oldSlug, newSlug) {
+    try {
+      const oldPath = this._getFullPath(oldSlug);
+      const newPath = this._getFullPath(newSlug);
+
+      console.log("oldPath", oldPath);
+      console.log("newPath", newPath);
+
+      await this.copyFolder(oldPath, newPath);
+
+      // After successful copy, delete the old folder
+      await this.deleteFolder(oldPath);
+
+      console.log(`Successfully moved files and folders from ${oldSlug} to ${newSlug}`);
+    } catch (err) {
+      console.error(`Error moving files and folders from ${oldSlug} to ${newSlug}:`, err);
+      throw err;
+    }
+  }
+
+  async copyFolder(sourcePath, destPath) {
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .list(sourcePath, { sortBy: { column: "name", order: "asc" } });
+
+    if (error) throw error;
+
+    for (const item of data) {
+      const sourceItemPath = `${sourcePath}/${item.name}`;
+      const destItemPath = `${destPath}/${item.name}`;
+
+      if (item.id === null && item.metadata === null) {
+        // This is a folder, recurse
+        await this.copyFolder(sourceItemPath, destItemPath);
+      } else {
+        // This is a file, copy it
+        await this.copyFile(sourceItemPath, destItemPath);
+      }
+    }
+  }
+
+  async copyFile(sourcePath, destPath) {
+    const { data, error: downloadError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .download(sourcePath);
+
+    if (downloadError) throw downloadError;
+
+    const { error: uploadError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .upload(destPath, data, {
+        contentType: mime.lookup(sourcePath) || "application/octet-stream",
+        upsert: true,
+      });
+
+    if (uploadError) throw uploadError;
+  }
+
+  async deleteFolder(folderPath) {
+    const { data, error } = await supabase.storage
+      .from(BUCKET_NAME)
+      .list(folderPath, { sortBy: { column: "name", order: "asc" } });
+
+    if (error) throw error;
+
+    for (const item of data) {
+      const itemPath = `${folderPath}/${item.name}`;
+      if (item.id === null && item.metadata === null) {
+        // This is a folder, recurse
+        await this.deleteFolder(itemPath);
+      } else {
+        // This is a file, delete it
+        const { error: deleteError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .remove([itemPath]);
+        if (deleteError) throw deleteError;
+      }
+    }
+
+    // After deleting all contents, delete the folder itself
+    const { error: deleteFolderError } = await supabase.storage
+      .from(BUCKET_NAME)
+      .remove([folderPath]);
+    if (deleteFolderError) throw deleteFolderError;
+  }
 }
 
 module.exports = SupabaseStorageStrategy;

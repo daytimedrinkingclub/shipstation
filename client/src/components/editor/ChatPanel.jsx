@@ -1,7 +1,7 @@
 import Chat from "@/components/Chat";
+import { useSelector } from "react-redux";
 
 const ChatPanel = ({
-  shipId,
   onCodeUpdate,
   onAssetsUpdate,
   assets,
@@ -9,8 +9,11 @@ const ChatPanel = ({
   initialPrompt,
   isDeploying,
 }) => {
+  const { id: shipId, slug: shipSlug } = useSelector((state) => state.ship);
+
   return (
     <Chat
+      shipSlug={shipSlug}
       shipId={shipId}
       onCodeUpdate={onCodeUpdate}
       onAssetsUpdate={onAssetsUpdate}

@@ -21,7 +21,11 @@ async function handleCTOToolUse({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
+  console.log("ctoToolController received images:", images?.length);
+  console.log("ctoToolController received assets:", assets?.length);
+
   if (tool.name === TOOLS.SEARCH) {
     const searchQuery = tool.input.query;
 
@@ -189,6 +193,7 @@ async function handleCTOToolUse({
       },
     ];
   } else if (tool.name === TOOLS.TASK_ASSIGNER) {
+    console.log
     const { file_name, task_guidelines } = tool.input;
 
     const fileContent = await fileService.getFile(
@@ -219,6 +224,7 @@ async function handleCTOToolUse({
       selectedDesign,
       customDesignPrompt,
       images,
+      assets,
     });
 
     sendEvent("progress", {

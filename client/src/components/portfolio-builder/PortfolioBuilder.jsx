@@ -24,6 +24,8 @@ import {
 import MobilePortfolioBuilder from "./MobilePortfolioBuilder";
 import WebsiteGallery from "./WebsiteGallery";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useProject } from "@/hooks/useProject";
+import { fileToBase64 } from "@/lib/utils/fileToBase64";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
@@ -38,11 +40,13 @@ export default function PortfolioBuilder() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [portfolioType, setPortfolioType] = useState("Developer");
   const [isPaymentRequired, setIsPaymentRequired] = useState(false);
-  const [deployedWebsiteSlug, setDeployedWebsiteSlug] = useState("");
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
+  const [assets, setAssets] = useState([]);
+  const [projectStarted, setProjectStarted] = useState(false);
+  const [projectData, setProjectData] = useState(null);
 
-  const baseUrl = import.meta.env.VITE_MAIN_URL; //https://shipstation.ai
+  const baseUrl = import.meta.env.VITE_MAIN_URL;
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
@@ -50,15 +54,13 @@ export default function PortfolioBuilder() {
     onOpen: onLoaderOpen,
     onClose: onLoaderClose,
   } = useDisclosure();
-  const {
-    isOpen: isSuccessOpen,
-    onOpen: onSuccessOpen,
-    onClose: onSuccessClose,
-  } = useDisclosure();
+  const { isOpen: isSuccessOpen, onOpen: onSuccessOpen } = useDisclosure();
 
   const navigate = useNavigate();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  const { uploadTemporaryAssets } = useProject();
 
   const handleWebsiteSelection = (website) => {
     setCustomDesignPrompt(website.prompt);
@@ -66,7 +68,7 @@ export default function PortfolioBuilder() {
     toast.success("Prompt selected and applied!");
   };
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!name.trim()) {
       toast.error("Please enter your name");
       return;
@@ -85,22 +87,57 @@ export default function PortfolioBuilder() {
 
     setIsGenerating(true);
 
-    const portfolioData = {
-      shipType: "portfolio",
-      name,
-      portfolioType,
-      designChoice: "custom",
-      customDesignPrompt: customDesignPrompt,
-    };
+    try {
+      let uploadedAssets = [];
+      let aiReferenceFiles = [];
 
-    socket.emit("startProject", {
-      roomId,
-      userId,
-      apiKey: anthropicKey,
-      ...portfolioData,
-    });
+      if (assets.length > 0) {
+        const websiteFiles = assets.filter((file) => file.forWebsite);
+        const aiFiles = assets.filter((file) => file.forAI);
 
-    onLoaderOpen();
+        if (websiteFiles.length > 0) {
+          const assetsToUpload = websiteFiles.map((file) => ({
+            file: file.file,
+            comment: file.description || "",
+            forAI: false,
+            forWebsite: true,
+          }));
+          uploadedAssets = await uploadTemporaryAssets(assetsToUpload);
+        }
+
+        for (const file of aiFiles) {
+          const base64 = await fileToBase64(file.file);
+          aiReferenceFiles.push({
+            name: file.file.name,
+            type: file.file.type,
+            base64: base64,
+            description: file.description,
+          });
+        }
+      }
+
+      const portfolioData = {
+        shipType: "portfolio",
+        name,
+        portfolioType,
+        designChoice: "custom",
+        customDesignPrompt,
+        images: aiReferenceFiles,
+        assets: uploadedAssets,
+      };
+
+      socket.emit("startProject", {
+        roomId,
+        userId,
+        apiKey: anthropicKey,
+        ...portfolioData,
+      });
+
+      onLoaderOpen();
+    } catch (error) {
+      console.error("Error uploading assets:", error);
+      toast.error("Failed to upload assets");
+    }
   }, [
     name,
     customDesignPrompt,
@@ -109,6 +146,8 @@ export default function PortfolioBuilder() {
     anthropicKey,
     roomId,
     userId,
+    assets,
+    uploadTemporaryAssets,
   ]);
 
   useEffect(() => {
@@ -139,13 +178,13 @@ export default function PortfolioBuilder() {
       socket.on("project_started", (data) => {
         const { slug, prompt } = data;
         dispatch(setIsDeploying(true));
-        navigate("/editor", { state: { shipId: slug, initialPrompt: prompt } });
+        setProjectStarted(true);
+        setProjectData({ slug, prompt });
       });
 
-      socket.on("websiteDeployed", ({ slug }) => {
+      socket.on("websiteDeployed", () => {
         onSuccessOpen();
         onLoaderClose();
-        setDeployedWebsiteSlug(slug);
       });
 
       return () => {
@@ -153,13 +192,30 @@ export default function PortfolioBuilder() {
         socket.off("showPaymentOptions");
         socket.off("websiteDeployed");
         socket.off("needMoreInfo");
+        socket.off("project_started");
       };
     }
   }, [socket, isPaymentRequired, navigate]);
 
+  useEffect(() => {
+    if ( projectStarted && projectData) {
+      navigate("/editor", {
+        state: {
+          shipId: null,
+          shipSlug: projectData.slug,
+          initialPrompt: projectData.prompt,
+        },
+      });
+    }
+  }, [isGenerating, projectStarted, projectData, navigate]);
+
   const handleSubmitAnthropicKey = (apiKey) => {
     socket.emit("anthropicKey", { anthropicKey: apiKey });
     setIsKeyValidating(true);
+  };
+
+  const handleAssetsUpdate = (newAssets) => {
+    setAssets(newAssets);
   };
 
   return (
@@ -183,17 +239,19 @@ export default function PortfolioBuilder() {
             handleSubmit={handleSubmit}
             onOpenPromptGallery={() => setIsWebsitesDialogOpen(true)}
             availableShips={availableShips}
+            assets={assets}
+            setAssets={setAssets}
           />
         ) : (
-          <div className="hidden md:block">
+          <div className="hidden md:block space-y-6">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold mb-4 block">Your Name</h2>
+              <h2 className="text-lg font-semibold mb-2">Your Name</h2>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your name"
-                className="mt-1 w-1/2"
+                className="mt-1 max-w-md"
                 disabled={isGenerating}
               />
             </div>
@@ -204,37 +262,47 @@ export default function PortfolioBuilder() {
               isGenerating={isGenerating}
             />
 
-            <div className="grid grid-cols-1 gap-6">
-              <Card className="h-full">
-                <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
-                    <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
-                    <CardDescription>
-                      Describe your ideal portfolio design or select a design
-                      from the gallery
-                    </CardDescription>
-                  </div>
-                  <Button
-                    onClick={() => setIsWebsitesDialogOpen(true)}
-                    disabled={isGenerating}
-                    size="sm"
-                  >
-                    <DraftingCompass className="mr-2 h-4 w-4" />
-                    Open Prompt Gallery
-                  </Button>
-                </CardHeader>
-                <CardContent>
-                  <CustomDesignPrompt
-                    customDesignPrompt={customDesignPrompt}
-                    setCustomDesignPrompt={setCustomDesignPrompt}
-                    isGenerating={isGenerating}
-                  />
-                </CardContent>
-              </Card>
-            </div>
+            <Card className="h-full">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="pt-4">Custom Design Prompt</CardTitle>
+                  <CardDescription>
+                    Describe your ideal portfolio design or select a design from
+                    the gallery
+                  </CardDescription>
+                </div>
+                <Button
+                  onClick={() => setIsWebsitesDialogOpen(true)}
+                  disabled={isGenerating}
+                  size="sm"
+                >
+                  <DraftingCompass className="mr-2 h-4 w-4" />
+                  Open Prompt Gallery
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <CustomDesignPrompt
+                  customDesignPrompt={customDesignPrompt}
+                  setCustomDesignPrompt={setCustomDesignPrompt}
+                  isGenerating={isGenerating}
+                  onAssetsUpdate={handleAssetsUpdate}
+                  assets={assets}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter" && e.ctrlKey) {
+                      handleSubmit();
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
 
-            <div className="flex justify-between items-end mt-auto pt-4">
-              <div />
+            <div className="flex justify-end items-center">
+              {/* <div className="flex items-center">
+                <Fuel className="mr-2 h-4 w-4" />
+                <span className="text-sm">
+                  {availableShips} container{availableShips !== 1 && "s"} available
+                </span>
+              </div> */}
               <Button
                 onClick={handleSubmit}
                 disabled={availableShips <= 0 || isGenerating}

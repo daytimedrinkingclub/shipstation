@@ -1,0 +1,14 @@
+{
+  "name": "pdf_parser_tool",
+  "description": "This tool parses text content from a PDF file, which can be used to extract information for portfolio content such as education, experience, projects, email, and social media links.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "pdf_url": {
+        "type": "string",
+        "description": "The URL of the PDF file to be parsed"
+      }
+    },
+    "required": ["pdf_url"]
+  }
+}

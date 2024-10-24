@@ -87,18 +87,22 @@ async function updateConversation(conversationId, conversation) {
 }
 
 async function getUserProfile(userId) {
-  const { data, error } = await supabaseClient
-    .from("user_profiles")
-    .select("*")
-    .eq("id", userId)
-    .single();
+  try {
+    const { data, error } = await supabaseClient
+      .from("user_profiles")
+      .select("*")
+      .eq("id", userId)
+      .single();
 
-  if (error) {
-    console.error("Error getting user:", error);
+    if (error) {
+      console.error("Error getting user:", error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error("Error in getUserProfile:", error);
     throw error;
   }
-
-  return data;
 }
 
 async function updateUserProfile(userId, profileData) {
@@ -132,7 +136,7 @@ async function getCodeRefiningConversation(shipId) {
   const { data, error } = await supabaseClient
     .from("code_refining_conversations")
     .select("*")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .single();
 
   if (error && error.code !== "PGRST116") {
@@ -147,8 +151,8 @@ async function upsertCodeRefiningConversation(shipId, userId, messages) {
   const { data, error } = await supabaseClient
     .from("code_refining_conversations")
     .upsert(
-      { ship_slug: shipId, user_id: userId, messages, updated_at: new Date() },
-      { onConflict: "ship_slug" }
+      { ship_id: shipId, user_id: userId, messages, updated_at: new Date() },
+      { onConflict: "ship_id" }
     )
     .select();
 
@@ -166,7 +170,7 @@ async function saveCodeVersion(shipId, filePath) {
     await supabaseClient
       .from("code_versions")
       .select("version")
-      .eq("ship_slug", shipId)
+      .eq("ship_id", shipId)
       .order("version", { ascending: false })
       .limit(1)
       .single();
@@ -182,7 +186,7 @@ async function saveCodeVersion(shipId, filePath) {
   // Insert the new version into the database
   const { data, error } = await supabaseClient
     .from("code_versions")
-    .insert({ ship_slug: shipId, version: newVersion, file_path: filePath });
+    .insert({ ship_id: shipId, version: newVersion, file_path: filePath });
 
   if (error) {
     console.error("Error saving code version:", error);
@@ -196,7 +200,7 @@ async function getCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("file_path")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .eq("version", version)
     .single();
 
@@ -212,7 +216,7 @@ async function getLatestCodeVersion(shipId) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("version")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .order("version", { ascending: false })
     .limit(1)
     .single();
@@ -229,7 +233,7 @@ async function getCurrentCodeVersion(shipId) {
   const { data, error } = await supabaseClient
     .from("ships")
     .select("current_version")
-    .eq("slug", shipId)
+    .eq("id", shipId)
     .single();
 
   if (error) {
@@ -244,7 +248,7 @@ async function updateCurrentCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("ships")
     .update({ current_version: version })
-    .eq("slug", shipId);
+    .eq("id", shipId);
 
   if (error) {
     console.error("Error updating current code version:", error);
@@ -258,7 +262,7 @@ async function getAllCodeVersions(shipId) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .select("*")
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .order("version", { ascending: true });
 
   if (error) {
@@ -273,7 +277,7 @@ async function deleteCodeVersion(shipId, version) {
   const { data, error } = await supabaseClient
     .from("code_versions")
     .delete()
-    .eq("ship_slug", shipId)
+    .eq("ship_id", shipId)
     .eq("version", version);
 
   if (error) {
@@ -366,7 +370,7 @@ async function getShipPrompt(shipId) {
     const { data, error } = await supabaseClient
       .from("ships")
       .select("prompt")
-      .eq("slug", shipId)
+      .eq("id", shipId)
       .single();
 
     if (error) {
@@ -402,15 +406,14 @@ async function getDesignPresetPrompt(shipType, designName) {
   return data;
 }
 
-async function likeWebsite(userId, slug) {
+async function likeWebsite(userId, shipId) {
   try {
     const { data, error } = await supabaseClient
       .from("website_likes")
-      .insert({ user_id: userId, ship_slug: slug });
+      .insert({ user_id: userId, ship_id: shipId });
 
     if (error) {
       if (error.code === "23505") {
-        // Unique constraint violation
         throw new Error("Already liked");
       }
       throw error;
@@ -423,12 +426,12 @@ async function likeWebsite(userId, slug) {
   }
 }
 
-async function unlikeWebsite(userId, slug) {
+async function unlikeWebsite(userId, shipId) {
   try {
     const { data, error } = await supabaseClient
       .from("website_likes")
       .delete()
-      .match({ user_id: userId, ship_slug: slug });
+      .match({ user_id: userId, ship_id: shipId });
 
     if (error) {
       throw error;
@@ -446,8 +449,8 @@ async function updateShipPrompt(shipId, prompt) {
     const { data, error } = await supabaseClient
       .from("ships")
       .upsert(
-        { slug: shipId, prompt: prompt },
-        { onConflict: "slug", returning: "minimal" }
+        { id: shipId, prompt: prompt },
+        { onConflict: "id", returning: "minimal" }
       );
 
     if (error) {
@@ -461,6 +464,38 @@ async function updateShipPrompt(shipId, prompt) {
     console.error("Error upserting ship prompt:", error);
     throw error;
   }
+}
+
+async function checkSlugAvailability(slug) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .select("id")
+    .eq("slug", slug)
+    .single();
+
+  if (error && error.code === "PGRST116") {
+    // PGRST116 means no rows returned, so the slug is available
+    return true;
+  } else if (error) {
+    console.error("Error checking slug availability:", error);
+    throw error;
+  }
+
+  return false;
+}
+
+async function updateShipSlug(shipId, newSlug) {
+  const { data, error } = await supabaseClient
+    .from("ships")
+    .update({ slug: newSlug })
+    .eq("id", shipId);
+
+  if (error) {
+    console.error("Error updating ship slug:", error);
+    throw error;
+  }
+
+  return data;
 }
 
 module.exports = {
@@ -489,4 +524,6 @@ module.exports = {
   likeWebsite,
   unlikeWebsite,
   updateShipPrompt,
+  checkSlugAvailability,
+  updateShipSlug,
 };

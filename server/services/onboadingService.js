@@ -12,7 +12,7 @@ const {
 } = require("../config/tools");
 const {
   handleOnboardingToolUse,
-} = require("../controllers/onboardingToolController");
+} = require("../tool-controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
@@ -40,9 +40,11 @@ async function processConversation({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
   console.log("Entered processConversation function");
   console.log("processConversation received images:", images?.length);
+  console.log("processConversation received assets:", assets?.length);
 
   while (true) {
     if (abortSignal.aborted) {
@@ -181,6 +183,7 @@ async function processConversation({
           selectedDesign,
           customDesignPrompt,
           images,
+          assets,
         });
         messages.push({ role: "user", content: toolResult });
 
@@ -245,8 +248,19 @@ function handleOnboardingSocketEvents(io) {
         selectedDesign,
         customDesignPrompt,
         images,
+        assets,
       } = data;
-      console.log("startProject", roomId, userId, apiKey, shipType, name);
+      console.log(
+        "startProject",
+        roomId,
+        userId,
+        apiKey,
+        shipType,
+        name,
+        portfolioType
+      );
+      console.log("Images:", images?.length);
+      console.log("Assets:", assets?.length);
 
       const clientParams = { userId };
       if (apiKey) {
@@ -287,6 +301,7 @@ function handleOnboardingSocketEvents(io) {
           selectedDesign,
           customDesignPrompt,
           images,
+          assets,
         });
         return;
       } catch (error) {
@@ -301,8 +316,9 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, message, assets, assetInfo, aiReferenceFiles } = data;
-      console.log("Received chat message:", message, "\nfor ship:", shipId);
+      const { shipId, shipSlug, message, assets, assetInfo, aiReferenceFiles } =
+        data;
+      console.log("Received chat message:", message, "\nfor ship:", shipSlug);
       console.log("Message:", message);
       console.log("Assets:", assets.length, assetInfo);
       console.log("AI Reference Files:", aiReferenceFiles.length);
@@ -310,6 +326,7 @@ function handleOnboardingSocketEvents(io) {
       try {
         const result = await refineCode(
           shipId,
+          shipSlug,
           message,
           socket.userId,
           assets,
@@ -321,7 +338,7 @@ function handleOnboardingSocketEvents(io) {
 
         if (result.updatedCode) {
           socket.emit("codeUpdate", result.updatedCode);
-          await screenshotService.saveScreenshot(shipId);
+          await screenshotService.saveScreenshot(shipSlug);
 
           await updatePrompt(shipId, socket.userId, [
             { role: "user", content: message },
@@ -337,11 +354,11 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("undoCodeChange", async (data) => {
-      const { shipId } = data;
+      const { shipId, shipSlug } = data;
       console.log("Received undo request for ship:", shipId);
 
       try {
-        const result = await undoCodeChange(shipId);
+        const result = await undoCodeChange(shipId, shipSlug);
 
         if (result.success) {
           socket.emit("undoResult", { success: true, message: result.message });
@@ -362,11 +379,11 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("redoCodeChange", async (data) => {
-      const { shipId } = data;
+      const { shipId, shipSlug } = data;
       console.log("Received redo request for ship:", shipId);
 
       try {
-        const result = await redoCodeChange(shipId);
+        const result = await redoCodeChange(shipId, shipSlug);
 
         if (result.success) {
           socket.emit("redoResult", { success: true, message: result.message });

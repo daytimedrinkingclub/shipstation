@@ -4,7 +4,7 @@ const {
   deployProjectTool,
   searchTool,
 } = require("../config/tools");
-const { handleCTOToolUse } = require("../controllers/ctoToolController");
+const { handleCTOToolUse } = require("../tool-controllers/ctoToolController");
 const { TOOLS } = require("../config/tools");
 const ctoPrompt = require("./prompts/ctoPrompt");
 
@@ -27,7 +27,10 @@ async function ctoService({
   selectedDesign,
   customDesignPrompt,
   images,
+  assets,
 }) {
+  console.log("ctoService received images:", images?.length);
+  console.log("ctoService received assets:", assets?.length);
   const systemPrompt = [
     {
       type: "text",
@@ -64,6 +67,7 @@ async function ctoService({
           selectedDesign,
           customDesignPrompt,
           images,
+          assets,
         });
 
         messages.push({ role: "user", content: toolResult });

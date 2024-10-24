@@ -61,6 +61,10 @@ class FileService {
   async uploadTemporaryAssets(assets) {
     return this.strategy.uploadTemporaryAssets(assets);
   }
+
+  async moveFiles(oldSlug, newSlug) {
+    return this.strategy.moveFiles(oldSlug, newSlug);
+  }
 }
 
 module.exports = FileService;
