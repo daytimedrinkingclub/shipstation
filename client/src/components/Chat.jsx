@@ -53,6 +53,7 @@ const Chat = ({
   isDeploying,
 }) => {
   const { socket } = useSocket();
+
   const { uploadAssets } = useProject(shipSlug);
 
   const [messages, setMessages] = useState([]);
@@ -80,6 +81,31 @@ const Chat = ({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  useEffect(() => {
+    console.log(
+      "Effect triggered. isDeploying:",
+      isDeploying,
+      "shipId:",
+      shipId,
+      "shipSlug:",
+      shipSlug,
+      "isInitialized:",
+      isInitialized
+    );
+    if (isDeploying && initialPrompt) {
+      console.log("Setting initial deploying message");
+      setMessages([
+        { text: initialPrompt, sender: "user" },
+        { text: "", sender: "assistant", isLoading: true },
+      ]);
+      setIsLoadingMessages(false);
+      setIsInitialized(true);
+    } else if (!isDeploying && shipId && shipSlug && !isInitialized) {
+      console.log("Initializing chat");
+      initChat();
+    }
+  }, [isDeploying, initialPrompt, shipId, shipSlug, isInitialized]);
+
   const initChat = async () => {
     console.log(
       "Initializing chat with shipId:",
@@ -88,37 +114,43 @@ const Chat = ({
       shipSlug
     );
     setIsLoadingMessages(true);
-    let combinedMessages = [];
-    if (isDeploying && initialPrompt) {
-      combinedMessages = [
-        { text: initialPrompt, sender: "user" },
-        { text: "", sender: "assistant", isLoading: true },
-      ];
-    } else {
+    try {
+      let combinedMessages = [];
       const conversationHistory = await fetchConversationHistory();
       const initialUserMessage = await fetchInitialUserMessage();
       combinedMessages = [...initialUserMessage, ...conversationHistory];
+
+      console.log("Combined messages:", combinedMessages);
+
+      setMessages(combinedMessages);
+      setIsConversationHistoryFetched(true);
+      setInitialMessageFetched(true);
+    } catch (error) {
+      console.error("Error initializing chat:", error);
+    } finally {
+      setIsLoadingMessages(false);
+      setIsInitialized(true);
     }
-    setMessages(combinedMessages);
-    setIsConversationHistoryFetched(true);
-    setInitialMessageFetched(true);
-    setIsLoadingMessages(false);
-    setIsInitialized(true);
   };
 
   useEffect(() => {
-    if (shipId && shipSlug && !isInitialized) {
-      console.log("Calling initChat from useEffect");
+    if (isDeploying && initialPrompt) {
+      setMessages([
+        { text: initialPrompt, sender: "user" },
+        { text: "", sender: "assistant", isLoading: true },
+      ]);
+      setIsLoadingMessages(false);
+    } else if (!isDeploying && shipId && shipSlug) {
       initChat();
     }
-  }, [shipId, shipSlug, isInitialized]);
+  }, [isDeploying, initialPrompt, shipId, shipSlug]);
 
   useEffect(() => {
-    if (isInitialized && !isDeploying) {
+    if (!isDeploying && shipId && shipSlug) {
       console.log("Reinitializing chat due to isDeploying change");
       initChat();
     }
-  }, [isDeploying]);
+  }, [isDeploying, shipId, shipSlug]);
 
   useEffect(() => {
     const allDescriptionsFilled = tempFiles.every(
@@ -391,18 +423,6 @@ const Chat = ({
       return;
     }
 
-    // Check for PDF count
-    const existingPdfCount = filesToUpload.filter(
-      (file) => file.file.type === "application/pdf"
-    ).length;
-    const newPdfCount = tempFiles.filter(
-      (file) => file.file.type === "application/pdf"
-    ).length;
-    if (existingPdfCount + newPdfCount > 1) {
-      toast.error("You can upload only 1 PDF file.");
-      return;
-    }
-
     // Check file sizes
     const oversizedFiles = tempFiles.filter(
       (file) => file.file.size > 5 * 1024 * 1024
@@ -484,15 +504,14 @@ const Chat = ({
                   className="mb-2 flex justify-start"
                 >
                   <div className="flex flex-col items-start">
-                    <span className="inline-block p-2 h-10 flex items-center rounded max-w-[80%] bg-secondary text-secondary-foreground">
+                    <span className="inline-block p-2 h-10 flex items-center rounded bg-secondary text-secondary-foreground">
                       <ThreeDotLoader />
                     </span>
                   </div>
                 </div>
               </>
             ) : (
-              initialMessageFetched &&
-              isConversationHistoryFetched &&
+              isInitialized &&
               messages.map((message, index) => (
                 <div
                   key={index}

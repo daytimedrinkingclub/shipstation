@@ -34,6 +34,7 @@ export default function PortfolioBuilder() {
   const userId = user?.id;
 
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Add useNavigate hook
 
   const [name, setName] = useState("");
   const [customDesignPrompt, setCustomDesignPrompt] = useState("");
@@ -43,8 +44,6 @@ export default function PortfolioBuilder() {
   const [isKeyValidating, setIsKeyValidating] = useState(false);
   const [isWebsitesDialogOpen, setIsWebsitesDialogOpen] = useState(false);
   const [assets, setAssets] = useState([]);
-  const [projectStarted, setProjectStarted] = useState(false);
-  const [projectData, setProjectData] = useState(null);
 
   const baseUrl = import.meta.env.VITE_MAIN_URL;
 
@@ -55,8 +54,6 @@ export default function PortfolioBuilder() {
     onClose: onLoaderClose,
   } = useDisclosure();
   const { isOpen: isSuccessOpen, onOpen: onSuccessOpen } = useDisclosure();
-
-  const navigate = useNavigate();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -178,8 +175,14 @@ export default function PortfolioBuilder() {
       socket.on("project_started", (data) => {
         const { slug, prompt } = data;
         dispatch(setIsDeploying(true));
-        setProjectStarted(true);
-        setProjectData({ slug, prompt });
+
+        // Navigate to /editor with state data
+        navigate("/editor", {
+          state: {
+            shipSlug: slug,
+            initialPrompt: prompt,
+          },
+        });
       });
 
       socket.on("websiteDeployed", () => {
@@ -195,19 +198,7 @@ export default function PortfolioBuilder() {
         socket.off("project_started");
       };
     }
-  }, [socket, isPaymentRequired, navigate]);
-
-  useEffect(() => {
-    if ( projectStarted && projectData) {
-      navigate("/editor", {
-        state: {
-          shipId: null,
-          shipSlug: projectData.slug,
-          initialPrompt: projectData.prompt,
-        },
-      });
-    }
-  }, [isGenerating, projectStarted, projectData, navigate]);
+  }, [socket, isPaymentRequired, navigate, dispatch]);
 
   const handleSubmitAnthropicKey = (apiKey) => {
     socket.emit("anthropicKey", { anthropicKey: apiKey });
