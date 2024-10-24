@@ -134,7 +134,7 @@ export default function CustomDesignPrompt({
     const assetToRemove = assets[index];
     const updatedAssets = assets.filter((_, i) => i !== index);
     onAssetsUpdate(updatedAssets);
-    
+
     // If the removed asset was the resume, also clear the resumeFile state
     if (assetToRemove === resumeFile) {
       setResumeFile(null);
@@ -160,13 +160,13 @@ export default function CustomDesignPrompt({
         description:
           "User added a resume pdf, this can be used for content of the portfolio.",
       };
-      
+
       setResumeFile(newResumeFile);
-      
+
       // Update assets by replacing the old resume (if any) with the new one
-      const updatedAssets = assets.filter(asset => asset !== resumeFile);
+      const updatedAssets = assets.filter((asset) => asset !== resumeFile);
       onAssetsUpdate([...updatedAssets, newResumeFile]);
-      
+
       toast.success("Resume updated successfully!");
     } else {
       toast.error("Please upload a PDF file for your resume.");
@@ -288,16 +288,16 @@ export default function CustomDesignPrompt({
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-auto p-4">
             {tempFiles.map((file, index) => (
-              <Card key={index} className="bg-card relative">
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6 z-10"
-                  onClick={() => handleRemoveFile(file.file.name)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+              <Card key={index} className="bg-card relative pt-2">
                 <CardContent className="p-4 space-y-4">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6 z-10"
+                    onClick={() => handleRemoveFile(file.file.name)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                   <div className="aspect-video bg-muted rounded-md overflow-hidden">
                     <FilePreview file={file.file} />
                   </div>
