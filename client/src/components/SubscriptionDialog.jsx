@@ -11,134 +11,131 @@ import {
 import { Button } from "@/components/ui/button";
 import { Zap, Image, Globe, FileText, Crown } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
+import { initializePaddle } from "@paddle/paddle-js";
+import { useToast } from "@/components/ui/use-toast";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   const [selectedPlan, setSelectedPlan] = useState("yearly");
   const [showConfetti, setShowConfetti] = useState(false);
+  const [paddle, setPaddle] = useState(null);
+  const [prices, setPrices] = useState({
+    monthly: null,
+    yearly: null,
+  });
+  const { toast } = useToast();
 
-  const planDetails = {
-    monthly: {
-      price: "$4",
-      period: "per month",
-      planId: "P-31N80695BE517244WM4AQH2I",
-      description: "Monthly Subscription",
-    },
-    yearly: {
-      price: "$38",
-      period: "per year",
-      planId: "P-7CH88240A4661311RM4AQIUI",
-      description: "Yearly Subscription",
-    },
-  };
+  const fetchPrices = async (paddleInstance) => {
+    const request = {
+      items: [
+        {
+          priceId: import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID,
+          quantity: 1,
+        },
+        {
+          priceId: import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
+          quantity: 1,
+        },
+      ],
+    };
+    try {
+      const pricePreview = await paddleInstance.PricePreview(request);
+      console.log("Price Preview Response:", pricePreview);
 
-  const rzpPlanDetails = {
-    monthly: {
-      price: "₹190",
-      period: "per month",
-      subscriptionId: "plan_P50C6KoJZ5cCYY	", // Replace with actual monthly plan ID
-      description: "Monthly Subscription",
-    },
-    yearly: {
-      price: "₹999",
-      period: "per year",
-      subscriptionId: "plan_P6Aold8asDFAUk", // Replace with actual yearly plan ID
-      description: "Yearly Subscription",
-    },
-  };
+      if (
+        pricePreview &&
+        pricePreview.data &&
+        pricePreview.data.details &&
+        pricePreview.data.details.lineItems
+      ) {
+        const monthlyPrice = pricePreview.data.details.lineItems.find(
+          (item) => item.price.billingCycle.interval === "month"
+        );
+        const yearlyPrice = pricePreview.data.details.lineItems.find(
+          (item) => item.price.billingCycle.interval === "year"
+        );
 
-  const rzpKeys = {
-    test: {
-      key: "rzp_test_81n8IWzEnxvpwy",
-    },
-    prod: {
-      key: "rzp_live_81n8IWzEnxvpwy",
-    },
-  };
-
-  const getRzpKey = () => {
-    if (process.env.NODE_ENV === "development") {
-      return rzpKeys.test.key;
-    } else {
-      return rzpKeys.prod.key;
+        if (monthlyPrice && yearlyPrice) {
+          setPrices({
+            monthly: {
+              amount: monthlyPrice.formattedTotals.total,
+              period: "per month",
+            },
+            yearly: {
+              amount: yearlyPrice.formattedTotals.total,
+              period: "per year",
+            },
+          });
+        } else {
+          console.error(
+            "Could not find monthly or yearly prices in the response"
+          );
+        }
+      } else {
+        console.error("Unexpected response structure from PricePreview");
+      }
+    } catch (error) {
+      console.error("Error fetching prices:", error);
     }
   };
-  
-  const currentPlan = planDetails[selectedPlan];
 
-  const handleSubscribe = () => {
-    const options = {
-      key: getRzpKey(),
-      subscription_id: currentPlan.subscriptionId,
-      name: "ShipStation.ai",
-      description: currentPlan.description,
-      image: "https://app.shipstation.ai/assets/logo.png",
-      handler: function (response) {
-        console.log(response.razorpay_payment_id);
-        console.log(response.razorpay_subscription_id);
-        console.log(response.razorpay_signature);
-
-        setShowConfetti(true);
-
-        toast.success("Subscription successful!", {
-          description: "Welcome to the premium plan!",
-        });
-
-        setTimeout(() => {
-          onClose();
-          setShowConfetti(false);
-        }, 3000);
-      },
-      prefill: {
-        email: user.email,
-      },
-      notes: {
-        note_key_1: "Premium Portfolio Subscription",
-        note_key_2: selectedPlan === "yearly" ? "Yearly Plan" : "Monthly Plan",
-      },
-      theme: {
-        color: "#10B981",
-      },
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
+  const handleSubscriptionSuccess = () => {
+    setShowConfetti(true);
+    toast({
+      title: "Subscription Successful!",
+      description:
+        "Welcome to the premium features. Enjoy your upgraded experience!",
+      duration: 5000,
+    });
+    setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
+    onClose(); // Close the dialog
   };
 
-
-  const handleSubscriptionApprove = (data, actions) => {
-    return actions.subscription.get().then((details) => {
-      console.log("Subscription completed", details);
-      setShowConfetti(true);
-      toast.success("Subscription successful!", {
-        description: "Welcome to the premium plan!",
+  const handleSubscribe = () => {
+    if (paddle) {
+      paddle.Checkout.open({
+        items: [
+          {
+            priceId:
+              selectedPlan === "monthly"
+                ? import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID
+                : import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
+            quantity: 1,
+          },
+        ],
+        customer: {
+          email: user?.email,
+        },
+        theme: "dark",
+        successCallback: handleSubscriptionSuccess,
+        closeCallback: () => {
+          console.log("Checkout closed");
+        },
       });
-      setTimeout(() => {
-        onClose();
-        setShowConfetti(false);
-      }, 3000);
-    });
+    } else {
+      console.error("Paddle is not initialized");
+    }
+    console.log("Subscribe");
   };
 
   useEffect(() => {
-    // const script = document.createElement("script");
-    // script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    // script.async = true;
-    // document.body.appendChild(script);
-
-    // return () => {
-    //   document.body.removeChild(script);
-    // };
+    initializePaddle({
+      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT,
+      token: import.meta.env.VITE_PADDLE_KEY,
+    }).then((paddleInstance) => {
+      if (paddleInstance) {
+        setPaddle(paddleInstance);
+        fetchPrices(paddleInstance);
+      }
+    });
   }, []);
 
   const renderSubscriptionContent = () => {
     if (!isSubscribed) {
       return (
         <>
-          <DialogHeader>
-            <DialogTitle>Upgrade to Premium</DialogTitle>
-            <DialogDescription>
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-2xl">Upgrade to ShipStation Pro</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
@@ -155,12 +152,17 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
             </Tabs>
             <div className="flex items-center">
               <span className="text-2xl font-bold text-primary">
-                {currentPlan.price}
+                {prices[selectedPlan]?.amount || "Loading..."}
               </span>
               <span className="text-sm text-muted-foreground ml-1">
-                {currentPlan.period}
+                {prices[selectedPlan]?.period || ""}
               </span>
             </div>
+            {selectedPlan === "yearly" && (
+              <span className="text-sm text-foreground font-semibold mt-1">
+                Get two months free 🥰
+              </span>
+            )}
           </div>
           <div className="grid grid-cols-1 gap-4 py-4">
             {[
@@ -204,26 +206,16 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
             ))}
           </div>
           <DialogFooter className="flex items-center sm:justify-center w-full">
-            <PayPalButtons
-              key={selectedPlan}
-              createSubscription={(data, actions) => {
-                const currentPlan = planDetails[selectedPlan];
-                return actions.subscription.create({
-                  plan_id: currentPlan.planId,
-                });
-              }}
-              onApprove={handleSubscriptionApprove}
-              style={{ layout: "vertical", color: "blue" }}
-            />
+            <Button onClick={handleSubscribe}>Subscribe to Pro</Button>
           </DialogFooter>
         </>
       );
     } else {
       return (
         <>
-          <DialogHeader>
-            <DialogTitle>Your Subscription</DialogTitle>
-            <DialogDescription>
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-2xl">Your Subscription</DialogTitle>
+            <DialogDescription className="text-gray-500">
               Manage your premium subscription
             </DialogDescription>
           </DialogHeader>
@@ -264,20 +256,14 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   };
 
   return (
-    <PayPalScriptProvider
-      options={{
-        "client-id":
-          "Abfx2fBz2b8Zos3YenEPUvpAS1OF_6HwAaJpnHw535oNJaRHoTE_j-XWrw0z04OUXi63fIn7bMbeMopf",
-        vault: true,
-      }}
-    >
+    <>
       {showConfetti && <Confetti />}
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           {renderSubscriptionContent()}
         </DialogContent>
       </Dialog>
-    </PayPalScriptProvider>
+    </>
   );
 };
 
