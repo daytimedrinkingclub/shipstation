@@ -65,7 +65,7 @@ const WebsiteGallery = ({ userId, onSelectWebsite, baseUrl }) => {
       const isLiked = website.is_liked_by_user;
       const action = isLiked ? unlikeWebsite : likeWebsite;
 
-      await action(website.slug);
+      await action(website.id);
 
       setAllGeneratedWebsites((prev) => ({
         ...prev,

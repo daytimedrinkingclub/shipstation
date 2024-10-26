@@ -259,7 +259,7 @@ function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
 
     IMPORTANT: Only use these tools if absolutely necessary. If you have sufficient information to make the requested changes without using any tools, proceed directly with the code refinement. Do not use tools for routine updates or when the existing information is adequate.
 
-    Your response should be structured using XML tags as follows:
+    Your response should contain just the following two XML tags only, nothing else:
 
     <explanation>
     A brief explanation of the changes made. (Do no get very technical, user may not be a developer. Just explain what you did in simple terms.)

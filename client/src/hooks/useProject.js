@@ -137,9 +137,9 @@ export function useProject(slug) {
     }
   };
 
-  const likeWebsite = async (websiteSlug) => {
+  const likeWebsite = async (websiteId) => {
     try {
-      const response = await axiosInstance.post(`/like/${websiteSlug}`);
+      const response = await axiosInstance.post(`/like/${websiteId}`);
       return response.data;
     } catch (err) {
       setError("Failed to like website");
@@ -148,9 +148,9 @@ export function useProject(slug) {
     }
   };
 
-  const unlikeWebsite = async (websiteSlug) => {
+  const unlikeWebsite = async (websiteId) => {
     try {
-      const response = await axiosInstance.delete(`/like/${websiteSlug}`);
+      const response = await axiosInstance.delete(`/like/${websiteId}`);
       return response.data;
     } catch (err) {
       setError("Failed to unlike website");
