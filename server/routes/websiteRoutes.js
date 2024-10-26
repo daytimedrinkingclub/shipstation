@@ -9,6 +9,6 @@ router.get("/project-structure/:slug", websiteController.getProjectStructure);
 router.get("/:websiteId", websiteController.getWebsite);
 router.post("/like/:slug", authMiddleware, websiteController.likeWebsite);
 router.delete("/like/:slug", authMiddleware, websiteController.unlikeWebsite);
-router.get("/analyze/:shipId", websiteController.analyzeWebsite);
+router.get("/analyze-repair/:shipId", websiteController.analyzeWebsite);
 
 module.exports = router;

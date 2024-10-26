@@ -255,7 +255,7 @@ export default function CustomDesignPrompt({
                   />
                 ) : (
                   <div className="w-24 h-24 bg-secondary flex items-center justify-center rounded">
-                    <span className="text-xs text-center break-words px-1">
+                    <span className="text-xs text-center break-words line-clamp-2 px-1">
                       {asset.file.name}
                     </span>
                   </div>

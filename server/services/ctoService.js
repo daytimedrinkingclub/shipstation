@@ -100,17 +100,17 @@ async function ctoService({
     const slug = projectFolderName;
 
     // Run analyze and repair after cto calls deploy tool
-    console.log("Starting analyze and repair process...");
-    try {
-      const analyzeAndRepairResult =
-        await analyzeAndRepairService.analyzeAndRepairSite(slug);
-      console.log(
-        "Analyze and repair process completed:",
-        analyzeAndRepairResult
-      );
-    } catch (error) {
-      console.error("Error in analyze and repair process:", error);
-    }
+    // console.log("Starting analyze and repair process...");
+    // try {
+    //   const analyzeAndRepairResult =
+    //     await analyzeAndRepairService.analyzeAndRepairSite(slug);
+    //   console.log(
+    //     "Analyze and repair process completed:",
+    //     analyzeAndRepairResult
+    //   );
+    // } catch (error) {
+    //   console.error("Error in analyze and repair process:", error);
+    // }
 
     await screenshotService.saveScreenshot(slug);
 

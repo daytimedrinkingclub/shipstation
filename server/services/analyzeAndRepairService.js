@@ -1,4 +1,4 @@
-const { chromium } = require("playwright-core");
+const puppeteer = require("puppeteer");
 const { AnthropicService } = require("./anthropicService");
 const FileService = require("./fileService");
 const {
@@ -34,13 +34,16 @@ class AnalyzeAndRepairService {
     const url = `${process.env.MAIN_URL}/site/${shipId}`;
     console.log(`Analyzing website: ${url}`);
 
-    const browser = await chromium.launch({ headless: true });
+    const browser = await puppeteer.launch({
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+      headless: true,
+    });
     const page = await browser.newPage();
 
     try {
       console.log("Navigating to the page...");
       const navigationStart = Date.now();
-      await page.goto(url, { waitUntil: "networkidle" });
+      await page.goto(url, { waitUntil: "networkidle0" });
       console.log(
         `Navigation completed in ${(Date.now() - navigationStart) / 1000}s`
       );
@@ -107,60 +110,33 @@ class AnalyzeAndRepairService {
     );
     screenshots.mobile = await this.takeFullPageScreenshot(
       page,
-      390,
+      500,
       844,
       "Mobile",
       screenshotDir
     );
 
-    // Take screenshots of semantic sections for both desktop and mobile
-    const semanticTags = [
-      "header",
-      "main",
-      "footer",
-      "section",
-      "nav",
-      "article",
-    ];
+    // Take screenshots of semantic sections
+    const semanticTags = ["header", "main", "footer", "section", "nav", "article"];
 
     // Desktop element screenshots
-    await page.setViewportSize({ width: 1920, height: 1080 });
-    await this.takeElementScreenshots(
-      page,
-      semanticTags,
-      screenshots,
-      "desktop",
-      screenshotDir
-    );
-
-    // Prioritize main content section screenshots for desktop
-    const desktopMain = await page.$("main");
-    if (desktopMain) {
-      screenshots.desktop_main_priority = await this.takeElementScreenshot(
+    await page.setViewport({ width: 1920, height: 1080 });
+    for (const tag of semanticTags) {
+      screenshots[`desktop_${tag}`] = await this.takeElementScreenshot(
         page,
-        desktopMain,
-        "desktop_main_priority",
+        tag,
+        `desktop_${tag}`,
         screenshotDir
       );
     }
 
     // Mobile element screenshots
-    await page.setViewportSize({ width: 390, height: 844 });
-    await this.takeElementScreenshots(
-      page,
-      semanticTags,
-      screenshots,
-      "mobile",
-      screenshotDir
-    );
-
-    // Prioritize main content section screenshots for mobile
-    const mobileMain = await page.$("main");
-    if (mobileMain) {
-      screenshots.mobile_main_priority = await this.takeElementScreenshot(
+    await page.setViewport({ width: 390, height: 844 });
+    for (const tag of semanticTags) {
+      screenshots[`mobile_${tag}`] = await this.takeElementScreenshot(
         page,
-        mobileMain,
-        "mobile_main_priority",
+        tag,
+        `mobile_${tag}`,
         screenshotDir
       );
     }
@@ -168,62 +144,36 @@ class AnalyzeAndRepairService {
     return screenshots;
   }
 
-  async takeElementScreenshots(
-    page,
-    semanticTags,
-    screenshots,
-    viewportType,
-    screenshotDir
-  ) {
-    for (const tag of semanticTags) {
-      const elements = await page.$$(tag);
-      for (let i = 0; i < elements.length; i++) {
-        const elementScreenshot = await this.takeElementScreenshot(
-          page,
-          elements[i],
-          `${viewportType}_${tag}_${i + 1}`,
-          screenshotDir
-        );
-        if (elementScreenshot) {
-          screenshots[`${viewportType}_${tag}_${i + 1}`] = elementScreenshot;
-        }
-      }
-    }
-  }
-
-  async takeFullPageScreenshot(page, width, height, label, screenshotDir) {
-    console.log(`Taking ${label} screenshot...`);
-    const start = Date.now();
-    await page.setViewportSize({ width, height });
-    const screenshot = await page.screenshot({ fullPage: true, type: "png" });
-    console.log(`${label} screenshot taken in ${(Date.now() - start) / 1000}s`);
-
-    const compressedScreenshot = await this.compressImage(screenshot);
-
-    // Save the screenshot locally only if SAVE_LOCAL_SCREENSHOTS is true
-    if (SAVE_LOCAL_SCREENSHOTS) {
-      const filename = `${label.toLowerCase()}_full.jpg`;
-      await this.saveScreenshotLocally(
-        compressedScreenshot,
-        screenshotDir,
-        filename
-      );
-    }
-
-    return compressedScreenshot;
-  }
-
-  async takeElementScreenshot(page, element, label, screenshotDir) {
+  async takeElementScreenshot(page, selector, label, screenshotDir) {
     try {
       console.log(`Taking screenshot of ${label}...`);
       const start = Date.now();
 
-      await element.scrollIntoViewIfNeeded();
+      // Find the element using the tag name
+      const element = await page.$(`${selector}`);
+      if (!element) {
+        console.log(`Element ${selector} not found`);
+        return null;
+      }
 
-      const screenshot = await element.screenshot({ type: "png" });
-      console.log(
-        `${label} screenshot taken in ${(Date.now() - start) / 1000}s`
-      );
+      // Make sure the element is visible in viewport
+      await element.evaluate(el => {
+        el.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      });
+
+      // Wait a bit for any scrolling to complete
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Take the screenshot
+      const screenshot = await element.screenshot({
+        type: "png",
+        omitBackground: false
+      });
+
+      console.log(`${label} screenshot taken in ${(Date.now() - start) / 1000}s`);
 
       const compressedScreenshot = await this.compressImage(screenshot);
 
@@ -242,6 +192,51 @@ class AnalyzeAndRepairService {
       console.error(`Error taking screenshot of ${label}:`, error);
       return null;
     }
+  }
+
+  async takeFullPageScreenshot(page, width, height, label, screenshotDir) {
+    console.log(`Taking ${label} screenshot...`);
+    const start = Date.now();
+    
+    await page.setViewport({ width, height });
+    
+    // Wait for any lazy-loaded content
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Wait for network to be idle
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.evaluate(() => 
+      new Promise(resolve => {
+        let lastScroll = document.documentElement.scrollHeight;
+        const checkScroll = () => {
+          document.documentElement.scrollHeight === lastScroll ? 
+            resolve() : 
+            (lastScroll = document.documentElement.scrollHeight, setTimeout(checkScroll, 100));
+        };
+        checkScroll();
+      })
+    );
+    
+    const screenshot = await page.screenshot({ 
+      fullPage: true, 
+      type: "png"
+    });
+    
+    console.log(`${label} screenshot taken in ${(Date.now() - start) / 1000}s`);
+
+    const compressedScreenshot = await this.compressImage(screenshot);
+
+    // Save the screenshot locally only if SAVE_LOCAL_SCREENSHOTS is true
+    if (SAVE_LOCAL_SCREENSHOTS) {
+      const filename = `${label.toLowerCase()}_full.jpg`;
+      await this.saveScreenshotLocally(
+        compressedScreenshot,
+        screenshotDir,
+        filename
+      );
+    }
+
+    return compressedScreenshot;
   }
 
   async compressImage(imageBuffer) {
