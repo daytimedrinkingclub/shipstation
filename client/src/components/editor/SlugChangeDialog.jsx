@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setShipInfo } from "@/store/shipSlice";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +28,11 @@ const SlugChangeDialog = ({ open, onOpenChange }) => {
     );
   }, [newSlug, shipInfo.slug]);
 
+  const cleanSlug = (input) => {
+    // Remove any characters that aren't a-z, 0-9, or dash
+    return input.toLowerCase().replace(/[^a-z0-9-]/g, '');
+  };
+
   const handleSlugChange = async () => {
     setIsChangingSlug(true);
     try {
@@ -54,24 +58,29 @@ const SlugChangeDialog = ({ open, onOpenChange }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Change Slug</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
+          <DialogTitle className="text-left">Change Slug</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-left">
             Enter a new slug for your project. This will change the URL of your
             website.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="slug" className="text-right text-foreground">
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label htmlFor="slug" className="text-right text-foreground pt-2">
               Slug
             </Label>
-            <Input
-              id="slug"
-              value={newSlug}
-              onChange={(e) => setNewSlug(e.target.value)}
-              placeholder="Enter new slug"
-              className="col-span-3 text-foreground"
-            />
+            <div className="col-span-3 space-y-2">
+              <Input
+                id="slug"
+                value={newSlug}
+                onChange={(e) => setNewSlug(cleanSlug(e.target.value))}
+                placeholder="Enter new slug"
+                className="text-foreground"
+              />
+              <p className="text-xs text-muted-foreground">
+                Only lowercase letters, numbers, and dashes are allowed
+              </p>
+            </div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label className="text-right text-foreground">Preview</Label>
