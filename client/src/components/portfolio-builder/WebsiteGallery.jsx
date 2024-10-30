@@ -1,61 +1,38 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { useInView } from "react-intersection-observer";
 import { Button } from "@/components/ui/button";
 import { FocusCards } from "@/components/ui/focus-cards";
 import { Loader2, Heart } from "lucide-react";
-import { fetchGeneratedWebsites } from "@/lib/utils/portfolioUtils";
 import { toast } from "sonner";
 import { useProject } from "@/hooks/useProject";
 import { Switch } from "@/components/ui/switch";
+import { useWebsites } from "@/hooks/useWebsites";
+import { useQueryClient } from "@tanstack/react-query";
 
 const WebsiteGallery = ({ userId, onSelectWebsite, baseUrl }) => {
-  const [allGeneratedWebsites, setAllGeneratedWebsites] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [showLikedOnly, setShowLikedOnly] = useState(false);
+  const queryClient = useQueryClient();
   const { ref, inView } = useInView({
     threshold: 0,
   });
-  const [showLikedOnly, setShowLikedOnly] = useState(false);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  } = useWebsites(userId);
 
   const { likeWebsite, unlikeWebsite } = useProject();
 
-  const loadGeneratedWebsites = useCallback(
-    async (pageNumber = 1) => {
-      if (!hasMore && pageNumber !== 1) return;
-
-      setIsLoading(true);
-      try {
-        const data = await fetchGeneratedWebsites(pageNumber, 15, userId);
-
-        setAllGeneratedWebsites((prev) => ({
-          ...prev,
-          [pageNumber]: data.websites,
-        }));
-
-        setHasMore(data.hasMore);
-        setCurrentPage(pageNumber);
-      } catch (error) {
-        console.error("Error fetching generated websites:", error);
-        toast.error("Failed to load generated websites");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [userId]
-  );
-
-  useEffect(() => {
-    loadGeneratedWebsites(1);
-  }, [loadGeneratedWebsites]);
-
-  useEffect(() => {
-    if (inView && !isLoading && hasMore) {
-      loadGeneratedWebsites(currentPage + 1);
+  React.useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
-  }, [inView, isLoading, hasMore, currentPage, loadGeneratedWebsites]);
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const handleLikeWebsite = async (website, pageNumber) => {
+  const handleLikeWebsite = async (website, pageIndex) => {
     if (!userId) {
       toast.error("Please log in to like websites");
       return;
@@ -67,16 +44,24 @@ const WebsiteGallery = ({ userId, onSelectWebsite, baseUrl }) => {
 
       await action(website.id);
 
-      setAllGeneratedWebsites((prev) => ({
-        ...prev,
-        [pageNumber]: prev[pageNumber].map((w) =>
-          w.slug === website.slug
+      // Update cache
+      queryClient.setQueryData(["websites", userId], (oldData) => ({
+        ...oldData,
+        pages: oldData.pages.map((page, idx) => 
+          idx === pageIndex
             ? {
-                ...w,
-                likes_count: isLiked ? w.likes_count - 1 : w.likes_count + 1,
-                is_liked_by_user: !isLiked,
+                ...page,
+                websites: page.websites.map((w) =>
+                  w.slug === website.slug
+                    ? {
+                        ...w,
+                        likes_count: isLiked ? w.likes_count - 1 : w.likes_count + 1,
+                        is_liked_by_user: !isLiked,
+                      }
+                    : w
+                ),
               }
-            : w
+            : page
         ),
       }));
 
@@ -88,51 +73,46 @@ const WebsiteGallery = ({ userId, onSelectWebsite, baseUrl }) => {
   };
 
   const filteredWebsites = useCallback(() => {
-    return Object.entries(allGeneratedWebsites).flatMap(
-      ([pageNumber, websites]) =>
-        websites
-          .filter((website) => !showLikedOnly || website.is_liked_by_user)
-          .map((website) => ({
-            key: `${website.slug}-${pageNumber}`,
-            src: `${
-              import.meta.env.VITE_SUPABASE_URL
-            }/storage/v1/object/public/shipstation-websites/websites/${
-              website.slug
-            }/screenshot.png`,
-            url: `${baseUrl}/site/${website.slug}`,
-            onClick: () => onSelectWebsite(website),
-            likeButton: (
-              <Button
-                key={`like-${website.slug}-${pageNumber}`}
-                size="sm"
-                variant="ghost"
-                className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLikeWebsite(website, pageNumber);
-                }}
-              >
-                <Heart
-                  className={`h-5 w-5 ${
-                    website.is_liked_by_user
-                      ? "fill-current text-red-500"
-                      : "text-gray-500"
-                  }`}
-                />
-                <span className="ml-1 text-gray-700 dark:text-gray-300">
-                  {website.likes_count}
-                </span>
-              </Button>
-            ),
-          }))
+    if (!data?.pages) return [];
+
+    return data.pages.flatMap((page, pageIndex) =>
+      page.websites
+        .filter((website) => !showLikedOnly || website.is_liked_by_user)
+        .map((website) => ({
+          key: `${website.slug}-${pageIndex}`,
+          src: `${
+            import.meta.env.VITE_SUPABASE_URL
+          }/storage/v1/object/public/shipstation-websites/websites/${
+            website.slug
+          }/screenshot.png`,
+          url: `${baseUrl}/site/${website.slug}`,
+          onClick: () => onSelectWebsite(website),
+          likeButton: (
+            <Button
+              key={`like-${website.slug}-${pageIndex}`}
+              size="sm"
+              variant="ghost"
+              className="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLikeWebsite(website, pageIndex);
+              }}
+            >
+              <Heart
+                className={`h-5 w-5 ${
+                  website.is_liked_by_user
+                    ? "fill-current text-red-500"
+                    : "text-gray-500"
+                }`}
+              />
+              <span className="ml-1 text-gray-700 dark:text-gray-300">
+                {website.likes_count}
+              </span>
+            </Button>
+          ),
+        }))
     );
-  }, [
-    allGeneratedWebsites,
-    showLikedOnly,
-    baseUrl,
-    onSelectWebsite,
-    handleLikeWebsite,
-  ]);
+  }, [data?.pages, showLikedOnly, baseUrl, onSelectWebsite]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -155,12 +135,12 @@ const WebsiteGallery = ({ userId, onSelectWebsite, baseUrl }) => {
         <div className="p-4 md:px-0">
           <FocusCards cards={filteredWebsites()} />
         </div>
-        {isLoading && (
+        {(isLoading || isFetchingNextPage) && (
           <div className="flex justify-center items-center mt-4">
             <Loader2 className="h-6 w-6 animate-spin" />
           </div>
         )}
-        {!isLoading && hasMore && <div ref={ref} className="h-10" />}
+        {!isLoading && hasNextPage && <div ref={ref} className="h-10" />}
       </div>
     </div>
   );
