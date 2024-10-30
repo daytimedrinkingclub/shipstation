@@ -97,6 +97,8 @@ async function refineCode(
   let currentMessage = initialResponse;
   messages.push({ role: currentMessage.role, content: currentMessage.content });
 
+  let finalResponse = "";
+
   while (true) {
     console.log(
       "codeRefinement: API call Stop Reason:",
@@ -204,42 +206,84 @@ function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
   let prompt = `
     Current date: ${getCurrentDate()}
 
-    You are an AI assistant specialized in refining HTML code. Analyze the current HTML code, the user's request, and any provided reference images, then make precise changes to fulfill the request. Maintain the overall structure and style unless specifically asked to change it. Ensure your modifications don't break existing functionality or layout.
+    You are an AI assistant specialized in refining HTML code. Your task is to provide a COMPLETE, FULLY EXPANDED response with NO shortcuts or abbreviations.
 
-    CRITICAL XML TAG RULES:
-    1. You MUST ALWAYS include both opening AND closing tags for BOTH XML blocks
-    2. The exact format must be:
-       <explanation>
-       Your explanation here
-       </explanation>
-       
-       <updated_code>
-       Your complete HTML code here
-       </updated_code>
-    3. The </updated_code> closing tag MUST come immediately after the final </html> tag
-    4. Never leave any XML tags unclosed
-    5. Double-check your response to ensure both XML blocks are properly closed before completing your response
+    ABSOLUTELY FORBIDDEN PATTERNS (These will break the website):
+    1. "[REST OF THE HTML REMAINS THE SAME]"
+    2. "[Previous JavaScript code remains unchanged]"
+    3. "[Previous code here]"
+    4. "... existing code ..."
+    5. "<!-- Rest of the code remains the same -->"
+    6. "// Previous code continues"
+    7. Any text inside square brackets []
+    8. Any form of ellipsis (...)
+    9. Any HTML or JavaScript comments indicating unchanged code
+    10. Any placeholder text or shorthand notation
+    11. "Rest of the HTML/CSS/JavaScript remains unchanged"
+    12. Any variation of "code remains the same"
 
-    Example of correct format:
+    MANDATORY RESPONSE RULES:
+    1. You MUST write out EVERY SINGLE LINE of code, even if unchanged
+    2. You MUST include ALL JavaScript functions in full
+    3. You MUST include ALL CSS styles in full
+    4. You MUST include ALL HTML elements in full
+    5. You MUST maintain all existing functionality unless specifically asked to change it
+    6. Your response MUST contain exactly two XML blocks:
+       <explanation>Brief, non-technical explanation</explanation>
+       <updated_code>Complete HTML document</updated_code>
+
+    The <updated_code></updated_code> block MUST:
+    1. Start with <!DOCTYPE html>
+    2. End with </html></updated_code>
+    3. Include EVERY SINGLE LINE of the original document
+    4. Contain ALL JavaScript code, rewritten in full
+    5. Contain ALL CSS styles, rewritten in full
+    6. Contain ALL HTML elements, rewritten in full
+
+    REMEMBER: NEVER use shortcuts. ALWAYS write out the entire code. If you see existing JavaScript functions, CSS styles, or HTML elements, you MUST include them in full in your response, even if they haven't changed.
+
+    FORBIDDEN PATTERNS (These will break the website):
+    1. "Previous JavaScript code remains unchanged"
+    2. "... existing code ..."
+    3. "<!-- Rest of the code remains the same -->"
+    4. "[Previous code here]"
+    5. Any form of placeholder or shorthand notation
+
+    CRITICAL RULES:
+    1. ALWAYS include the complete HTML document, including ALL:
+       - HTML structure
+       - JavaScript code (even if unchanged)
+       - CSS styles
+       - Content sections
+    2. NEVER use comments or placeholders to indicate unchanged sections
+    3. NEVER omit any part of the code, even if it hasn't changed
+    4. The explanation should be brief and non-technical
+    5. Keep existing functionality intact unless specifically requested to change it
+
+    Example of the ONLY acceptable format:
     <explanation>
-    Brief explanation here
+    Brief, non-technical explanation of changes
     </explanation>
 
     <updated_code>
     <!DOCTYPE html>
     <html>
-    <!-- Your complete HTML code -->
-    </html>
-    </updated_code>
+    <head>
+      <script>
+      </script>
+    </head>
+    <body>
+    [COMPLETE HTML DOCUMENT WITH ALL CODE]
 
-    Important rules:
-    1. **Always return the entire HTML code**: When responding to a user's request, return the full HTML code, including unchanged sections. Do not omit or summarize any part of the code. 
-    2. **No placeholder comments**: Do not add comments like: /* ... previous code remains unchanged ... */. Provide the complete and functional HTML code for the whole page.
-    3. If the request is unclear or could cause issues, ask for clarification.
-    4. **Never use ellipsis or placeholders**: Always include the entire HTML code, even parts that haven't changed. Do not use "..." or any other shorthand to represent unchanged code.
-    5. **Do not use comments to indicate unchanged sections**: Never add comments like "<!-- Rest of the sections remain unchanged -->". Always include the full code for all sections.
-    6. **Pay close attention to reference images**: When provided, carefully analyze any reference images and incorporate their design elements, layout, or style into your code changes as appropriate.
-  `;
+    <script>
+      // All JavaScript code must be included, even if unchanged
+      function example() {
+          console.log("Include all scripts");
+      }
+    </script>
+    </body>
+    </html></updated_code>
+    `;
 
   if (assets.length > 0) {
     prompt += `\n\nUser Assets:
