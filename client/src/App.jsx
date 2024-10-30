@@ -10,6 +10,9 @@ import Edit from "./pages/Edit";
 import Portfolio from "./pages/Portfolio";
 import { AuthProvider } from "./context/AuthContext";
 import { SocketProvider } from "./context/SocketProvider";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
 
 function App() {
   useEffect(() => {
@@ -22,15 +25,17 @@ function App() {
       <SocketProvider>
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <Router>
-              <Routes>
-                <Route path="/home" element={<Home />} />
-                <Route path="/" element={<Portfolio />} />
-                <Route path="/ship" element={<Ship />} />
-                <Route path="/editor" element={<Edit />} />
-              </Routes>
-              <Toaster richColors position="bottom-center" invert />
-            </Router>
+            <QueryClientProvider client={queryClient}>
+              <Router>
+                <Routes>
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/" element={<Portfolio />} />
+                  <Route path="/ship" element={<Ship />} />
+                  <Route path="/editor" element={<Edit />} />
+                </Routes>
+                <Toaster richColors position="bottom-center" invert />
+              </Router>
+            </QueryClientProvider>
           </PersistGate>
         </Provider>
       </SocketProvider>
