@@ -8,6 +8,7 @@ async function validateKey(key) {
     apiKey: key,
     defaultHeaders: {
       "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+      "Helicone-Cache-Enabled": "true",
     },
   });
   try {
