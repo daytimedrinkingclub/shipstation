@@ -3,7 +3,13 @@ const { insertConversation } = require("./dbService");
 require("dotenv").config();
 
 async function validateKey(key) {
-  const testClient = new Anthropic({ apiKey: key });
+  const testClient = new Anthropic({
+    baseURL: "https://anthropic.helicone.ai/v1",
+    apiKey: key,
+    defaultHeaders: {
+      "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+    },
+  });
   try {
     await testClient.messages.create({
       model: process.env.DEFAULT_MODEL,
