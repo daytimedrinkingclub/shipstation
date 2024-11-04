@@ -37,6 +37,7 @@ exports.handleRazorpayWebhook = async (req, res) => {
       const profilePayload = {
         subscription_status: "active",
         subscription_start_date: new Date().toISOString(),
+        available_ships: 1000,
       };
 
       await updateUserProfile(user_id, profilePayload);
