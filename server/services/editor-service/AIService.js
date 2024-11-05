@@ -249,10 +249,21 @@ class AIService {
     </modifications>
 
     MODIFICATION TYPES:
-    1. "add": Insert new HTML content
-    2. "update": Modify existing content
-    3. "remove": Delete elements
-    4. "style": Modify element styling and attributes
+    - "update": Use when the target element exists and needs changes
+    - "add": Use ONLY when the feature/section doesn't exist at all
+    - "remove": Use for removing unwanted elements
+    - "style": Use for styling changes only
+
+    DECISION RULES FOR MODIFICATIONS:
+    1. Before adding new sections, ALWAYS check if a similar section already exists
+        - If a similar section exists, use "update" instead of "add"
+        - Example: When asked to add a contact form, first check if "#contact-form" exists
+
+    2. Common scenarios:
+        - "Add a header" -> First check if <header> exists, then update if it does
+        - "Add a contact form" -> Check for existing forms before adding new one
+        - "Add a feature section" -> Look for similar sections by ID or content
+        - "Change the layout" -> Use "style" or "update" on existing elements
 
     STYLE MODIFICATION RULES:
     1. Always use the "attributes" field for style modifications
