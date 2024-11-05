@@ -16,11 +16,11 @@ const {
 const { AnthropicService } = require("../services/anthropicService");
 const { getUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
-const {
-  undoCodeChange,
-  redoCodeChange,
-  refineCode,
-} = require("./codeRefinementService");
+// const {
+//   undoCodeChange,
+//   redoCodeChange,
+// } = require("./codeRefinementService");
+const { refineCode } = require("./editor-service");
 const { generateSiteContent } = require("./siteContentService");
 const ScreenshotService = require("./screenshotService");
 const { updatePrompt } = require("./promptUpdateService");
@@ -353,55 +353,55 @@ function handleOnboardingSocketEvents(io) {
       }
     });
 
-    socket.on("undoCodeChange", async (data) => {
-      const { shipId, shipSlug } = data;
-      console.log("Received undo request for ship:", shipId);
+    // socket.on("undoCodeChange", async (data) => {
+    //   const { shipId, shipSlug } = data;
+    //   console.log("Received undo request for ship:", shipId);
 
-      try {
-        const result = await undoCodeChange(shipId, shipSlug);
+    //   try {
+    //     const result = await undoCodeChange(shipId, shipSlug);
 
-        if (result.success) {
-          socket.emit("undoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.code);
-        } else {
-          socket.emit("undoResult", {
-            success: false,
-            message: result.message,
-          });
-        }
-      } catch (error) {
-        console.error("Error processing undo request:", error);
-        socket.emit("undoResult", {
-          success: false,
-          message: "An error occurred while processing your undo request.",
-        });
-      }
-    });
+    //     if (result.success) {
+    //       socket.emit("undoResult", { success: true, message: result.message });
+    //       socket.emit("codeUpdate", result.code);
+    //     } else {
+    //       socket.emit("undoResult", {
+    //         success: false,
+    //         message: result.message,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error("Error processing undo request:", error);
+    //     socket.emit("undoResult", {
+    //       success: false,
+    //       message: "An error occurred while processing your undo request.",
+    //     });
+    //   }
+    // });
 
-    socket.on("redoCodeChange", async (data) => {
-      const { shipId, shipSlug } = data;
-      console.log("Received redo request for ship:", shipId);
+    // socket.on("redoCodeChange", async (data) => {
+    //   const { shipId, shipSlug } = data;
+    //   console.log("Received redo request for ship:", shipId);
 
-      try {
-        const result = await redoCodeChange(shipId, shipSlug);
+    //   try {
+    //     const result = await redoCodeChange(shipId, shipSlug);
 
-        if (result.success) {
-          socket.emit("redoResult", { success: true, message: result.message });
-          socket.emit("codeUpdate", result.code);
-        } else {
-          socket.emit("redoResult", {
-            success: false,
-            message: result.message,
-          });
-        }
-      } catch (error) {
-        console.error("Error processing redo request:", error);
-        socket.emit("redoResult", {
-          success: false,
-          message: "An error occurred while processing your redo request.",
-        });
-      }
-    });
+    //     if (result.success) {
+    //       socket.emit("redoResult", { success: true, message: result.message });
+    //       socket.emit("codeUpdate", result.code);
+    //     } else {
+    //       socket.emit("redoResult", {
+    //         success: false,
+    //         message: result.message,
+    //       });
+    //     }
+    //   } catch (error) {
+    //     console.error("Error processing redo request:", error);
+    //     socket.emit("redoResult", {
+    //       success: false,
+    //       message: "An error occurred while processing your redo request.",
+    //     });
+    //   }
+    // });
 
     socket.on("generateSiteContent", async (data) => {
       const { userMessage, type, portfolioType } = data;
