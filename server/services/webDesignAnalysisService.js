@@ -44,7 +44,7 @@ class WebDesignAnalysisService {
             type: "image",
             source: {
               type: "base64",
-              media_type: img.mediaType,
+              media_type: img.type,
               data: img.base64,
             },
           }
