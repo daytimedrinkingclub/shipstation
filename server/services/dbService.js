@@ -498,6 +498,29 @@ async function updateShipSlug(shipId, newSlug) {
   return data;
 }
 
+async function createUser(email) {
+  try {
+    const tempPassword = Math.random().toString(36).slice(-12);
+
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+      });
+
+    if (authError) {
+      console.error("Error creating auth user:", authError);
+      throw authError;
+    }
+
+    return authData.user;
+  } catch (error) {
+    console.error("Error in createUser:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -526,4 +549,5 @@ module.exports = {
   updateShipPrompt,
   checkSlugAvailability,
   updateShipSlug,
+  createUser,
 };

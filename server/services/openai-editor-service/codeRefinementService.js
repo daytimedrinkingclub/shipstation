@@ -19,7 +19,11 @@ async function refineCode(
   console.log(`Starting code refinement for shipSlug: ${shipSlug}`);
 
   const openai = new OpenAI({
+    baseURL: "https://oai.helicone.ai/v1",
     apiKey: process.env.OPENAI_API_KEY,
+    defaultHeaders: {
+      "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+    },
   });
 
   const filePath = `${shipSlug}/index.html`;
