@@ -19,34 +19,34 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   useEffect(() => {
     const addRazorpayScript = () => {
       const rzpPaymentForm = document.getElementById("rzp_payment_form");
-      
+
       if (rzpPaymentForm && !rzpPaymentForm.hasChildNodes()) {
         const script = document.createElement("script");
         script.src = "https://checkout.razorpay.com/v1/payment-button.js";
         script.async = true;
         script.dataset.payment_button_id = "pl_PH9UiM0zlSM2Xw";
-        
+
         // Add click handler to close dialog
-        rzpPaymentForm.addEventListener('click', () => {
+        rzpPaymentForm.addEventListener("click", () => {
           setTimeout(() => onClose(false), 100);
         });
 
-        // Check if the button is rendered
-        const checkButtonRendered = setInterval(() => {
-          const razorpayButton = rzpPaymentForm.querySelector('button');
+        // Check if the button is rendered using MutationObserver
+        const observer = new MutationObserver((mutations, obs) => {
+          const razorpayButton = document.querySelector(
+            ".razorpay-payment-button"
+          );
           if (razorpayButton) {
             setIsPaymentLoading(false);
-            clearInterval(checkButtonRendered);
+            obs.disconnect(); // Stop observing once button is found
           }
-        }, 500);
+        });
 
-        // Clear interval after 2 seconds to prevent infinite checking
-        setTimeout(() => {
-          clearInterval(checkButtonRendered);
-          // If still loading after 2 seconds, show button anyway
-          setIsPaymentLoading(false);
-        }, 2000);
-        
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+
         rzpPaymentForm.appendChild(script);
       }
     };
@@ -80,19 +80,22 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     if (!isSubscribed) {
       return (
         <>
-          <DialogHeader className="mb-4">
-            <DialogTitle className="text-2xl">Upgrade to ShipStation Pro</DialogTitle>
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              Upgrade to ShipStation Pro
+            </DialogTitle>
             <DialogDescription className="text-gray-500">
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-1 gap-4 py-4">
             {[
               {
                 icon: Zap,
                 title: "Unlimited AI Refinements",
-                description: "Continuously improve your portfolio with AI assistance",
+                description:
+                  "Continuously improve your portfolio with AI assistance",
               },
               {
                 icon: Globe,
@@ -102,7 +105,8 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               {
                 icon: Image,
                 title: "Unlimited Assets",
-                description: "Add as many images, videos, and files as you need",
+                description:
+                  "Add as many images, videos, and files as you need",
               },
               {
                 icon: Crown,
@@ -116,8 +120,12 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               >
                 <feature.icon className="w-6 h-6 text-primary" />
                 <div>
-                  <h4 className="font-semibold text-foreground">{feature.title}</h4>
-                  <p className="text-sm text-muted-foreground">{feature.description}</p>
+                  <h4 className="font-semibold text-foreground">
+                    {feature.title}
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {feature.description}
+                  </p>
                 </div>
               </div>
             ))}

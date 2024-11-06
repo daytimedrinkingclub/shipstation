@@ -14,7 +14,7 @@ const {
   handleOnboardingToolUse,
 } = require("../tool-controllers/onboardingToolController");
 const { AnthropicService } = require("../services/anthropicService");
-const { getUserProfile } = require("../services/dbService");
+const { getUserProfile, updateUserProfile } = require("../services/dbService");
 const { SHIP_TYPES, DEFAULT_MESSAGES } = require("./constants");
 const {
   undoCodeChange,
@@ -316,8 +316,15 @@ function handleOnboardingSocketEvents(io) {
     });
 
     socket.on("chatMessage", async (data) => {
-      const { shipId, shipSlug, message, assets, assetInfo, aiReferenceFiles } =
-        data;
+      const {
+        shipId,
+        shipSlug,
+        message,
+        assets,
+        assetInfo,
+        aiReferenceFiles,
+        userId,
+      } = data;
       console.log("Received chat message:", message, "\nfor ship:", shipSlug);
       console.log("Message:", message);
       console.log("Assets:", assets.length, assetInfo);
@@ -328,7 +335,6 @@ function handleOnboardingSocketEvents(io) {
           shipId,
           shipSlug,
           message,
-          socket.userId,
           assets,
           assetInfo,
           aiReferenceFiles
@@ -340,7 +346,15 @@ function handleOnboardingSocketEvents(io) {
           socket.emit("codeUpdate", result.updatedCode);
           await screenshotService.saveScreenshot(shipSlug);
 
-          await updatePrompt(shipId, socket.userId, [
+          // decrement available ships after successful codeUpdate
+          const userProfile = await getUserProfile(userId);
+          if (userProfile.available_ships > 0) {
+            await updateUserProfile(userId, {
+              available_ships: userProfile.available_ships - 1,
+            });
+          }
+
+          await updatePrompt(shipId, userId, [
             { role: "user", content: message },
             { role: "assistant", content: result.updatedMessage },
           ]);

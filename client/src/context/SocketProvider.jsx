@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
-    const newSocket = io(import.meta.env.VITE_BACKEND_URL);
+    const newSocket = io(import.meta.env.VITE_SOCKET_URL);
     setSocket(newSocket);
 
     return () => newSocket.close();

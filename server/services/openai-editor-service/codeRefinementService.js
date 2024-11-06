@@ -11,7 +11,6 @@ async function refineCode(
   shipId,
   shipSlug,
   message,
-  userId,
   assets,
   assetInfo,
   aiReferenceFiles
@@ -88,7 +87,6 @@ async function refineCode(
 
     await dbService.upsertCodeRefiningConversation(
       shipId,
-      userId,
       messagesToSaveInDB
     );
 

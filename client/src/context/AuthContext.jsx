@@ -2,7 +2,24 @@ import { createContext, useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
-export const AuthContext = createContext({});
+export const AuthContext = createContext({
+  user: null,
+  userLoading: false,
+  supabase: null,
+  availableShips: 0,
+  recentlyShipped: [],
+  handleLogout: () => {},
+  handleLogin: () => {},
+  handleGoogleLogin: () => {},
+  sendLoginLink: () => {},
+  isSendingLoginLink: false,
+  isLoading: false,
+  myProjectsLoading: false,
+  anthropicKey: "",
+  setAnthropicKey: () => {},
+  checkCustomDomain: () => {},
+  getAvailableShips: () => {},
+});
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -31,14 +48,22 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getAvailableShips = async () => {
-    let { data: user_profiles, error } = await supabase
-      .from("user_profiles")
-      .select("available_ships");
+    try {
+      let { data: user_profiles, error } = await supabase
+        .from("user_profiles")
+        .select("available_ships");
 
-    if (error) {
-      console.error("Error fetching available ships:", error);
-    } else {
-      setAvailableShips(user_profiles[0]?.available_ships ?? 0);
+      if (error) {
+        console.error("Error fetching available ships:", error);
+        return 0;
+      } 
+      
+      const ships = user_profiles[0]?.available_ships ?? 0;
+      setAvailableShips(ships);
+      return ships;
+    } catch (error) {
+      console.error("Error in getAvailableShips:", error);
+      return 0;
     }
   };
 
@@ -168,6 +193,7 @@ export const AuthProvider = ({ children }) => {
         anthropicKey,
         setAnthropicKey,
         checkCustomDomain,
+        getAvailableShips,
       }}
     >
       {children}
