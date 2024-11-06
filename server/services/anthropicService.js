@@ -4,12 +4,7 @@ require("dotenv").config();
 
 async function validateKey(key) {
   const testClient = new Anthropic({
-    baseURL: "https://anthropic.helicone.ai/v1",
     apiKey: key,
-    defaultHeaders: {
-      "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
-      "Helicone-Cache-Enabled": "true",
-    },
   });
   try {
     await testClient.messages.create({
@@ -38,6 +33,11 @@ class AnthropicService {
     this.isCustomKey = !!apiKey;
     this.client = new Anthropic({
       apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+      baseURL: "https://anthropic.helicone.ai/v1",
+      defaultHeaders: {
+        "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
+        "Helicone-Cache-Enabled": "true",
+      },
     });
     this.apiKey = apiKey;
     this.tokensUsed = tokensUsed;
