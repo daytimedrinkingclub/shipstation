@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +44,9 @@ import { fileToBase64 } from "@/lib/utils/fileToBase64";
 import { AutosizeTextarea } from "@/components/ui/AutosizeTextarea";
 import { cn } from "@/lib/utils";
 
+import { AuthContext } from "@/context/AuthContext";
+import SubscriptionDialog from "@/components/SubscriptionDialog";
+
 const Chat = ({
   shipSlug,
   shipId,
@@ -76,6 +79,13 @@ const Chat = ({
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInputEmpty, setIsInputEmpty] = useState(true);
+
+  const { user, availableShips } = useContext(AuthContext);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  const handleCloseSubscriptionDialog = () => {
+    setShowSubscriptionDialog(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -260,6 +270,11 @@ const Chat = ({
   };
 
   const handleSend = async () => {
+    if (availableShips < 1 || availableShips === undefined) {
+      setShowSubscriptionDialog(true);
+      return;
+    }
+
     if (input.trim() || filesToUpload.length > 0) {
       setIsLoading(true);
       try {
@@ -465,6 +480,17 @@ const Chat = ({
       prevFiles.filter((file) => file.file.name !== fileName)
     );
   };
+
+  if (showSubscriptionDialog) {
+    return (
+      <SubscriptionDialog
+        isOpen={showSubscriptionDialog}
+        onClose={handleCloseSubscriptionDialog}
+        isSubscribed={false}
+        user={user}
+      />
+    );
+  }
 
   return (
     <div
@@ -748,6 +774,12 @@ const Chat = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <SubscriptionDialog
+        isOpen={showSubscriptionDialog}
+        onClose={handleCloseSubscriptionDialog}
+        isSubscribed={false}
+        user={user}
+      />
     </div>
   );
 };

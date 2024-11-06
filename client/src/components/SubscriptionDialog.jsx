@@ -8,126 +8,73 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Zap, Image, Globe, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Zap, Image, Globe, FileText, Crown } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { initializePaddle } from "@paddle/paddle-js";
-import { useToast } from "@/components/ui/use-toast";
+import { FileText } from "lucide-react";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
-  const [selectedPlan, setSelectedPlan] = useState("yearly");
   const [showConfetti, setShowConfetti] = useState(false);
-  const [paddle, setPaddle] = useState(null);
-  const [prices, setPrices] = useState({
-    monthly: null,
-    yearly: null,
-  });
-  const { toast } = useToast();
-
-  const fetchPrices = async (paddleInstance) => {
-    const request = {
-      items: [
-        {
-          priceId: import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID,
-          quantity: 1,
-        },
-        {
-          priceId: import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-    };
-    try {
-      const pricePreview = await paddleInstance.PricePreview(request);
-      console.log("Price Preview Response:", pricePreview);
-
-      if (
-        pricePreview &&
-        pricePreview.data &&
-        pricePreview.data.details &&
-        pricePreview.data.details.lineItems
-      ) {
-        const monthlyPrice = pricePreview.data.details.lineItems.find(
-          (item) => item.price.billingCycle.interval === "month"
-        );
-        const yearlyPrice = pricePreview.data.details.lineItems.find(
-          (item) => item.price.billingCycle.interval === "year"
-        );
-
-        if (monthlyPrice && yearlyPrice) {
-          setPrices({
-            monthly: {
-              amount: monthlyPrice.formattedTotals.total,
-              period: "per month",
-            },
-            yearly: {
-              amount: yearlyPrice.formattedTotals.total,
-              period: "per year",
-            },
-          });
-        } else {
-          console.error(
-            "Could not find monthly or yearly prices in the response"
-          );
-        }
-      } else {
-        console.error("Unexpected response structure from PricePreview");
-      }
-    } catch (error) {
-      console.error("Error fetching prices:", error);
-    }
-  };
-
-  const handleSubscriptionSuccess = () => {
-    setShowConfetti(true);
-    toast({
-      title: "Subscription Successful!",
-      description:
-        "Welcome to the premium features. Enjoy your upgraded experience!",
-      duration: 5000,
-    });
-    setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
-    onClose(); // Close the dialog
-  };
-
-  const handleSubscribe = () => {
-    if (paddle) {
-      paddle.Checkout.open({
-        items: [
-          {
-            priceId:
-              selectedPlan === "monthly"
-                ? import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID
-                : import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
-            quantity: 1,
-          },
-        ],
-        customer: {
-          email: user?.email,
-        },
-        theme: "dark",
-        successCallback: handleSubscriptionSuccess,
-        closeCallback: () => {
-          console.log("Checkout closed");
-        },
-      });
-    } else {
-      console.error("Paddle is not initialized");
-    }
-    console.log("Subscribe");
-  };
+  const [isPaymentLoading, setIsPaymentLoading] = useState(true);
 
   useEffect(() => {
-    initializePaddle({
-      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT,
-      token: import.meta.env.VITE_PADDLE_KEY,
-    }).then((paddleInstance) => {
-      if (paddleInstance) {
-        setPaddle(paddleInstance);
-        fetchPrices(paddleInstance);
+    const addRazorpayScript = () => {
+      const rzpPaymentForm = document.getElementById("rzp_payment_form");
+      
+      if (rzpPaymentForm && !rzpPaymentForm.hasChildNodes()) {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/payment-button.js";
+        script.async = true;
+        script.dataset.payment_button_id = "pl_PH9UiM0zlSM2Xw";
+        
+        // Add click handler to close dialog
+        rzpPaymentForm.addEventListener('click', () => {
+          setTimeout(() => onClose(false), 100);
+        });
+
+        // Check if the button is rendered
+        const checkButtonRendered = setInterval(() => {
+          const razorpayButton = rzpPaymentForm.querySelector('button');
+          if (razorpayButton) {
+            setIsPaymentLoading(false);
+            clearInterval(checkButtonRendered);
+          }
+        }, 500);
+
+        // Clear interval after 2 seconds to prevent infinite checking
+        setTimeout(() => {
+          clearInterval(checkButtonRendered);
+          // If still loading after 2 seconds, show button anyway
+          setIsPaymentLoading(false);
+        }, 2000);
+        
+        rzpPaymentForm.appendChild(script);
       }
-    });
-  }, []);
+    };
+
+    if (isOpen && !isSubscribed) {
+      setIsPaymentLoading(true);
+      setTimeout(addRazorpayScript, 100);
+    }
+
+    // Cleanup function
+    return () => {
+      setIsPaymentLoading(true);
+    };
+  }, [isOpen, isSubscribed, onClose]);
+
+  const renderPaymentButton = () => {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-4">
+        <form id="rzp_payment_form" className="w-full flex justify-center" />
+        {isPaymentLoading && (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Initializing secure payment options...</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderSubscriptionContent = () => {
     if (!isSubscribed) {
@@ -139,38 +86,13 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-start sm:gap-4 w-full">
-            <Tabs
-              value={selectedPlan}
-              onValueChange={setSelectedPlan}
-              className="mb-4 sm:mb-0"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="yearly">Yearly</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-primary">
-                {prices[selectedPlan]?.amount || "Loading..."}
-              </span>
-              <span className="text-sm text-muted-foreground ml-1">
-                {prices[selectedPlan]?.period || ""}
-              </span>
-            </div>
-            {selectedPlan === "yearly" && (
-              <span className="text-sm text-foreground font-semibold mt-1">
-                Get two months free 🥰
-              </span>
-            )}
-          </div>
+          
           <div className="grid grid-cols-1 gap-4 py-4">
             {[
               {
                 icon: Zap,
                 title: "Unlimited AI Refinements",
-                description:
-                  "Continuously improve your portfolio with AI assistance",
+                description: "Continuously improve your portfolio with AI assistance",
               },
               {
                 icon: Globe,
@@ -180,8 +102,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               {
                 icon: Image,
                 title: "Unlimited Assets",
-                description:
-                  "Add as many images, videos, and files as you need",
+                description: "Add as many images, videos, and files as you need",
               },
               {
                 icon: Crown,
@@ -195,18 +116,15 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               >
                 <feature.icon className="w-6 h-6 text-primary" />
                 <div>
-                  <h4 className="font-semibold text-foreground">
-                    {feature.title}
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.description}
-                  </p>
+                  <h4 className="font-semibold text-foreground">{feature.title}</h4>
+                  <p className="text-sm text-muted-foreground">{feature.description}</p>
                 </div>
               </div>
             ))}
           </div>
+
           <DialogFooter className="flex items-center sm:justify-center w-full">
-            <Button onClick={handleSubscribe}>Subscribe to Pro</Button>
+            {renderPaymentButton()}
           </DialogFooter>
         </>
       );
