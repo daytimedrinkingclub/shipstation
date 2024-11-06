@@ -20,7 +20,7 @@ const {
   undoCodeChange,
   redoCodeChange,
   refineCode,
-} = require("./codeRefinementService");
+} = require("../services/openai-editor-service/codeRefinementService");
 const { generateSiteContent } = require("./siteContentService");
 const ScreenshotService = require("./screenshotService");
 const { updatePrompt } = require("./promptUpdateService");
