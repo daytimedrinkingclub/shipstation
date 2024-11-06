@@ -7,6 +7,7 @@ const {
   insertPayment,
   getUserProfile,
   updateUserProfile,
+  createUser,
 } = require("../services/dbService");
 const { postToDiscordWebhook } = require("../services/webhookService");
 
@@ -23,7 +24,11 @@ exports.handleRazorpayWebhook = async (req, res) => {
       const amountInRs = payload.payment?.entity?.amount / 100;
       const orderId = payload.order?.entity?.id;
       const paymentId = payload.payment?.entity?.id;
-      const user_id = await getUserIdFromEmail(email);
+      let user_id = await getUserIdFromEmail(email);
+      if (!user_id) {
+        const { id } = await createUser(email);
+        user_id = id;
+      }
       const paymentPayload = {
         payload,
         user_id,
