@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.0",
+    "@anthropic-ai/sdk": "^0.32.1",
     "@aws-sdk/client-s3": "^3.600.0",
     "@microlink/mql": "^0.13.9",
     "@paypal/checkout-server-sdk": "^1.0.3",

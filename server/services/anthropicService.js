@@ -33,7 +33,7 @@ class AnthropicService {
     this.isCustomKey = !!apiKey;
     this.client = new Anthropic({
       apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
-      baseURL: "https://anthropic.helicone.ai/v1",
+      baseURL: "https://anthropic.helicone.ai",
       defaultHeaders: {
         "Helicone-Auth": `Bearer ${process.env.HELICONE_API_KEY}`,
         "Helicone-Cache-Enabled": "true",
