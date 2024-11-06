@@ -2,10 +2,16 @@ const FileService = require("../../fileService");
 const fileService = new FileService();
 
 function extractUpdatedContent(responseText) {
-  console.log(`Processing AI response. Response length: ${responseText.length} characters`);
+  console.log(
+    `Processing AI response. Response length: ${responseText.length} characters`
+  );
 
-  const explanationMatch = responseText.match(/<explanation>([\s\S]*?)<\/explanation>/);
-  const codeMatch = responseText.match(/<updated_code>([\s\S]*?)<\/updated_code>/);
+  const explanationMatch = responseText.match(
+    /<explanation>([\s\S]*?)<\/explanation>/
+  );
+  const codeMatch = responseText.match(
+    /<updated_code>([\s\S]*?)<\/updated_code>/
+  );
 
   if (!explanationMatch || !codeMatch) {
     console.error("Unexpected response format from AI");
@@ -30,5 +36,5 @@ async function saveUpdatedCode(filePath, updatedCode) {
 
 module.exports = {
   extractUpdatedContent,
-  saveUpdatedCode
-}; 
+  saveUpdatedCode,
+};

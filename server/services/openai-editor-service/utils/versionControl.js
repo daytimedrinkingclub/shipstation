@@ -14,7 +14,10 @@ async function saveNewVersion(shipId, shipSlug, currentCode) {
   const allVersions = await dbService.getAllCodeVersions(shipId);
 
   if (allVersions.length > MAX_VERSIONS) {
-    const versionsToDelete = allVersions.slice(0, allVersions.length - MAX_VERSIONS);
+    const versionsToDelete = allVersions.slice(
+      0,
+      allVersions.length - MAX_VERSIONS
+    );
     for (const version of versionsToDelete) {
       await dbService.deleteCodeVersion(shipId, version.version);
       await fileService.deleteFile(version.file_path);
@@ -79,5 +82,5 @@ async function redoCodeChange(shipId, shipSlug) {
 module.exports = {
   saveNewVersion,
   undoCodeChange,
-  redoCodeChange
-}; 
+  redoCodeChange,
+};
