@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Confetti from "react-confetti";
 import {
   Dialog,
   DialogContent,
@@ -8,13 +7,33 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Confetti from "react-confetti";
 import { Zap, Image, Globe, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [isPaymentLoading, setIsPaymentLoading] = useState(true);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+
+  useEffect(() => {
+    // Handle window resize for confetti
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const addRazorpayScript = () => {
@@ -56,11 +75,42 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
       setTimeout(addRazorpayScript, 100);
     }
 
+    // Subscribe to realtime changes using channel
+    const channel = supabase
+      .channel("user_profiles_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "user_profiles",
+          filter: `id=eq.${user?.id}`,
+        },
+        (payload) => {
+          if (
+            payload.new.subscription_status === "active" &&
+            payload.old.subscription_status !== "active"
+          ) {
+            setTimeout(() => {
+              setShowConfetti(true);
+              toast.success("Welcome to ShipStation Pro! 🚀", {
+                description: "Your account has been upgraded successfully!",
+                duration: 15000, // Long duration for better visibility
+              });
+
+              setTimeout(() => setShowConfetti(false), 3000);
+            }, 10000); // Delay to ensure payment modal confirmation and redirection from gateway
+          }
+        }
+      )
+      .subscribe();
+
     // Cleanup function
     return () => {
       setIsPaymentLoading(true);
+      supabase.removeChannel(channel);
     };
-  }, [isOpen, isSubscribed, onClose]);
+  }, [isOpen, isSubscribed, onClose, user?.id]);
 
   const renderPaymentButton = () => {
     return (
@@ -183,7 +233,16 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
 
   return (
     <>
-      {showConfetti && <Confetti />}
+      {showConfetti && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 1000 }}
+          numberOfPieces={500}
+          recycle={false}
+          gravity={0.2}
+        />
+      )}
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           {renderSubscriptionContent()}

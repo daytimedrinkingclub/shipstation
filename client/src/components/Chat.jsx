@@ -185,6 +185,37 @@ const Chat = ({
     }
   }, [socket, onCodeUpdate, shipId]);
 
+  useEffect(() => {
+    // Subscribe to realtime changes using channel
+    const channel = supabase.channel('user_profiles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user?.id}`,
+        },
+        (payload) => {
+          if (
+            payload.new.subscription_status === 'active' &&
+            payload.old.subscription_status !== 'active'
+          ) {
+            // Close subscription dialog if it's open
+            setShowSubscriptionDialog(false);
+            // Refresh available ships count
+            getAvailableShips();
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, getAvailableShips]);
+
   const fetchConversationHistory = async () => {
     console.log("Fetching conversation history for shipId:", shipId);
     try {
