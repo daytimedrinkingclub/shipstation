@@ -277,8 +277,8 @@ const Chat = ({
       const userMessage = { text: data.prompt, sender: "user" };
       const aiMessage = {
         text: `Sure! Your website is live at ${
-          import.meta.env.VITE_MAIN_URL
-        }/site/${shipSlug} \n\n How can I help you further with your project?`,
+          import.meta.env.VITE_MYPROFILE_URL
+        }/${shipSlug} \n\n How can I help you further with your project?`,
         sender: "assistant",
       };
       console.log("Fetched initial user message:", [userMessage, aiMessage]);

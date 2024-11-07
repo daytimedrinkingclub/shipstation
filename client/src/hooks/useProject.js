@@ -181,9 +181,9 @@ export function useProject(slug) {
     }
   };
 
-  useEffect(() => {
-    fetchDirectoryStructure();
-  }, [slug]);
+  // useEffect(() => {
+  //   fetchDirectoryStructure();
+  // }, [slug]);
 
   return {
     directoryStructure,

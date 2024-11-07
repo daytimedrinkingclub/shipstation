@@ -8,7 +8,7 @@ const SuccessOverlay = ({ isOpen, onClose, slug }) => {
   const navigate = useNavigate();
 
   const successText = `Your website "${slug}" is live!`;
-  const link = `${import.meta.env.VITE_MAIN_URL}/site/${slug}/`;
+  const link = `${import.meta.env.VITE_MYPROFILE_URL}/${slug}/`;
 
   const handleEditProject = () => {
     navigate(`/project/${slug}`);

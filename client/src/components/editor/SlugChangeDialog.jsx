@@ -57,7 +57,7 @@ const SlugChangeDialog = ({ open, onOpenChange }) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle className="text-left">Change Slug</DialogTitle>
           <DialogDescription className="text-muted-foreground text-left">

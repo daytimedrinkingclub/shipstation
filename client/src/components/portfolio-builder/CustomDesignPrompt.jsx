@@ -167,7 +167,7 @@ export default function CustomDesignPrompt({
       const updatedAssets = assets.filter((asset) => asset !== resumeFile);
       onAssetsUpdate([...updatedAssets, newResumeFile]);
 
-      toast.success("Resume updated successfully!");
+      toast.success("Resume added successfully!");
     } else {
       toast.error("Please upload a PDF file for your resume.");
     }

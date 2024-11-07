@@ -52,7 +52,7 @@ const Header = ({
   };
 
   const handleShare = async () => {
-    const shareUrl = `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`;
+    const shareUrl = `${import.meta.env.VITE_MYPROFILE_URL}/${shipSlug}/`;
 
     if (navigator.share) {
       try {
@@ -199,7 +199,7 @@ const Header = ({
                 className="w-10 h-10 hidden md:w-auto md:px-2"
                 onClick={() => {
                   window.open(
-                    `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`,
+                    `${import.meta.env.VITE_MYPROFILE_URL}/${shipSlug}/`,
                     "_blank"
                   );
                 }}
