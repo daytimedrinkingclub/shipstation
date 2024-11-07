@@ -23,7 +23,8 @@ import ChatWidget from "@/components/ChatWidget";
 
 const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] =
+    useState(false);
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
   const { isSubscribed } = useContext(AuthContext);
 
@@ -55,7 +56,7 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
               <DropdownMenuSeparator />
             </>
           )}
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onSelect={handleOpenSubscriptionDialog}
             className="flex items-center justify-between"
           >
@@ -65,9 +66,7 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
                 {isSubscribed ? "Pro Member" : "Upgrade to Pro"}
               </span>
             </div>
-            {isSubscribed && (
-              <Check className="h-4 w-4 text-primary" />
-            )}
+            {isSubscribed && <Check className="h-4 w-4 text-green-500" />}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a

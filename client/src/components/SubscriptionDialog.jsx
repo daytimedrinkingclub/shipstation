@@ -95,7 +95,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               setShowConfetti(true);
               toast.success("Welcome to ShipStation Pro! 🚀", {
                 description: "Your account has been upgraded successfully!",
-                duration: 15000, // Long duration for better visibility
+                duration: 12000, // Long duration for better visibility
               });
 
               setTimeout(() => setShowConfetti(false), 3000);

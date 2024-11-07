@@ -1,3 +1,4 @@
+import { useContext, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,8 @@ import {
   Lock,
   Award,
 } from "lucide-react";
+import { AuthContext } from "@/context/AuthContext";
+import SubscriptionDialog from "@/components/SubscriptionDialog";
 
 const DomainPanel = ({
   customDomain,
@@ -22,6 +25,17 @@ const DomainPanel = ({
   domainStatus,
   customDomainStatus,
 }) => {
+  const { isSubscribed, user } = useContext(AuthContext);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  const handleDNSConfirm = () => {
+    if (!isSubscribed) {
+      setShowSubscriptionDialog(true);
+      return;
+    }
+    handleConfirmDomain();
+  };
+
   const renderDomainContent = () => {
     if (domainStatus === "pending") {
       return (
@@ -200,7 +214,7 @@ const DomainPanel = ({
               </div>
             </div>
           ) : (
-            <div className=" p-4 space-y-4">
+            <div className="p-4 space-y-4">
               <h3 className="text-xl font-semibold">
                 DNS Configuration Instructions
               </h3>
@@ -221,7 +235,7 @@ const DomainPanel = ({
               </div>
               <p>Once you've added the DNS record, click Confirm</p>
               <Button
-                onClick={handleConfirmDomain}
+                onClick={handleDNSConfirm}
                 disabled={isConnectingDomain}
                 className="w-full"
               >
@@ -234,7 +248,17 @@ const DomainPanel = ({
     }
   };
 
-  return renderDomainContent();
+  return (
+    <>
+      {renderDomainContent()}
+      <SubscriptionDialog
+        isOpen={showSubscriptionDialog}
+        onClose={() => setShowSubscriptionDialog(false)}
+        isSubscribed={isSubscribed}
+        user={user}
+      />
+    </>
+  );
 };
 
 export default DomainPanel;
