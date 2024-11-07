@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useProject } from "@/hooks/useProject";
+import { setShipInfo } from "@/store/shipSlice";
 
 const SlugChangeDialog = ({ open, onOpenChange }) => {
   const dispatch = useDispatch();
@@ -24,13 +25,13 @@ const SlugChangeDialog = ({ open, onOpenChange }) => {
 
   useEffect(() => {
     setPreviewUrl(
-      `${import.meta.env.VITE_MAIN_URL}/site/${newSlug || shipInfo.slug}/`
+      `${import.meta.env.VITE_MYPROFILE_URL}/${newSlug || shipInfo.slug}`
     );
   }, [newSlug, shipInfo.slug]);
 
   const cleanSlug = (input) => {
     // Remove any characters that aren't a-z, 0-9, or dash
-    return input.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    return input.toLowerCase().replace(/[^a-z0-9-]/g, "");
   };
 
   const handleSlugChange = async () => {
