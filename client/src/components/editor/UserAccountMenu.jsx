@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -15,15 +15,17 @@ import {
   MessageSquare,
   Star,
   UserIcon,
+  Check,
 } from "lucide-react";
+import { AuthContext } from "@/context/AuthContext";
 import SubscriptionDialog from "@/components/SubscriptionDialog";
 import ChatWidget from "@/components/ChatWidget";
 
 const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] =
-    useState(false);
+  const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] = useState(false);
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
+  const { isSubscribed } = useContext(AuthContext);
 
   const handleOpenSubscriptionDialog = () => {
     setIsSubscriptionDialogOpen(true);
@@ -33,7 +35,7 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
   const handleOpenChatWidget = useCallback(() => {
     setIsOpen(false);
     setIsChatWidgetOpen(true);
-  }, [isOpen, isChatWidgetOpen]);
+  }, []);
 
   return (
     <>
@@ -53,15 +55,26 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
               <DropdownMenuSeparator />
             </>
           )}
-          <DropdownMenuItem onSelect={handleOpenSubscriptionDialog}>
-            <Crown className="mr-2 h-4 w-4" />
-            <span className="text-foreground">Upgrade to Pro</span>
+          <DropdownMenuItem 
+            onSelect={handleOpenSubscriptionDialog}
+            className="flex items-center justify-between"
+          >
+            <div className="flex items-center">
+              <Crown className="mr-2 h-4 w-4" />
+              <span className="text-foreground">
+                {isSubscribed ? "Pro Member" : "Upgrade to Pro"}
+              </span>
+            </div>
+            {isSubscribed && (
+              <Check className="h-4 w-4 text-primary" />
+            )}
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a
               href="https://github.com/daytimedrinkingclub/shipstation"
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               <Star className="mr-2 h-4 w-4" />
               <span className="text-foreground">Star us on GitHub</span>
@@ -72,6 +85,7 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
               href="https://discord.gg/wMNmcmq3SX"
               target="_blank"
               rel="noopener noreferrer"
+              className="flex items-center"
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               <span className="text-foreground">Join our Discord</span>
@@ -90,7 +104,7 @@ const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
       <SubscriptionDialog
         isOpen={isSubscriptionDialogOpen}
         onClose={() => setIsSubscriptionDialogOpen(false)}
-        isSubscribed={user.isSubscribed}
+        isSubscribed={isSubscribed}
         user={user}
       />
       {isChatWidgetOpen && (

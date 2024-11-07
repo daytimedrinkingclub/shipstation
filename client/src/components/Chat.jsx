@@ -80,7 +80,7 @@ const Chat = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInputEmpty, setIsInputEmpty] = useState(true);
 
-  const { user, availableShips, getAvailableShips } = useContext(AuthContext);
+  const { user, availableShips, getAvailableShips, isSubscribed } = useContext(AuthContext);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
 
   const handleCloseSubscriptionDialog = () => {
@@ -305,7 +305,7 @@ const Chat = ({
     setIsLoading(true);
     const currentShips = await getAvailableShips();
 
-    if (currentShips < 1 || !currentShips) {
+    if (!isSubscribed && (currentShips < 1 || !currentShips)) {
       setShowSubscriptionDialog(true);
       setIsLoading(false);
       return;
@@ -804,7 +804,7 @@ const Chat = ({
       <SubscriptionDialog
         isOpen={showSubscriptionDialog}
         onClose={handleCloseSubscriptionDialog}
-        isSubscribed={false}
+        isSubscribed={isSubscribed}
         user={user}
       />
     </div>

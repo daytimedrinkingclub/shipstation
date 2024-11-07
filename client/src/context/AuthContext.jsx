@@ -8,6 +8,7 @@ export const AuthContext = createContext({
   supabase: null,
   availableShips: 0,
   recentlyShipped: [],
+  isSubscribed: false,
   handleLogout: () => {},
   handleLogin: () => {},
   handleGoogleLogin: () => {},
@@ -25,6 +26,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [availableShips, setAvailableShips] = useState(0);
   const [recentlyShipped, setRecentlyShipped] = useState([]);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [anthropicKey, setAnthropicKey] = useState("");
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
   const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -42,10 +44,53 @@ export const AuthProvider = ({ children }) => {
     setUser(user);
     setUserLoading(false);
     if (user) {
-      await getAvailableShips();
-      await getRecentlyShipped();
+      await Promise.all([
+        getAvailableShips(),
+        getRecentlyShipped(),
+        checkSubscriptionStatus(),
+      ]);
     }
   };
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("subscription_status")
+        .single();
+
+      if (error) throw error;
+
+      setIsSubscribed(data.subscription_status === "active");
+      return data.subscription_status === "active";
+    } catch (error) {
+      console.error("Error checking subscription status:", error);
+      setIsSubscribed(false);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    // Subscribe to realtime changes for subscription status
+    const channel = supabase.channel('subscription_status')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user?.id}`,
+        },
+        (payload) => {
+          setIsSubscribed(payload.new.subscription_status === "active");
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const getAvailableShips = async () => {
     try {
@@ -89,9 +134,8 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setAvailableShips(0);
     setRecentlyShipped([]);
-    // Clear local storage
+    setIsSubscribed(false);
     localStorage.clear();
-    // Redirect to the home page
     window.location.href = "/?logout=true";
   };
 
@@ -183,6 +227,7 @@ export const AuthProvider = ({ children }) => {
         supabase,
         availableShips,
         recentlyShipped,
+        isSubscribed,
         handleLogout,
         handleLogin,
         handleGoogleLogin,
