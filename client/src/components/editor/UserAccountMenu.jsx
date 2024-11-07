@@ -21,12 +21,12 @@ import { AuthContext } from "@/context/AuthContext";
 import SubscriptionDialog from "@/components/SubscriptionDialog";
 import ChatWidget from "@/components/ChatWidget";
 
-const UserAccountMenu = ({ user, onLogout, isMobile = false }) => {
+const UserAccountMenu = ({ onLogout, isMobile = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSubscriptionDialogOpen, setIsSubscriptionDialogOpen] =
     useState(false);
   const [isChatWidgetOpen, setIsChatWidgetOpen] = useState(false);
-  const { isSubscribed } = useContext(AuthContext);
+  const { user, isSubscribed } = useContext(AuthContext);
 
   const handleOpenSubscriptionDialog = () => {
     setIsSubscriptionDialogOpen(true);

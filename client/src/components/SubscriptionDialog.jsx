@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
 import { toast } from "sonner";
+import { format, addYears } from "date-fns";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
   const [showConfetti, setShowConfetti] = useState(false);
@@ -21,6 +22,8 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const [nextBillingDate, setNextBillingDate] = useState(null);
+  const [recentPayments, setRecentPayments] = useState([]);
 
   useEffect(() => {
     // Handle window resize for confetti
@@ -112,6 +115,47 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     };
   }, [isOpen, isSubscribed, onClose, user?.id]);
 
+  useEffect(() => {
+    const fetchSubscriptionDetails = async () => {
+      if (!user?.id || !isSubscribed) return;
+
+      try {
+        // Fetch user profile to get subscription start date
+        const { data: profileData, error: profileError } = await supabase
+          .from("user_profiles")
+          .select("subscription_start_date")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profileData?.subscription_start_date) {
+          const nextBilling = addYears(
+            new Date(profileData.subscription_start_date),
+            1
+          );
+          setNextBillingDate(nextBilling);
+        }
+
+        // Fetch recent payments
+        const { data: paymentsData, error: paymentsError } = await supabase
+          .from("payments")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (paymentsError) throw paymentsError;
+        setRecentPayments(paymentsData || []);
+      } catch (error) {
+        console.error("Error fetching subscription details:", error);
+        toast.error("Failed to load subscription details");
+      }
+    };
+
+    fetchSubscriptionDetails();
+  }, [user?.id, isSubscribed]);
+
   const renderPaymentButton = () => {
     return (
       <div className="w-full flex flex-col items-center justify-center gap-4">
@@ -198,29 +242,37 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
           <div className="space-y-4 py-4">
             <div className="bg-primary/10 p-4 rounded-lg">
               <h3 className="font-semibold text-lg text-foreground">
-                Current Plan: Premium
+                Current Plan: Pro
               </h3>
               <p className="text-sm text-muted-foreground">
-                Next billing date: June 1, 2023
+                Next billing date:{" "}
+                {nextBillingDate
+                  ? format(nextBillingDate, "MMMM d, yyyy")
+                  : "Loading..."}
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">Recent Invoices</h4>
-              {[
-                { date: "May 1, 2023", amount: "$9.99" },
-                { date: "April 1, 2023", amount: "$9.99" },
-              ].map((invoice, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-2 bg-secondary rounded-lg"
-                >
-                  <div className="flex items-center space-x-2 text-foreground">
-                    <FileText className="w-4 h-4" />
-                    <span>{invoice.date}</span>
+              <h4 className="font-semibold text-foreground">Recent Payments</h4>
+              {recentPayments.length > 0 ? (
+                recentPayments.map((payment, index) => (
+                  <div
+                    key={payment.id}
+                    className="flex justify-between items-center p-2 bg-secondary rounded-lg"
+                  >
+                    <div className="flex items-center space-x-2 text-foreground">
+                      <FileText className="w-4 h-4" />
+                      <span>
+                        {format(new Date(payment.created_at), "MMMM d, yyyy")}
+                      </span>
+                    </div>
+                    {/* <span className="text-foreground">₹{payment.amount}</span> */}
                   </div>
-                  <span className="text-foreground">{invoice.amount}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No payment history available
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter className="flex justify-start">
