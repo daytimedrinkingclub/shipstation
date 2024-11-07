@@ -115,7 +115,7 @@ const Header = ({
                 className="w-10 h-10 hidden md:flex md:w-auto md:px-2"
                 onClick={() => {
                   window.open(
-                    `${import.meta.env.VITE_MAIN_URL}/site/${shipSlug}/`,
+                    `${import.meta.env.VITE_MYPROFILE_URL}/${shipSlug}/`,
                     "_blank"
                   );
                 }}

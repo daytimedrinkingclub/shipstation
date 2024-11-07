@@ -147,11 +147,11 @@ async function getCodeRefiningConversation(shipId) {
   return data;
 }
 
-async function upsertCodeRefiningConversation(shipId, userId, messages) {
+async function upsertCodeRefiningConversation(shipId, messages) {
   const { data, error } = await supabaseClient
     .from("code_refining_conversations")
     .upsert(
-      { ship_id: shipId, user_id: userId, messages, updated_at: new Date() },
+      { ship_id: shipId, messages, updated_at: new Date() },
       { onConflict: "ship_id" }
     )
     .select();

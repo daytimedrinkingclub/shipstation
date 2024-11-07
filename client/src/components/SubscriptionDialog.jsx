@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import Confetti from "react-confetti";
 import {
   Dialog,
   DialogContent,
@@ -8,162 +7,182 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import Confetti from "react-confetti";
+import { Zap, Image, Globe, Crown, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Zap, Image, Globe, FileText, Crown } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { initializePaddle } from "@paddle/paddle-js";
-import { useToast } from "@/components/ui/use-toast";
+import { FileText } from "lucide-react";
+import { supabase } from "@/lib/supabaseClient";
+import { toast } from "sonner";
+import { format, addYears } from "date-fns";
 
 const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
-  const [selectedPlan, setSelectedPlan] = useState("yearly");
   const [showConfetti, setShowConfetti] = useState(false);
-  const [paddle, setPaddle] = useState(null);
-  const [prices, setPrices] = useState({
-    monthly: null,
-    yearly: null,
+  const [isPaymentLoading, setIsPaymentLoading] = useState(true);
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
   });
-  const { toast } = useToast();
-
-  const fetchPrices = async (paddleInstance) => {
-    const request = {
-      items: [
-        {
-          priceId: import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID,
-          quantity: 1,
-        },
-        {
-          priceId: import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
-          quantity: 1,
-        },
-      ],
-    };
-    try {
-      const pricePreview = await paddleInstance.PricePreview(request);
-      console.log("Price Preview Response:", pricePreview);
-
-      if (
-        pricePreview &&
-        pricePreview.data &&
-        pricePreview.data.details &&
-        pricePreview.data.details.lineItems
-      ) {
-        const monthlyPrice = pricePreview.data.details.lineItems.find(
-          (item) => item.price.billingCycle.interval === "month"
-        );
-        const yearlyPrice = pricePreview.data.details.lineItems.find(
-          (item) => item.price.billingCycle.interval === "year"
-        );
-
-        if (monthlyPrice && yearlyPrice) {
-          setPrices({
-            monthly: {
-              amount: monthlyPrice.formattedTotals.total,
-              period: "per month",
-            },
-            yearly: {
-              amount: yearlyPrice.formattedTotals.total,
-              period: "per year",
-            },
-          });
-        } else {
-          console.error(
-            "Could not find monthly or yearly prices in the response"
-          );
-        }
-      } else {
-        console.error("Unexpected response structure from PricePreview");
-      }
-    } catch (error) {
-      console.error("Error fetching prices:", error);
-    }
-  };
-
-  const handleSubscriptionSuccess = () => {
-    setShowConfetti(true);
-    toast({
-      title: "Subscription Successful!",
-      description:
-        "Welcome to the premium features. Enjoy your upgraded experience!",
-      duration: 5000,
-    });
-    setTimeout(() => setShowConfetti(false), 5000); // Stop confetti after 5 seconds
-    onClose(); // Close the dialog
-  };
-
-  const handleSubscribe = () => {
-    if (paddle) {
-      paddle.Checkout.open({
-        items: [
-          {
-            priceId:
-              selectedPlan === "monthly"
-                ? import.meta.env.VITE_PADDLE_MONTHLY_PRICE_ID
-                : import.meta.env.VITE_PADDLE_YEARLY_PRICE_ID,
-            quantity: 1,
-          },
-        ],
-        customer: {
-          email: user?.email,
-        },
-        theme: "dark",
-        successCallback: handleSubscriptionSuccess,
-        closeCallback: () => {
-          console.log("Checkout closed");
-        },
-      });
-    } else {
-      console.error("Paddle is not initialized");
-    }
-    console.log("Subscribe");
-  };
+  const [nextBillingDate, setNextBillingDate] = useState(null);
+  const [recentPayments, setRecentPayments] = useState([]);
 
   useEffect(() => {
-    initializePaddle({
-      environment: import.meta.env.VITE_PADDLE_ENVIRONMENT,
-      token: import.meta.env.VITE_PADDLE_KEY,
-    }).then((paddleInstance) => {
-      if (paddleInstance) {
-        setPaddle(paddleInstance);
-        fetchPrices(paddleInstance);
-      }
-    });
+    // Handle window resize for confetti
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const addRazorpayScript = () => {
+      const rzpPaymentForm = document.getElementById("rzp_payment_form");
+
+      if (rzpPaymentForm && !rzpPaymentForm.hasChildNodes()) {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/payment-button.js";
+        script.async = true;
+        script.dataset.payment_button_id = "pl_PH9UiM0zlSM2Xw";
+
+        // Add click handler to close dialog
+        rzpPaymentForm.addEventListener("click", () => {
+          setTimeout(() => onClose(false), 100);
+        });
+
+        // Check if the button is rendered using MutationObserver
+        const observer = new MutationObserver((mutations, obs) => {
+          const razorpayButton = document.querySelector(
+            ".razorpay-payment-button"
+          );
+          if (razorpayButton) {
+            setIsPaymentLoading(false);
+            obs.disconnect(); // Stop observing once button is found
+          }
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+
+        rzpPaymentForm.appendChild(script);
+      }
+    };
+
+    if (isOpen && !isSubscribed) {
+      setIsPaymentLoading(true);
+      setTimeout(addRazorpayScript, 100);
+    }
+
+    // Subscribe to realtime changes using channel
+    const channel = supabase
+      .channel("user_profiles_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "user_profiles",
+          filter: `id=eq.${user?.id}`,
+        },
+        (payload) => {
+          if (
+            payload.new.subscription_status === "active" &&
+            payload.old.subscription_status !== "active"
+          ) {
+            setTimeout(() => {
+              setShowConfetti(true);
+              toast.success("Welcome to ShipStation Pro! 🚀", {
+                description: "Your account has been upgraded successfully!",
+                duration: 12000, // Long duration for better visibility
+              });
+
+              setTimeout(() => setShowConfetti(false), 3000);
+            }, 10000); // Delay to ensure payment modal confirmation and redirection from gateway
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup function
+    return () => {
+      setIsPaymentLoading(true);
+      supabase.removeChannel(channel);
+    };
+  }, [isOpen, isSubscribed, onClose, user?.id]);
+
+  useEffect(() => {
+    const fetchSubscriptionDetails = async () => {
+      if (!user?.id || !isSubscribed) return;
+
+      try {
+        // Fetch user profile to get subscription start date
+        const { data: profileData, error: profileError } = await supabase
+          .from("user_profiles")
+          .select("subscription_start_date")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        if (profileData?.subscription_start_date) {
+          const nextBilling = addYears(
+            new Date(profileData.subscription_start_date),
+            1
+          );
+          setNextBillingDate(nextBilling);
+        }
+
+        // Fetch recent payments
+        const { data: paymentsData, error: paymentsError } = await supabase
+          .from("payments")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        if (paymentsError) throw paymentsError;
+        setRecentPayments(paymentsData || []);
+      } catch (error) {
+        console.error("Error fetching subscription details:", error);
+        toast.error("Failed to load subscription details");
+      }
+    };
+
+    fetchSubscriptionDetails();
+  }, [user?.id, isSubscribed]);
+
+  const renderPaymentButton = () => {
+    return (
+      <div className="w-full flex flex-col items-center justify-center gap-4">
+        <form id="rzp_payment_form" className="w-full flex justify-center" />
+        {isPaymentLoading && (
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Initializing secure payment options...</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const renderSubscriptionContent = () => {
     if (!isSubscribed) {
       return (
         <>
-          <DialogHeader className="mb-4">
-            <DialogTitle className="text-2xl">Upgrade to ShipStation Pro</DialogTitle>
+          <DialogHeader>
+            <DialogTitle className="text-2xl">
+              Upgrade to ShipStation Pro
+            </DialogTitle>
             <DialogDescription className="text-gray-500">
               Unlock powerful features to enhance your portfolio
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col sm:flex-row items-center justify-between sm:justify-start sm:gap-4 w-full">
-            <Tabs
-              value={selectedPlan}
-              onValueChange={setSelectedPlan}
-              className="mb-4 sm:mb-0"
-            >
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="monthly">Monthly</TabsTrigger>
-                <TabsTrigger value="yearly">Yearly</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-primary">
-                {prices[selectedPlan]?.amount || "Loading..."}
-              </span>
-              <span className="text-sm text-muted-foreground ml-1">
-                {prices[selectedPlan]?.period || ""}
-              </span>
-            </div>
-            {selectedPlan === "yearly" && (
-              <span className="text-sm text-foreground font-semibold mt-1">
-                Get two months free 🥰
-              </span>
-            )}
-          </div>
+
           <div className="grid grid-cols-1 gap-4 py-4">
             {[
               {
@@ -205,8 +224,9 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               </div>
             ))}
           </div>
+
           <DialogFooter className="flex items-center sm:justify-center w-full">
-            <Button onClick={handleSubscribe}>Subscribe to Pro</Button>
+            {renderPaymentButton()}
           </DialogFooter>
         </>
       );
@@ -222,29 +242,37 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
           <div className="space-y-4 py-4">
             <div className="bg-primary/10 p-4 rounded-lg">
               <h3 className="font-semibold text-lg text-foreground">
-                Current Plan: Premium
+                Current Plan: Pro
               </h3>
               <p className="text-sm text-muted-foreground">
-                Next billing date: June 1, 2023
+                Next billing date:{" "}
+                {nextBillingDate
+                  ? format(nextBillingDate, "MMMM d, yyyy")
+                  : "Loading..."}
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-semibold text-foreground">Recent Invoices</h4>
-              {[
-                { date: "May 1, 2023", amount: "$9.99" },
-                { date: "April 1, 2023", amount: "$9.99" },
-              ].map((invoice, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center p-2 bg-secondary rounded-lg"
-                >
-                  <div className="flex items-center space-x-2 text-foreground">
-                    <FileText className="w-4 h-4" />
-                    <span>{invoice.date}</span>
+              <h4 className="font-semibold text-foreground">Recent Payments</h4>
+              {recentPayments.length > 0 ? (
+                recentPayments.map((payment, index) => (
+                  <div
+                    key={payment.id}
+                    className="flex justify-between items-center p-2 bg-secondary rounded-lg"
+                  >
+                    <div className="flex items-center space-x-2 text-foreground">
+                      <FileText className="w-4 h-4" />
+                      <span>
+                        {format(new Date(payment.created_at), "MMMM d, yyyy")}
+                      </span>
+                    </div>
+                    {/* <span className="text-foreground">₹{payment.amount}</span> */}
                   </div>
-                  <span className="text-foreground">{invoice.amount}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No payment history available
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter className="flex justify-start">
@@ -257,7 +285,16 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
 
   return (
     <>
-      {showConfetti && <Confetti />}
+      {showConfetti && (
+        <Confetti
+          width={windowSize.width}
+          height={windowSize.height}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 1000 }}
+          numberOfPieces={500}
+          recycle={false}
+          gravity={0.2}
+        />
+      )}
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           {renderSubscriptionContent()}

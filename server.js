@@ -32,17 +32,21 @@ const io = socketIo(server, {
 const PORT = process.env.PORT || 5001;
 
 app.use(express.json());
-app.use(express.static("websites"));
-app.use(express.static("public"));
 app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "websites")));
 
-// Use routes
-app.use(websiteRoutes);
-app.use(fileRoutes);
-app.use(assetRoutes);
-app.use(paymentRoutes);
-app.use(miscRoutes);
-app.use(reactRoutes);
+// API routes with specific prefixes
+app.use("/api", websiteRoutes);
+app.use("/api", fileRoutes);
+app.use("/api", assetRoutes);
+app.use("/api", paymentRoutes);
+app.use("/api", miscRoutes);
+
+// React routes for all other requests
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 handleOnboardingSocketEvents(io);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +44,9 @@ import { fileToBase64 } from "@/lib/utils/fileToBase64";
 import { AutosizeTextarea } from "@/components/ui/AutosizeTextarea";
 import { cn } from "@/lib/utils";
 
+import { AuthContext } from "@/context/AuthContext";
+import SubscriptionDialog from "@/components/SubscriptionDialog";
+
 const Chat = ({
   shipSlug,
   shipId,
@@ -76,6 +79,13 @@ const Chat = ({
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isInputEmpty, setIsInputEmpty] = useState(true);
+
+  const { user, availableShips, getAvailableShips, isSubscribed } = useContext(AuthContext);
+  const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
+
+  const handleCloseSubscriptionDialog = () => {
+    setShowSubscriptionDialog(false);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -175,6 +185,37 @@ const Chat = ({
     }
   }, [socket, onCodeUpdate, shipId]);
 
+  useEffect(() => {
+    // Subscribe to realtime changes using channel
+    const channel = supabase.channel('user_profiles_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user_profiles',
+          filter: `id=eq.${user?.id}`,
+        },
+        (payload) => {
+          if (
+            payload.new.subscription_status === 'active' &&
+            payload.old.subscription_status !== 'active'
+          ) {
+            // Close subscription dialog if it's open
+            setShowSubscriptionDialog(false);
+            // Refresh available ships count
+            getAvailableShips();
+          }
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, getAvailableShips]);
+
   const fetchConversationHistory = async () => {
     console.log("Fetching conversation history for shipId:", shipId);
     try {
@@ -255,13 +296,22 @@ const Chat = ({
     setIsLoading(false);
   };
 
-  const handleCodeUpdate = (updatedCode) => {
+  const handleCodeUpdate = async (updatedCode) => {
     onCodeUpdate(updatedCode);
+    await getAvailableShips();
   };
 
   const handleSend = async () => {
+    setIsLoading(true);
+    const currentShips = await getAvailableShips();
+
+    if (!isSubscribed && (currentShips < 1 || !currentShips)) {
+      setShowSubscriptionDialog(true);
+      setIsLoading(false);
+      return;
+    }
+
     if (input.trim() || filesToUpload.length > 0) {
-      setIsLoading(true);
       try {
         let uploadedAssets = [];
         let aiReferenceFiles = [];
@@ -325,11 +375,14 @@ const Chat = ({
           assetInfo: combinedAssetInfo,
           assets: uploadedAssets,
           aiReferenceFiles: aiReferenceFiles,
+          userId: user.id,
         });
 
         setInput("");
         dispatch(setFilesToUpload([]));
         setFileDescriptions({});
+
+        await getAvailableShips();
       } catch (error) {
         console.error("Error uploading assets or sending message:", error);
         toast.error("Failed to send message with assets");
@@ -748,6 +801,12 @@ const Chat = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <SubscriptionDialog
+        isOpen={showSubscriptionDialog}
+        onClose={handleCloseSubscriptionDialog}
+        isSubscribed={isSubscribed}
+        user={user}
+      />
     </div>
   );
 };
