@@ -8,7 +8,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import Confetti from "react-confetti";
-import { Zap, Image, Globe, Crown, Loader2 } from "lucide-react";
+import {
+  Zap,
+  Image,
+  Globe,
+  Crown,
+  Loader2,
+  Link,
+  Copy,
+  BadgeHelpIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
 import { supabase } from "@/lib/supabaseClient";
@@ -156,6 +165,20 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
     fetchSubscriptionDetails();
   }, [user?.id, isSubscribed]);
 
+  const handleEmailCopy = () => {
+    if (user?.email) {
+      navigator.clipboard
+        .writeText(user.email)
+        .then(() => {
+          toast.success("Email address copied to clipboard");
+        })
+        .catch((err) => {
+          console.error("Failed to copy email: ", err);
+          toast.error("Failed to copy email address");
+        });
+    }
+  };
+
   const renderPaymentButton = () => {
     return (
       <div className="w-full flex flex-col items-center justify-center gap-4">
@@ -165,6 +188,19 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
             <Loader2 className="h-5 w-5 animate-spin" />
             <span>Initializing secure payment options...</span>
           </div>
+        )}
+        {!isPaymentLoading && (
+          <span
+            className="text-sm text-muted-foreground"
+            onClick={handleEmailCopy}
+          >
+            Use email address
+            <span className="font-semibold underline cursor-pointer mx-1 inline-flex items-center gap-1">
+              {user?.email}
+              <Copy className="w-4 h-4" />
+            </span>{" "}
+            while completing the payment.
+          </span>
         )}
       </div>
     );
@@ -179,7 +215,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               Upgrade to ShipStation Pro
             </DialogTitle>
             <DialogDescription className="text-gray-500">
-              Unlock powerful features to enhance your portfolio
+              Unlock powerful features to enhance your portfolio, for just ₹999
             </DialogDescription>
           </DialogHeader>
 
@@ -275,9 +311,9 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               )}
             </div>
           </div>
-          <DialogFooter className="flex justify-start">
+          {/* <DialogFooter className="flex justify-start">
             <Button variant="link">Cancel Subscription</Button>
-          </DialogFooter>
+          </DialogFooter> */}
         </>
       );
     }
