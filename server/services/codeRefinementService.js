@@ -19,7 +19,9 @@ async function refineCode(
   assetInfo,
   aiReferenceFiles
 ) {
-  console.log(`Starting code refinement for shipSlug: ${shipSlug}`);
+  console.log(
+    `Starting code refinement for shipSlug using Claude: ${shipSlug}`
+  );
 
   const client = new AnthropicService({ userId });
   const filePath = `${shipSlug}/index.html`;
@@ -38,7 +40,7 @@ async function refineCode(
 
   let dbMessages = conversation?.messages || [];
 
-  const aiReferenceFilesCount = aiReferenceFiles.length;
+  const aiReferenceFilesCount = aiReferenceFiles?.length;
   console.log("assets received", assets.length);
   console.log("aiReferenceFiles received", aiReferenceFilesCount);
 
@@ -201,7 +203,7 @@ async function saveNewVersion(shipId, shipSlug, currentCode) {
 }
 
 function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
-  const aiReferenceFilesCount = aiReferenceFiles.length;
+  const aiReferenceFilesCount = aiReferenceFiles?.length;
 
   let prompt = `
     Current date: ${getCurrentDate()}
@@ -325,7 +327,16 @@ function getSystemPrompt(assets, assetInfo, aiReferenceFiles) {
   prompt += `
     You have access to the following tools:
     1. **search_tool**: Use this to find relevant information for refining the code.
-    2. **placeholder_image_tool**: Use this to find and update placeholder images in the code.
+    2. **placeholder_image_tool**: Use this to find and update placeholder images in the code. You can also use this tool to find appropriate images, illustrations, or visual elements needed to complete user requests when specific images are required but not provided.
+
+    IMPORTANT RULES FOR IMAGES:
+    1. NEVER use hypothetical or placeholder URLs (e.g., "example.com/image.jpg" or "path/to/image.jpg")
+    2. ALWAYS use the placeholder_image_tool to get actual, working image URLs
+    3. Use Tailwind classes for responsive image handling:
+       - Use 'w-full' for full-width responsive images
+       - Add 'object-cover' or 'object-contain' as needed
+       - Include 'aspect-ratio' classes when necessary
+       - Always add meaningful 'alt' text for accessibility
 
     IMPORTANT: Only use these tools if absolutely necessary. If you have sufficient information to make the requested changes without using any tools, proceed directly with the code refinement. Do not use tools for routine updates or when the existing information is adequate.
 

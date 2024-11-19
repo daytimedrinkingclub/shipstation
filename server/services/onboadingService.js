@@ -20,7 +20,7 @@ const {
   undoCodeChange,
   redoCodeChange,
   refineCode,
-} = require("../services/openai-editor-service/codeRefinementService");
+} = require("../services/codeRefinementService");
 const { generateSiteContent } = require("./siteContentService");
 const ScreenshotService = require("./screenshotService");
 const { updatePrompt } = require("./promptUpdateService");
@@ -335,6 +335,7 @@ function handleOnboardingSocketEvents(io) {
           shipId,
           shipSlug,
           message,
+          userId,
           assets,
           assetInfo,
           aiReferenceFiles
