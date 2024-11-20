@@ -300,7 +300,10 @@ export default function PortfolioBuilder() {
                 className="relative"
               >
                 {isGenerating ? (
-                  "Generating..."
+                  <>
+                    Generating...
+                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
+                  </>
                 ) : (
                   <>
                     Generate Portfolio
