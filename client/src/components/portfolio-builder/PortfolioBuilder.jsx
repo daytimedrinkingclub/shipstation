@@ -300,22 +300,12 @@ export default function PortfolioBuilder() {
                 className="relative"
               >
                 {isGenerating ? (
-                  <>
-                    Generating...
-                    <Loader2 className="ml-2 h-4 w-4 animate-spin" />
-                  </>
-                ) : availableShips > 0 ? (
+                  "Generating..."
+                ) : (
                   <>
                     Generate Portfolio
                     <Sparkles className="ml-2 h-4 w-4" />
                   </>
-                ) : (
-                  "No ships available"
-                )}
-                {availableShips <= 0 && !isGenerating && (
-                  <span className="absolute inset-0 flex items-center justify-center bg-background/80 text-foreground text-sm font-medium">
-                    Get more ships
-                  </span>
                 )}
               </Button>
             </div>
