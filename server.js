@@ -1,3 +1,6 @@
+require("./instrument");
+
+const Sentry = require("@sentry/node");
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -48,6 +51,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+Sentry.setupExpressErrorHandler(app);
 handleOnboardingSocketEvents(io);
 
 server.listen(PORT, () => {

@@ -5,9 +5,12 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server",
+    "start": "pm2 start server.js --name shipstation",
     "dev": "nodemon server",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prod": "pm2 start server.js --name shipstation --watch",
+    "stop": "pm2 stop shipstation",
+    "monitor": "pm2 monit"
   },
   "author": "",
   "license": "ISC",
@@ -18,6 +21,8 @@
     "@paypal/checkout-server-sdk": "^1.0.3",
     "@paypal/paypal-js": "^8.1.0",
     "@paypal/react-paypal-js": "^8.5.0",
+    "@sentry/node": "^8.40.0",
+    "@sentry/profiling-node": "^8.40.0",
     "@supabase/supabase-js": "^2.44.2",
     "@tabler/icons-react": "^3.19.0",
     "archiver": "^7.0.1",
@@ -44,6 +49,7 @@
     "path": "^0.12.7",
     "paypal-rest-sdk": "^1.8.1",
     "pdf-parse": "^1.1.1",
+    "pm2": "^5.3.1",
     "puppeteer": "^23.1.0",
     "razorpay": "^2.9.4",
     "sharp": "^0.33.5",
