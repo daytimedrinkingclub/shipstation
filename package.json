@@ -5,12 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 start server.js --name shipstation",
-    "dev": "nodemon server",
     "lint": "eslint .",
-    "prod": "pm2 start server.js --name shipstation --watch",
-    "stop": "pm2 stop shipstation",
-    "monitor": "pm2 monit"
+    "dev": "nodemon server",
+    "start": "nodemon --exitcrash app.js"
   },
   "author": "",
   "license": "ISC",
@@ -49,7 +46,6 @@
     "path": "^0.12.7",
     "paypal-rest-sdk": "^1.8.1",
     "pdf-parse": "^1.1.1",
-    "pm2": "^5.3.1",
     "puppeteer": "^23.1.0",
     "razorpay": "^2.9.4",
     "sharp": "^0.33.5",
