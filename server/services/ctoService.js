@@ -11,6 +11,7 @@ const ctoPrompt = require("./prompts/ctoPrompt");
 require("dotenv").config();
 const ScreenshotService = require("./screenshotService");
 const AnalyzeAndRepairService = require("./analyzeAndRepairService");
+const { postToDiscordWebhook } = require("./webhookService");
 
 const screenshotService = new ScreenshotService();
 const analyzeAndRepairService = new AnalyzeAndRepairService();
@@ -118,6 +119,19 @@ async function ctoService({
     sendEvent("websiteDeployed", {
       slug,
     });
+
+    const webhookPayload = {
+      content: "New website deployed!",
+      embeds: [
+        {
+          title: "Website Details",
+          fields: [
+            { name: "URL", value: `${process.env.MAIN_URL}/site/${slug}` },
+          ],
+        },
+      ],
+    };
+    postToDiscordWebhook(webhookPayload, process.env.DISCORD_NEW_SHIP_WEBHOOK_URL);
 
     return {
       message: `Website successfully built, deployed, and analyzed. Slug: ${slug}`,
