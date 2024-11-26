@@ -33,9 +33,11 @@ async function refineCode(
   const conversation = await dbService.getCodeRefiningConversation(shipId);
 
   let messages = Array.isArray(conversation?.messages)
-    ? conversation.messages.map((msg) =>
-        msg.role === "user" ? { role: msg.role, content: msg.content } : msg
-      )
+    ? conversation.messages
+        .slice(-6) // context of last 6 messages (3 pairs of user/assistant messages)
+        .map((msg) =>
+          msg.role === "user" ? { role: msg.role, content: msg.content } : msg
+        )
     : [];
 
   let dbMessages = conversation?.messages || [];
