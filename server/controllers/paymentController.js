@@ -138,3 +138,149 @@ exports.handlePaypalWebhook = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+
+exports.handlePaddleWebhook = async (req, res) => {
+  try {
+    const { event_type, data } = req.body;
+
+    switch (event_type) {
+      case "customer.created": {
+        const { id: customerId, email } = data;
+
+        let user_id = await getUserIdFromEmail(email);
+        if (!user_id) {
+          const { id } = await createUser(email);
+          user_id = id;
+        }
+
+        // Update user profile with Paddle customer ID
+        await updateUserProfile(user_id, {
+          paddle_customer_id: customerId,
+        });
+
+        const webhookPayload = {
+          content: "New Paddle customer created!",
+          embeds: [
+            {
+              title: "Customer Details",
+              fields: [
+                { name: "Email", value: email },
+                { name: "Customer ID", value: customerId },
+              ],
+            },
+          ],
+        };
+        await postToDiscordWebhook(webhookPayload);
+
+        res.status(200).json({ status: "Customer created" });
+        break;
+      }
+
+      case "subscription.activated": {
+        const subscription = data;
+        const mainItem = subscription.items[0];
+        const product = mainItem.product;
+        const price = mainItem.price;
+        const customerId = subscription.customer_id;
+
+        // Find user by paddle_customer_id
+        const userProfile = await getUserProfileByPaddleCustomerId(customerId);
+        if (!userProfile) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        const paymentPayload = {
+          payload: subscription,
+          user_id: userProfile.user_id,
+          transaction_id: subscription.id,
+          status: "successful",
+          provider: "paddle",
+        };
+
+        await insertPayment(paymentPayload);
+
+        const profilePayload = {
+          subscription_status: "active",
+          subscription_start_date: subscription.started_at,
+          available_ships: process.env.NUMBER_OF_SHIPS || 1000,
+        };
+
+        await updateUserProfile(userProfile.user_id, profilePayload);
+
+        const webhookPayload = {
+          content: "New Paddle subscription activated!",
+          embeds: [
+            {
+              title: "Subscription Details",
+              fields: [
+                { name: "Product", value: product.name },
+                {
+                  name: "Amount",
+                  value: `$${parseInt(price.unit_price.amount) / 100} ${
+                    price.unit_price.currency_code
+                  }`,
+                },
+                { name: "Customer ID", value: customerId },
+                { name: "Subscription ID", value: subscription.id },
+                { name: "Quantity", value: mainItem.quantity.toString() },
+                { name: "Next Billing", value: subscription.next_billed_at },
+              ],
+            },
+          ],
+        };
+        await postToDiscordWebhook(webhookPayload);
+
+        res.status(200).json({ status: "Subscription activated!" });
+        break;
+      }
+
+      case "subscription.canceled": {
+        const subscription = data;
+        const customerId = subscription.customer_id;
+
+        const userProfile = await getUserProfileByPaddleCustomerId(customerId);
+        if (!userProfile) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        const profilePayload = {
+          subscription_status: "cancelled",
+          available_ships: 0,
+        };
+
+        await updateUserProfile(userProfile.user_id, profilePayload);
+
+        const webhookPayload = {
+          content: "Paddle subscription cancelled",
+          embeds: [
+            {
+              title: "Cancellation Details",
+              fields: [
+                { name: "Customer ID", value: customerId },
+                { name: "Subscription ID", value: subscription.id },
+                { name: "Cancelled At", value: subscription.canceled_at },
+              ],
+            },
+          ],
+        };
+        await postToDiscordWebhook(webhookPayload);
+
+        res.status(200).json({ status: "Subscription cancelled" });
+        break;
+      }
+
+      default:
+        console.log(`Unhandled Paddle event type: ${event_type}`);
+        res.status(200).json({ status: "Event ignored" });
+    }
+  } catch (error) {
+    console.error("Error handling Paddle webhook:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {
+  handleRazorpayWebhook,
+  handlePaypalWebhook,
+  handlePaddleWebhook,
+};

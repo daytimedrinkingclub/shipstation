@@ -521,6 +521,17 @@ async function createUser(email) {
   }
 }
 
+const getUserProfileByPaddleCustomerId = async (paddleCustomerId) => {
+    const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('paddle_customer_id', paddleCustomerId)
+        .single();
+
+    if (error) throw error;
+    return data;
+};
+
 module.exports = {
   insertConversation,
   insertMessage,
@@ -550,4 +561,5 @@ module.exports = {
   checkSlugAvailability,
   updateShipSlug,
   createUser,
+  getUserProfileByPaddleCustomerId,
 };
