@@ -102,71 +102,97 @@ async function refineCode(
   messages.push({ role: currentMessage.role, content: currentMessage.content });
 
   let finalResponse = "";
+  try {
+    while (true) {
+      console.log(
+        "codeRefinement: API call Stop Reason:",
+        currentMessage.stop_reason
+      );
 
-  while (true) {
-    console.log(
-      "codeRefinement: API call Stop Reason:",
-      currentMessage.stop_reason
+      if (currentMessage.stop_reason === "end_turn") {
+        const textContent = currentMessage.content.find(
+          (content) => content.type === "text"
+        );
+        if (textContent && textContent.text) {
+          finalResponse = textContent.text;
+          break;
+        }
+      } else if (currentMessage.stop_reason === "max_tokens") {
+        console.log("Max tokens reached, returning original code");
+        return {
+          updatedMessage:
+            "The request was too large to process. Please try breaking it into smaller changes.",
+          updatedCode: await readCurrentCode(filePath), // Return original code
+        };
+      } else if (currentMessage.stop_reason === "tool_use") {
+        try {
+          const toolUses = currentMessage.content.filter(
+            (content) => content.type === "tool_use"
+          );
+          if (toolUses.length > 0) {
+            const toolResults = [];
+            for (const toolUse of toolUses) {
+              const toolResult = await handleCodeRefinementToolUse({
+                tool: toolUse,
+                client,
+              });
+              console.log("Tool result received");
+              toolResults.push(...toolResult);
+            }
+            messages.push({ role: "user", content: toolResults });
+            console.log("Messages updated with tool results");
+          }
+          console.log("Sending request to Anthropic API...");
+          currentMessage = await client.sendMessage({
+            system: systemPrompt,
+            messages: messages,
+            tools: [searchTool, placeholderImageTool],
+            tool_choice: { type: "auto" },
+          });
+          console.log("Received response from Anthropic API", currentMessage);
+
+          messages.push({ role: "assistant", content: currentMessage.content });
+          console.log("Messages updated with assistant response");
+        } catch (toolError) {
+          console.error("Error during tool use:", toolError);
+          return {
+            updatedMessage:
+              "An error occurred while processing your request. Please try again.",
+            updatedCode: await readCurrentCode(filePath), // Return original code
+          };
+        }
+      }
+    }
+
+    const { updatedMessage, updatedCode } =
+      extractUpdatedContent(finalResponse);
+
+    await saveUpdatedCode(filePath, updatedCode);
+    await updateShipVersion(shipId);
+
+    messagesToSaveInDB.push({
+      role: "assistant",
+      content: [{ type: "text", text: updatedMessage }],
+    });
+
+    await dbService.upsertCodeRefiningConversation(
+      shipId,
+      userId,
+      messagesToSaveInDB
     );
 
-    if (currentMessage.stop_reason === "end_turn") {
-      const textContent = currentMessage.content.find(
-        (content) => content.type === "text"
-      );
-      if (textContent && textContent.text) {
-        finalResponse = textContent.text;
-        break;
-      }
-    } else if (currentMessage.stop_reason === "tool_use") {
-      const toolUses = currentMessage.content.filter(
-        (content) => content.type === "tool_use"
-      );
-      if (toolUses.length > 0) {
-        const toolResults = [];
-        for (const toolUse of toolUses) {
-          const toolResult = await handleCodeRefinementToolUse({
-            tool: toolUse,
-            client,
-          });
-          console.log("Tool result received");
-          toolResults.push(...toolResult);
-        }
-        messages.push({ role: "user", content: toolResults });
-        console.log("Messages updated with tool results");
-      }
-      console.log("Sending request to Anthropic API...");
-      currentMessage = await client.sendMessage({
-        system: systemPrompt,
-        messages: messages,
-        tools: [searchTool, placeholderImageTool],
-        tool_choice: { type: "auto" },
-      });
-      console.log("Received response from Anthropic API", currentMessage);
+    console.log(`Code refinement process completed for shipId: ${shipId}`);
 
-      messages.push({ role: "assistant", content: currentMessage.content });
-      console.log("Messages updated with assistant response");
-    }
+    return { updatedMessage, updatedCode };
+  } catch (error) {
+    console.error("Error in code refinement process:", error);
+    // Return a graceful response instead of throwing
+    return {
+      updatedMessage:
+        "An unexpected error occurred while processing your request. Please try again.",
+      updatedCode: await readCurrentCode(filePath), // Return original code
+    };
   }
-
-  const { updatedMessage, updatedCode } = extractUpdatedContent(finalResponse);
-
-  await saveUpdatedCode(filePath, updatedCode);
-  await updateShipVersion(shipId);
-
-  messagesToSaveInDB.push({
-    role: "assistant",
-    content: [{ type: "text", text: updatedMessage }],
-  });
-
-  await dbService.upsertCodeRefiningConversation(
-    shipId,
-    userId,
-    messagesToSaveInDB
-  );
-
-  console.log(`Code refinement process completed for shipId: ${shipId}`);
-
-  return { updatedMessage, updatedCode };
 }
 
 async function readCurrentCode(filePath) {
