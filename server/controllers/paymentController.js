@@ -278,9 +278,3 @@ exports.handlePaddleWebhook = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
-module.exports = {
-  handleRazorpayWebhook,
-  handlePaypalWebhook,
-  handlePaddleWebhook,
-};
