@@ -175,11 +175,7 @@ async function refineCode(
       content: [{ type: "text", text: updatedMessage }],
     });
 
-    await dbService.upsertCodeRefiningConversation(
-      shipId,
-      userId,
-      messagesToSaveInDB
-    );
+    await dbService.upsertCodeRefiningConversation(shipId, messagesToSaveInDB);
 
     console.log(`Code refinement process completed for shipId: ${shipId}`);
 
