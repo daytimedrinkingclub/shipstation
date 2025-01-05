@@ -8,6 +8,7 @@ const {
   getUserProfile,
   updateUserProfile,
   createUser,
+  getUserProfileByPaddleCustomerId
 } = require("../services/dbService");
 const { postToDiscordWebhook } = require("../services/webhookService");
 
@@ -143,7 +144,39 @@ exports.handlePaddleWebhook = async (req, res) => {
   try {
     const { event_type, data } = req.body;
 
+    console.log("Received Paddle webhook:", req.body);
+
     switch (event_type) {
+      case "subscription.created": {
+        const subscription = data;
+        const customerId = subscription.customer_id;
+
+        // Find user by paddle_customer_id
+        const userProfile = await getUserProfileByPaddleCustomerId(customerId);
+        if (!userProfile) {
+          return res.status(404).json({ error: "User not found" });
+        }
+
+        const webhookPayload = {
+          content: "New Paddle subscription created!",
+          embeds: [
+            {
+              title: "Subscription Details",
+              fields: [
+                { name: "Customer ID", value: customerId },
+                { name: "Subscription ID", value: subscription.id },
+                { name: "Status", value: subscription.status },
+                { name: "Next Billing", value: subscription.next_billed_at },
+              ],
+            },
+          ],
+        };
+        await postToDiscordWebhook(webhookPayload);
+
+        res.status(200).json({ status: "Subscription created" });
+        break;
+      }
+
       case "customer.created": {
         const { id: customerId, email } = data;
 
