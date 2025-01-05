@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import Confetti from "react-confetti";
 import { supabase } from "@/lib/supabaseClient";
 import axios from "axios";
+import { usePostHog } from 'posthog-js/react'
 
 import Header from "@/components/editor/Header";
 import CodeEditor from "@/components/editor/CodeEditor";
@@ -53,6 +54,7 @@ const Edit = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const posthog = usePostHog()
 
   const { user, userLoading, checkCustomDomain } = useContext(AuthContext);
   const shipInfo = useSelector((state) => state.ship);
@@ -401,6 +403,16 @@ const Edit = () => {
       }
     }
   }, [location.state, dispatch]);
+
+  useEffect(() => {
+    if (shipInfo.slug) {
+      const shipUrl = `${import.meta.env.VITE_MYPROFILE_URL}/${shipInfo.slug}`;
+      posthog?.people.set({
+        shipUrl: shipUrl,
+        currentShipSlug: shipInfo.slug
+      });
+    }
+  }, [shipInfo.slug, posthog]);
 
   if (userLoading) {
     return (

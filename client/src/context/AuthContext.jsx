@@ -1,6 +1,7 @@
 import { createContext, useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { usePostHog } from 'posthog-js/react'
 
 export const AuthContext = createContext({
   user: null,
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }) => {
   const [isSendingLoginLink, setIsSendingLoginLink] = useState(false);
   const [userLoading, setUserLoading] = useState(true);
   const [myProjectsLoading, setMyProjectsLoading] = useState(true);
+  const posthog = usePostHog()
 
   const checkUser = async () => {
     setUserLoading(true);
@@ -44,6 +46,10 @@ export const AuthProvider = ({ children }) => {
     setUser(user);
     setUserLoading(false);
     if (user) {
+      posthog?.identify(user.id, {
+        email: user.email,
+      });
+      
       await Promise.all([
         getAvailableShips(),
         getRecentlyShipped(),
@@ -61,8 +67,16 @@ export const AuthProvider = ({ children }) => {
 
       if (error) throw error;
 
-      setIsSubscribed(data.subscription_status === "active");
-      return data.subscription_status === "active";
+      const isActive = data.subscription_status === "active";
+      setIsSubscribed(isActive);
+      
+      // Update PostHog properties with subscription status
+      posthog?.people.set({
+        subscription_status: data.subscription_status,
+        is_subscribed: isActive
+      });
+
+      return isActive;
     } catch (error) {
       console.error("Error checking subscription status:", error);
       setIsSubscribed(false);
@@ -130,6 +144,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    posthog?.reset();
     toast("You have been logged out successfully!");
     setUser(null);
     setAvailableShips(0);
@@ -206,13 +221,23 @@ export const AuthProvider = ({ children }) => {
         if (error) throw error;
 
         setUser(data.user);
+        // Identify user in PostHog after Google login
+        posthog?.identify(data.user.id, {
+          email: data.user.email,
+          name: data.user.user_metadata?.full_name,
+          login_method: 'google'
+        });
+        
+        // Check subscription status and update PostHog
+        await checkSubscriptionStatus();
+        
         toast.success("Logged in successfully with Google!");
       } catch (error) {
         console.error("Error during Google login:", error);
         toast.error("Failed to log in with Google. Please try again.");
       }
     },
-    [supabase.auth]
+    [supabase.auth, posthog]
   );
 
   useEffect(() => {
