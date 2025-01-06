@@ -522,7 +522,7 @@ async function createUser(email) {
 }
 
 const getUserProfileByPaddleCustomerId = async (paddleCustomerId) => {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('user_profiles')
         .select('*')
         .eq('paddle_customer_id', paddleCustomerId)
