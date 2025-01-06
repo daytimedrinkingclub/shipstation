@@ -224,7 +224,7 @@ exports.handlePaddleWebhook = async (req, res) => {
 
         const paymentPayload = {
           payload: subscription,
-          user_id: userProfile.user_id,
+          user_id: userProfile.id,
           transaction_id: subscription.id,
           status: "successful",
           provider: "paddle",
