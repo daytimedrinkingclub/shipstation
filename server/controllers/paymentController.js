@@ -238,7 +238,7 @@ exports.handlePaddleWebhook = async (req, res) => {
           available_ships: process.env.NUMBER_OF_SHIPS || 1000,
         };
 
-        await updateUserProfile(userProfile.user_id, profilePayload);
+        await updateUserProfile(userProfile.id, profilePayload);
 
         const webhookPayload = {
           content: "New Paddle subscription activated!",
