@@ -45,7 +45,7 @@ class AnthropicService {
     this.conversationId;
     this.model = model;
     this.temperature = temperature;
-    this.maxTokens = maxTokens;
+    this.maxTokens = process.env.MAX_TOKENS ? parseInt(process.env.MAX_TOKENS) : maxTokens;
     this.startTimestamp = Date.now();
     this.abortController = new AbortController();
   }
