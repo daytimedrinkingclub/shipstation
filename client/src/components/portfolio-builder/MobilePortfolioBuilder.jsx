@@ -36,7 +36,6 @@ export default function MobilePortfolioBuilder({
   setCustomDesignPrompt,
   isGenerating,
   handleSubmit,
-  availableShips,
   onOpenPromptGallery,
   assets,
   setAssets,
@@ -192,7 +191,7 @@ export default function MobilePortfolioBuilder({
         {currentStep === steps.length - 1 ? (
           <Button
             onClick={handleSubmit}
-            disabled={isGenerating || availableShips <= 0}
+            disabled={isGenerating}
             size="sm"
           >
             {isGenerating ? (

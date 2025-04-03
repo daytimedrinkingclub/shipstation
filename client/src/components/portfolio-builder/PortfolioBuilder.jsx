@@ -29,7 +29,7 @@ import { fileToBase64 } from "@/lib/utils/fileToBase64";
 
 export default function PortfolioBuilder() {
   const { socket, roomId } = useSocket();
-  const { user, availableShips, anthropicKey, setAnthropicKey } =
+  const { user, availableShips, anthropicKey, setAnthropicKey, getAvailableShips } =
     useContext(AuthContext);
   const userId = user?.id;
 
@@ -76,11 +76,11 @@ export default function PortfolioBuilder() {
       return;
     }
 
-    if (availableShips <= 0) {
-      setIsPaymentRequired(true);
-      onOpen();
-      return;
-    }
+    // if (availableShips <= 0) {
+    //   setIsPaymentRequired(true);
+    //   onOpen();
+    //   return;
+    // }
 
     setIsGenerating(true);
 
@@ -200,6 +200,10 @@ export default function PortfolioBuilder() {
     }
   }, [socket, isPaymentRequired, navigate, dispatch]);
 
+  useEffect(() => {
+    getAvailableShips();
+  }, [getAvailableShips]);
+
   const handleSubmitAnthropicKey = (apiKey) => {
     socket.emit("anthropicKey", { anthropicKey: apiKey });
     setIsKeyValidating(true);
@@ -296,7 +300,7 @@ export default function PortfolioBuilder() {
               </div> */}
               <Button
                 onClick={handleSubmit}
-                disabled={availableShips <= 0 || isGenerating}
+                disabled={isGenerating}
                 className="relative"
               >
                 {isGenerating ? (
@@ -318,9 +322,8 @@ export default function PortfolioBuilder() {
 
       {isMobile ? (
         <div
-          className={`fixed inset-0 bg-background z-50 ${
-            isWebsitesDialogOpen ? "block" : "hidden"
-          }`}
+          className={`fixed inset-0 bg-background z-50 ${isWebsitesDialogOpen ? "block" : "hidden"
+            }`}
         >
           <div className="flex flex-col h-full relative">
             <div className="absolute top-4 right-4 z-30">
