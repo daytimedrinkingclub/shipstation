@@ -49,6 +49,15 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
       payload.old.subscription_status !== "active"
     ) {
       setTimeout(() => {
+        // Track Google Ads conversion with subscription value
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'conversion', {
+            'send_to': 'AW-16577722230/BSWgCK-JyLMaEPbu7-A9',
+            'value': isYearly ? 90.0 : 9.0,
+            'currency': 'USD'
+          });
+        }
+
         setShowConfetti(true);
         toast.success("Welcome to ShipStation Pro! 🚀", {
           description: "Your account has been upgraded successfully!",
