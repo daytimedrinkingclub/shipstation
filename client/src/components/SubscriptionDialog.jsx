@@ -169,7 +169,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
               <div className="text-center space-y-1">
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-2xl font-bold text-white">
-                    {isYearly ? "$200.00/year" : "$18.00/month"}
+                    {isYearly ? "$90.00/year" : "$9.00/month"}
                   </span>
                   {isYearly && (
                     <span className="text-xl text-emerald-400">Save 20%</span>
