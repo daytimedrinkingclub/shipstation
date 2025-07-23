@@ -34,7 +34,7 @@ function processTemplate(template, variables = {}) {
 }
 
 // Send email function
-async function sendEmail({ to, subject, template, variables = {}, from = 'ShipStation <hello@shipstation.ai>' }) {
+async function sendEmail({ to, subject, template, variables = {}, from = 'ShipStation.AI <hello@shipstation.ai>' }) {
   try {
     let htmlContent = '';
 

@@ -163,7 +163,7 @@ async function ctoService({
         await sendProjectDeployedEmail(
           userProfile.email, 
           projectUrl, 
-          userName,
+          null,
           screenshotUrl
         );
         console.log(`Project deployed email sent to ${userProfile.email}`);
