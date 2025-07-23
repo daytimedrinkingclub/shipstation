@@ -22,6 +22,11 @@ function processTemplate(template, variables = {}) {
 
   const allVariables = {
     year: new Date().getFullYear(),
+    platformName: 'ShipStation.ai',
+    platformUrl: 'https://app.shipstation.ai/',
+    supportEmail: 'support@shipstation.ai',
+    githubUrl: 'https://github.com/daytimedrinkingclub/shipstation',
+    discordUrl: 'https://discord.gg/wMNmcmq3SX',
     ...variables
   }
 

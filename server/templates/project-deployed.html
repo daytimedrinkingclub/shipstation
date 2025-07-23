@@ -4,8 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
     <title>Your Project is Live!</title>
     <style>
+        :root {
+            color-scheme: light dark;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -16,7 +22,7 @@
         }
 
         .container {
-            max-width: 600px;
+            max-width: 650px;
             margin: 0 auto;
             background-color: #ffffff;
             border-radius: 8px;
@@ -59,14 +65,6 @@
             font-size: 16px;
         }
 
-        .project-info {
-            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-            padding: 30px;
-            border-radius: 12px;
-            margin: 30px 0;
-            border: 1px solid #bfdbfe;
-        }
-
         .project-name {
             font-size: 20px;
             font-weight: 700;
@@ -92,6 +90,20 @@
 
         .cta-button {
             display: inline-block;
+            background: transparent;
+            color: #3b82f6 !important;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            font-size: 16px;
+            width: 100%;
+            border: 2px solid #3b82f6;
+            transition: all 0.2s;
+        }
+
+        .cta-button-app {
             background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white !important;
             padding: 16px 32px;
@@ -99,38 +111,36 @@
             border-radius: 6px;
             font-weight: 600;
             margin: 20px 0;
-            transition: transform 0.2s;
             font-size: 16px;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-1px);
-        }
-
-        .cta-button-app {
-            display: inline-block;
-            background: linear-gradient(135deg, #b41473 0%, #e54646 100%);
-            color: white !important;
-            padding: 16px 32px;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            margin: 20px 0;
-            transition: transform 0.2s;
-            font-size: 16px;
+            width: 100%;
         }
 
         .stats-container {
-            display: flex;
-            justify-content: space-around;
             background-color: #f9fafb;
-            padding: 30px 20px;
+            padding: 20px 20px 20px 20px;
             border-radius: 8px;
             margin: 30px 0;
         }
 
+        .stats-heading {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: 0.5px;
+            margin: 0 0 20px 0;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
         .stat-item {
             text-align: center;
+            padding: 10px;
+            width: 25%;
         }
 
         .stat-number {
@@ -147,21 +157,21 @@
         }
 
         .next-steps {
-            background-color: #fff9fd;
-            border-left: 4px solid #f50b40;
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
             padding: 20px;
             margin: 30px 0;
             border-radius: 0 8px 8px 0;
         }
 
         .next-steps h3 {
-            color: #92400e;
+            color: #1e40af;
             margin: 0 0 12px 0;
             font-size: 18px;
         }
 
         .next-steps ul {
-            color: #92400e;
+            color: #1e40af;
             margin: 0;
             padding-left: 20px;
         }
@@ -187,6 +197,118 @@
             text-decoration: none;
         }
 
+        .project-info-text {
+            margin: 0 0 16px 0;
+            color: #1e40af;
+        }
+
+        .screenshot-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .screenshot-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .button-container {
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            flex: 1;
+            width: 100%;
+        }
+
+        .footer-disclaimer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Dark mode styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #111827 !important;
+                color: #f9fafb !important;
+            }
+
+            .container {
+                background-color: #1f2937 !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .content h2 {
+                color: #f9fafb !important;
+            }
+
+            .content p {
+                color: #d1d5db !important;
+            }
+
+            .project-name {
+                color: #93c5fd !important;
+            }
+
+            .project-url-container {
+                background-color: #374151 !important;
+                border: 1px solid #6b7280 !important;
+            }
+
+            .project-url {
+                color: #93c5fd !important;
+            }
+
+            .stats-container {
+                background-color: #374151 !important;
+            }
+
+            .stats-heading {
+                color: #f9fafb !important;
+            }
+
+            .stat-label {
+                color: #d1d5db !important;
+            }
+
+            .next-steps {
+                background-color: #1e3a8a !important;
+                border-left: 4px solid #60a5fa !important;
+            }
+
+            .next-steps h3 {
+                color: #93c5fd !important;
+            }
+
+            .next-steps ul {
+                color: #93c5fd !important;
+            }
+
+            .external-link {
+                color: #d1d5db !important;
+            }
+
+            .footer {
+                background-color: #111827 !important;
+                color: #d1d5db !important;
+            }
+
+            .footer a {
+                color: #60a5fa !important;
+            }
+
+            .project-info-text {
+                color: #93c5fd !important;
+            }
+
+            .footer-disclaimer {
+                color: #9ca3af !important;
+            }
+        }
+
         @media (max-width: 600px) {
             .container {
                 margin: 0;
@@ -200,9 +322,18 @@
                 padding-right: 16px;
             }
 
-            .stats-container {
+            .stats-table {
+                width: 100%;
+            }
+
+            .stat-item {
+                width: 50%;
+                padding: 15px 5px;
+            }
+
+            .button-container {
                 flex-direction: column;
-                gap: 20px;
+                gap: 15px;
             }
         }
     </style>
@@ -211,62 +342,66 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Welcome to ShipStation.AI!</h1>
-            <p>Your journey to effortless websites starts here</p>
+            <h1>Welcome to {{platformName}}</h1>
         </div>
 
         <div class="content">
             <h2>Hi {{userName}}! 👋</h2>
-            <p>Great news! Your website has been successfully deployed and is now live on the internet. We thank you for
-                trying ShipStation.ai!</p>
+            <p>Great news! Your website has been successfully generated and is now live!</p>
 
             <div class="project-info">
-                <p style="margin: 0 0 16px 0; color: #1e40af;">Your website is accessible at:</p>
-                <div class="project-url-container"><a class="project-url" href="{{projectUrl}}">{{projectUrl}}</a></div>
+                <div class="project-url-container">
+                    🔗 &nbsp;
+                    <a class="project-url" href="{{projectUrl}}">{{projectUrl}}</a>
+                </div>
 
                 <!-- Website Screenshot -->
-                <div style="text-align: center; margin: 20px 0;">
+                <div class="screenshot-container">
                     <a href="{{projectUrl}}">
-                        <img src="{{screenshotUrl}}" alt="{{projectName}} Screenshot"
-                            style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                        <img src="{{screenshotUrl}}" alt="Your website screenshot (Enable Image Preview to see it)"
+                            class="screenshot-image">
                     </a>
                 </div>
             </div>
 
-            <div style="text-align: center;">
-                <a href="{{projectUrl}}" class="cta-button">View My Live Website 😍</a>
-            </div>
-
-            <div class="stats-container">
-                <div class="stat-item">
-                    <span class="stat-number">⚡</span>
-                    <div class="stat-label">Lightning Fast</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">🌍</span>
-                    <div class="stat-label">Globally Available</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">🔒</span>
-                    <div class="stat-label">SSL Secured</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">📱</span>
-                    <div class="stat-label">Mobile Ready</div>
-                </div>
+            <div class="button-container">
+                <a href="{{platformUrl}}" class="cta-button-app">Edit website on {{platformName}} </a>
             </div>
 
             <div class="next-steps">
                 <h3>🎯 What's Next?</h3>
                 <ul>
-                    <li>Make changes to your website</li>
-                    <li>Share your project with friends and colleagues</li>
+                    <li>Try making changes to your website on the {{platformName}} editor</li>
+                    <li>Share your website with friends and colleagues</li>
                     <li>Connect a custom domain for a professional look</li>
                     <li>Join our community to showcase your work</li>
                 </ul>
-                <div style="text-align: center;">
-                    <a href="{{projectUrl}}" class="cta-button-app">Launch ShipStation.ai</a>
-                </div>
+
+            </div>
+
+
+            <div class="stats-container">
+                <h3 class="stats-heading">We got you covered 🤗</h3>
+                <table class="stats-table">
+                    <tr>
+                        <td class="stat-item">
+                            <span class="stat-number">⚡</span>
+                            <div class="stat-label">Lightning Fast</div>
+                        </td>
+                        <td class="stat-item">
+                            <span class="stat-number">🌍</span>
+                            <div class="stat-label">Globally Available</div>
+                        </td>
+                        <td class="stat-item">
+                            <span class="stat-number">🔒</span>
+                            <div class="stat-label">SSL Secured</div>
+                        </td>
+                        <td class="stat-item">
+                            <span class="stat-number">📱</span>
+                            <div class="stat-label">Mobile Ready</div>
+                        </td>
+                    </tr>
+                </table>
             </div>
 
             <p>Your project is optimized for performance and ready to handle traffic. We're monitoring it 24/7 to ensure
@@ -274,21 +409,18 @@
 
             <p>If you need any help or have questions about your deployment, our support team is here to assist you. You
                 can reply to this email or reach us out at <a class="external-link"
-                    href="mailto:support@shipstation.ai">support@shipstation.ai</a></p>
-
-            <p>Congratulations once again! 🎊</p>
-            <p><strong>The ShipStation.ai Team</strong></p>
+                    href="mailto:{{supportEmail}}">{{supportEmail}}</a></p>
         </div>
 
         <div class="footer">
-            <p>© {{year}} ShipStation.ai All rights reserved.</p>
+            <p>© {{year}} {{platformName}} All rights reserved.</p>
             <p>
-                <a href="https://app.shipstation.ai/">👨🏻‍💻 Launch ShipStation</a> |
-                <a href="https://github.com/daytimedrinkingclub/shipstation">⭐️ Star us on Github</a> |
-                <a href="https://discord.gg/wMNmcmq3SX">👯 Join our Discord</a>
+                <a href="{{platformUrl}}">👨🏻‍💻 Launch {{platformName}}</a> |
+                <a href="{{githubUrl}}">⭐️ Star us on Github</a> |
+                <a href="{{discordUrl}}">👯 Join our Discord</a>
             </p>
-            <p style="margin-top: 16px; font-size: 12px; color: #9ca3af;">
-                You received this email because you have an active ShipStation.ai account.
+            <p class="footer-disclaimer">
+                You received this email because you have an active {{platformName}} account.
             </p>
         </div>
     </div>

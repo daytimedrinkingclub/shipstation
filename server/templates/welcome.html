@@ -1,10 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to ShipStation</title>
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
+    <title>Welcome to {{platformName}}</title>
     <style>
+        :root {
+            color-scheme: light dark;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -13,6 +20,7 @@
             color: #333;
             background-color: #f8fafc;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -21,38 +29,45 @@
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             padding: 40px 20px;
             text-align: center;
             color: white;
         }
+
         .header h1 {
             margin: 0;
             font-size: 28px;
             font-weight: 700;
         }
+
         .header p {
             margin: 10px 0 0 0;
             font-size: 16px;
             opacity: 0.9;
         }
+
         .content {
             padding: 40px 20px;
         }
+
         .content h2 {
             color: #1f2937;
             font-size: 24px;
             margin-bottom: 16px;
         }
+
         .content p {
             color: #6b7280;
             margin-bottom: 16px;
             font-size: 16px;
         }
+
         .cta-button {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
             color: white !important;
             padding: 14px 28px;
             text-decoration: none;
@@ -61,20 +76,24 @@
             margin: 20px 0;
             transition: transform 0.2s;
         }
-        .cta-button:hover {
-            transform: translateY(-1px);
+
+        .cta-container {
+            text-align: center;
         }
+
         .features {
             background-color: #f9fafb;
             padding: 20px;
             margin: 30px 0;
             border-radius: 8px;
         }
+
         .feature-item {
             margin-bottom: 16px;
             display: flex;
             align-items: flex-start;
         }
+
         .feature-icon {
             width: 20px;
             height: 20px;
@@ -84,10 +103,12 @@
             margin-top: 2px;
             flex-shrink: 0;
         }
+
         .feature-text {
             color: #374151;
             font-size: 14px;
         }
+
         .footer {
             background-color: #f3f4f6;
             padding: 30px 20px;
@@ -95,79 +116,136 @@
             color: #6b7280;
             font-size: 14px;
         }
+
         .footer a {
-            color: #667eea;
+            color: #3b82f6;
             text-decoration: none;
         }
+
+        .footer-disclaimer {
+            margin-top: 16px;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* Dark mode styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #111827 !important;
+                color: #f9fafb !important;
+            }
+
+            .container {
+                background-color: #1f2937 !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            .content h2 {
+                color: #f9fafb !important;
+            }
+
+            .content p {
+                color: #d1d5db !important;
+            }
+
+            .features {
+                background-color: #374151 !important;
+            }
+
+            .feature-text {
+                color: #d1d5db !important;
+            }
+
+            .footer {
+                background-color: #111827 !important;
+                color: #d1d5db !important;
+            }
+
+            .footer a {
+                color: #60a5fa !important;
+            }
+
+            .footer-disclaimer {
+                color: #9ca3af !important;
+            }
+        }
+
         @media (max-width: 600px) {
             .container {
                 margin: 0;
                 border-radius: 0;
             }
-            .header, .content, .footer {
+
+            .header,
+            .content,
+            .footer {
                 padding-left: 16px;
                 padding-right: 16px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 Welcome to ShipStation.AI!</h1>
-            <p>Your journey to effortless deployment starts here</p>
+            <h1>🚀 Welcome to {{platformName}}!</h1>
+            <p>Your journey to effortless websites starts here</p>
         </div>
-        
+
         <div class="content">
             <h2>Hi {{userName}}! 👋</h2>
-            <p>We're thrilled to have you on board! ShipStation is your one-stop platform for building, deploying, and managing your web projects with ease.</p>
-            
+            <p>We're thrilled to have you on board! {{platformName}} is your one-stop platform for building, deploying, and
+                managing your web projects with ease.</p>
+
             <p>Get ready to transform your ideas into live websites in 4-5 minutes, not hours.</p>
-            
-            <div style="text-align: center;">
-                <a href="https://app.shipstation.ai/" class="cta-button">Create my website</a>
+
+            <div class="cta-container">
+                <a href="{{platformUrl}}" class="cta-button">Create my free website on {{platformName}}</a>
             </div>
-            
+
             <div class="features">
                 <div class="feature-item">
-                    <!-- <div class="feature-icon"></div> -->
                     <div class="feature-text">
-                        <strong>Lightning Fast Deployment:</strong> Deploy your projects in seconds with our optimized infrastructure
+                        <strong>Lightning Fast Deployment:</strong> Deploy your projects in seconds with our optimized
+                        infrastructure
                     </div>
                 </div>
                 <div class="feature-item">
-                    <!-- <div class="feature-icon"></div> -->
                     <div class="feature-text">
                         <strong>AI-Powered Assistance:</strong> Get intelligent suggestions and automated optimizations
                     </div>
                 </div>
                 <div class="feature-item">
-                    <!-- <div class="feature-icon"></div> -->
                     <div class="feature-text">
                         <strong>Custom Domains:</strong> Connect your own domain and make your project truly yours
                     </div>
                 </div>
                 <div class="feature-item">
-                    <!-- <div class="feature-icon"></div> -->
                     <div class="feature-text">
                         <strong>24/7 Support:</strong> Our team is here to help you succeed every step of the way
                     </div>
                 </div>
             </div>
-            
+
             <p>If you have any questions or need help getting started, just reply to this email. We're here to help!</p>
-            
+
             <p>Happy shipping! 🎉</p>
-            <p><strong>The ShipStation.ai Team</strong></p>
+            <p><strong>The {{platformName}} Team</strong></p>
         </div>
-        
+
         <div class="footer">
-            <p>© {{year}} ShipStation.ai. All rights reserved.</p>
+            <p>© {{year}} {{platformName}} All rights reserved.</p>
             <p>
-                <a href="https://shipstation.ai">Visit our website</a> |
-                <a href="https://shipstation.ai">Unsubscribe</a>
+                <a href="{{platformUrl}}">👨🏻‍💻 Launch {{platformName}}</a> |
+                <a href="{{githubUrl}}">⭐️ Star us on Github</a> |
+                <a href="{{discordUrl}}">👯 Join our Discord</a>
+            </p>
+            <p class="footer-disclaimer">
+                You received this email because you have an active {{platformName}} account.
             </p>
         </div>
     </div>
 </body>
-</html> 
+
+</html>
