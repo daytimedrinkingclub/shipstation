@@ -1,7 +1,8 @@
 const { loadTemplate, processTemplate, sendWelcomeEmail, sendProjectDeployedEmail, sendNotificationEmail } = require('./server/services/emailService');
 require('dotenv').config();
 
-const testEmail = 'anujshama4u@gmail.com';
+// Change this to your test email
+const testEmail = 'test@test.com';
 
 async function testEmailService() {
   console.log('Testing Email Service...\n');
