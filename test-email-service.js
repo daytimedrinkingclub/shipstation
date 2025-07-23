@@ -2,10 +2,15 @@ const { loadTemplate, processTemplate, sendWelcomeEmail, sendProjectDeployedEmai
 require('dotenv').config();
 
 // Change this to your test email
-const testEmail = 'test@test.com';
+const testEmail = process.env.TEST_EMAIL;
 
 async function testEmailService() {
   console.log('Testing Email Service...\n');
+
+  if (!testEmail) {
+    console.log('❌ TEST_EMAIL not found in .env file');
+    return;
+  }
 
   // Test 1: Load welcome template
   console.log('1. Testing template loading...');
@@ -80,6 +85,10 @@ testEmailService().then(async () => {
       console.log('❌ Welcome email error:', error.message);
     }
 
+    // Wait for 2 seconds before next test
+    console.log('   Waiting 2 seconds...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     // Test project deployed email
     console.log('\n   Testing project deployed email...');
     try {
@@ -101,6 +110,10 @@ testEmailService().then(async () => {
     } catch (error) {
       console.log('❌ Project deployed email error:', error.message);
     }
+
+    // Wait for 2 seconds before next test
+    console.log('   Waiting 2 seconds...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Test notification email
     console.log('\n   Testing notification email...');
