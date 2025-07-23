@@ -48,6 +48,7 @@
     "pdf-parse": "^1.1.1",
     "puppeteer": "^23.1.0",
     "razorpay": "^2.9.4",
+    "resend": "^4.7.0",
     "sharp": "^0.33.5",
     "socket.io": "^4.7.5",
     "stream": "^0.0.3",

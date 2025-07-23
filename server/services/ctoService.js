@@ -12,9 +12,13 @@ require("dotenv").config();
 const ScreenshotService = require("./screenshotService");
 const AnalyzeAndRepairService = require("./analyzeAndRepairService");
 const { postToDiscordWebhook } = require("./webhookService");
+const { sendProjectDeployedEmail } = require("./emailService");
+const { getUserProfile } = require("./dbService");
 
 const screenshotService = new ScreenshotService();
 const analyzeAndRepairService = new AnalyzeAndRepairService();
+const FileService = require("./fileService");
+const fileService = new FileService();
 
 async function ctoService({
   query,
@@ -29,6 +33,7 @@ async function ctoService({
   customDesignPrompt,
   images,
   assets,
+  userId,
 }) {
   console.log("ctoService received images:", images?.length);
   console.log("ctoService received assets:", assets?.length);
@@ -120,18 +125,53 @@ async function ctoService({
       slug,
     });
 
+    // Get common data for both webhook and email
+    let userProfile = null;
+    if (userId) {
+      try {
+        userProfile = await getUserProfile(userId);
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      }
+    }
+    
+    // Get screenshot URL for both webhook and email
+    const screenshotPath = `${slug}/screenshot.png`;
+    const screenshotUrl = fileService.getPublicUrl(screenshotPath);
+    const projectUrl = `${process.env.MAIN_URL}/site/${slug}`;
+
+    // Discord webhook with screenshot
     const webhookPayload = {
       content: "New website deployed!",
       embeds: [
         {
           title: "Website Details",
           fields: [
-            { name: "URL", value: `${process.env.MAIN_URL}/site/${slug}` },
+            { name: "URL", value: projectUrl },
           ],
+          image: {
+            url: screenshotUrl
+          }
         },
       ],
     };
     postToDiscordWebhook(webhookPayload, process.env.DISCORD_NEW_SHIP_WEBHOOK_URL);
+
+    // Send project deployed email notification
+    try {
+      if (userProfile && userProfile.email) {
+        await sendProjectDeployedEmail(
+          userProfile.email, 
+          projectUrl, 
+          userName,
+          screenshotUrl
+        );
+        console.log(`Project deployed email sent to ${userProfile.email}`);
+      }
+    } catch (emailError) {
+      console.error('Error sending project deployed email:', emailError);
+      // Don't fail the deployment if email sending fails
+    }
 
     return {
       message: `Website successfully built, deployed, and analyzed. Slug: ${slug}`,

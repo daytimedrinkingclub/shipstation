@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification from ShipStation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 20px;
+        }
+        .content h2 {
+            color: #1f2937;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+        .content p {
+            color: #6b7280;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        .message-container {
+            background-color: #f8fafc;
+            border-left: 4px solid #3b82f6;
+            padding: 24px;
+            margin: 30px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .message-content {
+            color: #374151;
+            font-size: 16px;
+            line-height: 1.7;
+            margin: 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white !important;
+            padding: 14px 28px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+        .cta-button:hover {
+            transform: translateY(-1px);
+        }
+        .info-box {
+            background-color: #eff6ff;
+            border: 1px solid #dbeafe;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+        }
+        .info-box h3 {
+            color: #1e40af;
+            margin: 0 0 12px 0;
+            font-size: 18px;
+        }
+        .info-box p {
+            color: #1e40af;
+            margin: 0;
+            font-size: 14px;
+        }
+        .footer {
+            background-color: #f3f4f6;
+            padding: 30px 20px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .footer a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .header, .content, .footer {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📬 ShipStation.ai Notification</h1>
+            <p>Important update for your account</p>
+        </div>
+        
+        <div class="content">
+            <h2>Hi {{userName}}! 👋</h2>
+            <p>We have an important update for you regarding your account:</p>
+            
+            <div class="message-container">
+                <div class="message-content">{{message}}</div>
+            </div>
+            
+            <div class="info-box">
+                <h3>ℹ️ Need Help?</h3>
+                <p>If you have any questions about this notification or need assistance, don't hesitate to reach out to our support team. We're here to help!</p>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://app.shipstation.ai/" class="cta-button">Launch ShipStation.ai</a>
+            </div>
+            
+            <p>Thank you for being a valued member of the ShipStation.ai community. We appreciate your continued trust in our platform.</p>
+            
+            <p>Best regards,</p>
+            <p><strong>The ShipStation.ai Team</strong></p>
+        </div>
+        
+        <div class="footer">
+            <p>© {{year}} ShipStation.ai All rights reserved.</p>
+            <p>
+                <a href="https://app.shipstation.ai/">👨🏻‍💻 Launch ShipStation</a> |
+                <a href="https://github.com/daytimedrinkingclub/shipstation">⭐️ Star us on Github</a> |
+                <a href="https://discord.gg/wMNmcmq3SX">👯 Join our Discord</a>
+            </p>
+            <p style="margin-top: 16px; font-size: 12px; color: #9ca3af;">
+                You received this email because you have an active ShipStation.ai account.
+            </p>
+        </div>
+    </div>
+</body>
+</html> 

@@ -65,6 +65,14 @@ class FileService {
   async moveFiles(oldSlug, newSlug) {
     return this.strategy.moveFiles(oldSlug, newSlug);
   }
+
+  getPublicUrl(filePath) {
+    if (this.strategy.getPublicUrl) {
+      return this.strategy.getPublicUrl(filePath);
+    }
+    // Fallback for strategies that don't implement getPublicUrl
+    return null;
+  }
 }
 
 module.exports = FileService;

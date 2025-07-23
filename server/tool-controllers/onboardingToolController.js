@@ -201,6 +201,7 @@ async function handleOnboardingToolUse({
       customDesignPrompt,
       images,
       assets,
+      userId,
     });
 
     const mode = client.isCustomKey ? "self-key" : "paid";

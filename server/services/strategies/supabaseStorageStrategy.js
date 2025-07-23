@@ -431,6 +431,14 @@ class SupabaseStorageStrategy {
       .remove([folderPath]);
     if (deleteFolderError) throw deleteFolderError;
   }
+
+  getPublicUrl(filePath) {
+    const fullPath = this._getFullPath(filePath);
+    const { data } = supabase.storage
+      .from(BUCKET_NAME)
+      .getPublicUrl(fullPath);
+    return data.publicUrl;
+  }
 }
 
 module.exports = SupabaseStorageStrategy;
