@@ -12,7 +12,7 @@ const ChatWidget = ({ user, onClose }) => {
     };
 
     (function (d, t) {
-      var BASE_URL = "https://chatwoot.badalhibadal.com";
+      var BASE_URL = "https://chatwoot.anug.in/";
       var g = d.createElement(t),
         s = d.getElementsByTagName(t)[0];
       g.src = BASE_URL + "/packs/js/sdk.js";
