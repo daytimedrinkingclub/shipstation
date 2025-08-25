@@ -5,7 +5,7 @@ const Footer = () => {
     <footer className="flex justify-center p-4">
       <div className="flex items-center gap-4 flex-col sm:flex-row">
         <a
-          href="https://github.com/daytimedrinkingclub/shipstation"
+          href={import.meta.env.VITE_GITHUB_URL}
           target="_blank"
           className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
         >
@@ -13,7 +13,7 @@ const Footer = () => {
           Star us on GitHub
         </a>
         <a
-          href="https://discord.gg/wMNmcmq3SX"
+          href={import.meta.env.VITE_DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
@@ -22,7 +22,7 @@ const Footer = () => {
           Join our Discord
         </a>
         <a
-          href="mailto:anuj@daytimedrinkingclub.com"
+          href={`mailto:${import.meta.env.VITE_SUPPORT_EMAIL}`}
           className="text-muted-foreground inline-flex items-center gap-1 hover:text-foreground"
         >
           <HelpCircle height={16} width={16} />

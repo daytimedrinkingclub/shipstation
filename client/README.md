@@ -1,1 +1,1 @@
-# ShipStation Frontend App
+# FirstSite App Frontend

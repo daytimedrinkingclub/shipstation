@@ -1,6 +1,9 @@
 const { loadTemplate, processTemplate, sendWelcomeEmail, sendProjectDeployedEmail, sendNotificationEmail } = require('./server/services/emailService');
 require('dotenv').config();
 
+const baseUrl = ''; // Set this to the base url of your app
+const supabaseUrl = ''; // Set this to the supabase url of your app
+
 // Change this to your test email
 const testEmail = process.env.TEST_EMAIL;
 
@@ -45,8 +48,8 @@ async function testEmailService() {
 
   // Test 4: Process project deployed template with screenshot
   console.log('\n4. Testing project deployed template with screenshot...');
-  const projectUrl = 'https://shipstation.ai/site/-caro-SEv2MhEQ';
-  const screenshotUrl = 'https://supabasekong-shipstation.badalhibadal.com/storage/v1/object/public/shipstation-websites/websites/-caro-SEv2MhEQ/screenshot.png';
+  const projectUrl = `${baseUrl}/site/-caro-SEv2MhEQ`;
+  const screenshotUrl = `${supabaseUrl}/storage/v1/object/public/shipstation-websites/websites/-caro-SEv2MhEQ/screenshot.png`;
   const processedDeployedTemplate = processTemplate(deployedTemplate, {
     userName: 'Test User',
     projectName: 'Test Project',
@@ -92,8 +95,8 @@ testEmailService().then(async () => {
     // Test project deployed email
     console.log('\n   Testing project deployed email...');
     try {
-      const projectUrl = 'https://shipstation.ai/site/-caro-SEv2MhEQ';
-      const screenshotUrl = 'https://supabasekong-shipstation.badalhibadal.com/storage/v1/object/public/shipstation-websites/websites/-caro-SEv2MhEQ/screenshot.png';
+      const projectUrl = `${baseUrl}/site/-caro-SEv2MhEQ`;
+      const screenshotUrl = `${supabaseUrl}/storage/v1/object/public/shipstation-websites/websites/-caro-SEv2MhEQ/screenshot.png`;
 
       const deployedResult = await sendProjectDeployedEmail(
         testEmail,

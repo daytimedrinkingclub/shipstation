@@ -32,7 +32,7 @@ const Header = () => {
             className="text-2xl font-bold cursor-pointer"
             onClick={() => (window.location.href = "/")}
           >
-            <span>ShipStation</span>
+            <span>{import.meta.env.VITE_APP_NAME}</span>
           </h1>
         </div>
 

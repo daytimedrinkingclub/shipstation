@@ -22,11 +22,11 @@ function processTemplate(template, variables = {}) {
 
   const allVariables = {
     year: new Date().getFullYear(),
-    platformName: 'ShipStation.ai',
-    platformUrl: 'https://app.shipstation.ai/',
-    supportEmail: 'support@shipstation.ai',
-    githubUrl: 'https://github.com/daytimedrinkingclub/shipstation',
-    discordUrl: 'https://discord.gg/wMNmcmq3SX',
+    platformName: process.env.APP_NAME,
+    platformUrl: process.env.APP_URL,
+    supportEmail: process.env.SUPPORT_EMAIL,
+    githubUrl: process.env.GITHUB_URL,
+    discordUrl: process.env.DISCORD_URL,
     ...variables
   }
 
@@ -39,7 +39,7 @@ function processTemplate(template, variables = {}) {
 }
 
 // Send email function
-async function sendEmail({ to, subject, template, variables = {}, from = 'ShipStation.AI <hello@shipstation.ai>' }) {
+async function sendEmail({ to, subject, template, variables = {}, from = `${process.env.APP_NAME} <${process.env.SUPPORT_EMAIL}>` }) {
   try {
     let htmlContent = '';
 
@@ -81,7 +81,7 @@ async function sendEmail({ to, subject, template, variables = {}, from = 'ShipSt
 async function sendWelcomeEmail(userEmail, userName) {
   return await sendEmail({
     to: userEmail,
-    subject: 'Welcome to ShipStation AI! 🚀',
+    subject: `Welcome to ${process.env.APP_NAME}! 🚀`,
     template: 'welcome',
     variables: {
       userName: userName || 'there',
@@ -93,7 +93,7 @@ async function sendWelcomeEmail(userEmail, userName) {
 async function sendProjectDeployedEmail(userEmail, projectUrl, userName, screenshotUrl = null) {
   return await sendEmail({
     to: userEmail,
-    subject: `🎉 Your website is live on ShipStation.AI!`,
+    subject: `🎉 Your website is live on ${process.env.APP_NAME}!`,
     template: 'project-deployed',
     variables: {
       userName: userName || 'there',

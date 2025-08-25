@@ -57,7 +57,7 @@ const Header = ({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Check out my portfolio I made with ShipStation.ai",
+          title: `Check out my portfolio I made with ${import.meta.env.VITE_APP_NAME}`,
           url: shareUrl,
         });
       } catch (error) {

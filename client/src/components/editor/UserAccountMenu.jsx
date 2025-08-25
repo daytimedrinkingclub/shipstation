@@ -70,7 +70,7 @@ const UserAccountMenu = ({ onLogout, isMobile = false }) => {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a
-              href="https://github.com/daytimedrinkingclub/shipstation"
+              href={import.meta.env.VITE_GITHUB_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center"
@@ -81,7 +81,7 @@ const UserAccountMenu = ({ onLogout, isMobile = false }) => {
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <a
-              href="https://discord.gg/wMNmcmq3SX"
+              href={import.meta.env.VITE_DISCORD_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center"

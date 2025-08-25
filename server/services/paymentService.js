@@ -29,7 +29,7 @@ class PaymentService {
           email: true,
         },
         notes,
-        callback_url: "https://shipstation.ai/payment-success",
+        callback_url: `${process.env.MAIN_URL}/payment-success`,
         callback_method: "get",
       });
       return paymentLink;

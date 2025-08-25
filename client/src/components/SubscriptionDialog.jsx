@@ -59,7 +59,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
         }
 
         setShowConfetti(true);
-        toast.success("Welcome to ShipStation Pro! 🚀", {
+        toast.success(`Welcome to ${import.meta.env.VITE_APP_NAME} Pro! 🚀`, {
           description: "Your account has been upgraded successfully!",
           duration: 12000,
         });
@@ -159,7 +159,7 @@ const SubscriptionDialog = ({ isOpen, onClose, isSubscribed, user }) => {
         <>
           <DialogHeader className="space-y-4">
             <DialogTitle className="text-2xl text-white text-center">
-              Upgrade to ShipStation Pro
+              Upgrade to {import.meta.env.VITE_APP_NAME} Pro
             </DialogTitle>
 
             {/* Pricing Toggle & Amount */}

@@ -7,44 +7,45 @@ import { Button } from "./ui/button";
 
 const RecentlyShipped = () => {
   const { myProjectsLoading, recentlyShipped, user } = useContext(AuthContext);
+  const mainUrl = import.meta.env.VITE_MAIN_URL;
 
   const featuredWebsites = [
     {
       name: "Sam Altman - Spotify themed portfolio",
-      url: "https://shipstation.ai/site/sam-altman-spotify-portfolio-66Qmav1g/",
+      url: `${mainUrl}/site/sam-altman-spotify-portfolio-66Qmav1g/`,
     },
     {
       name: "Neon portfolio",
-      url: "https://shipstation.ai/site/neel-seth-8-bit-neon-portfolio-null/",
+      url: `${mainUrl}/site/neel-seth-8-bit-neon-portfolio-null/`,
     },
     {
       name: "Ray Kroc - Tribute Portfolio",
-      url: "https://shipstation.ai/site/ray-kroc-tribute-portfolio-room_tpq5did89//",
+      url: `${mainUrl}/site/ray-kroc-tribute-portfolio-room_tpq5did89//`,
     },
     {
       name: "Vintage Ink Emporium",
-      url: "https://shipstation.ai/site/vintage-ink-emporium-SvxCZNk0/",
+      url: `${mainUrl}/site/vintage-ink-emporium-SvxCZNk0/`,
     },
     {
       name: "TeacherOP - Education Excellence",
-      url: "https://shipstation.ai/site/teacherop-landing-page-8hv6oa8tz/",
+      url: `${mainUrl}/site/teacherop-landing-page-8hv6oa8tz/`,
     },
     {
       name: "Tankr Design portfolio",
-      url: "https://shipstation.ai/site/rachit-tank-tankr-design-portfolio-room_njf2lirzu/",
+      url: `${mainUrl}/site/rachit-tank-tankr-design-portfolio-room_njf2lirzu/`,
     },
     {
       name: "Alexis - AI Companion",
-      url: "https://shipstation.ai/site/alexis-ai-companion-55bp42f2x/",
+      url: `${mainUrl}/site/alexis-ai-companion-55bp42f2x/`,
     },
     {
       name: "Tarot Card Services - Portfolio",
-      url: "https://shipstation.ai/site/tarot-by-sakshi-room_vcmdpyfb9/",
+      url: `${mainUrl}/site/tarot-by-sakshi-room_vcmdpyfb9/`,
     },
   ];
 
   const handleWebsitesClick = () => {
-    window.open("https://shipstation.ai/all", "_blank");
+    window.open(`${mainUrl}/all`, "_blank");
   };
 
   return (
