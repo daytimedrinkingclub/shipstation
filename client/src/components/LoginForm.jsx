@@ -174,9 +174,9 @@ const LoginForm = ({ onSubmit, isLoading }) => {
       </CardContent>
       <CardFooter className="text-muted-foreground text-xs">
         <p>
-          By continuing, you agree to ShipStation.ai's{" "}
+          By continuing, you agree to {import.meta.env.VITE_APP_NAME}'s{" "}
           <a
-            href="https://shipstation.ai/terms.html"
+            href={`${import.meta.env.VITE_MAIN_URL}/terms.html`}
             className="hover:text-primary"
             target="_blank"
           >
@@ -184,7 +184,7 @@ const LoginForm = ({ onSubmit, isLoading }) => {
           </a>{" "}
           and{" "}
           <a
-            href="https://shipstation.ai/privacy-policy.html"
+            href={`${import.meta.env.VITE_MAIN_URL}/privacy-policy.html`}
             className="hover:text-primary"
             target="_blank"
           >

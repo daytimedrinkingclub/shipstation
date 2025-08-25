@@ -251,7 +251,7 @@ async function handleCTOToolUse({
         content: [
           {
             type: "text",
-            text: `Your project has been deployed on the link: https://shipstation.ai/${projectFolderName}`,
+            text: `Your project has been deployed on the link: ${process.env.SITES_APP}/${projectFolderName}`,
           },
         ],
       },

@@ -156,7 +156,7 @@ function getSystemPrompt(type, portfolioType) {
     <design>
     {
       "design_name": "A descriptive name for the design",
-      "sample_link": "https://shipstation.ai/site/example-site/",
+      "sample_link": "${process.env.SITES_APP}/example-site/",
       "color_palette": {
         "primary": {
           "value": "#HEXCODE",

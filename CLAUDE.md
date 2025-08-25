@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ShipStation is an AI-powered portfolio management service that generates personal websites through natural language prompts. Users interact through a chat interface to create and manage their websites.
+First Site is an AI-powered portfolio management service that generates personal websites through natural language prompts. Users interact through a chat interface to create and manage their websites.
 
-**Live URL**: https://shipstation.ai
+**Live URL**: Set via environment variables (MAIN_URL for server, VITE_MAIN_URL for client)
 
 ## Tech Stack
 

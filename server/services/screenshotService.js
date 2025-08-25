@@ -35,7 +35,7 @@ class ScreenshotService {
 
   async saveScreenshot(shipId) {
     try {
-      const url = `https://shipstation.ai/site/${shipId}`;
+      const url = `${process.env.SITES_APP}/${shipId}`;
       const screenshotBuffer = await this.generateScreenshot(url);
 
       const fileName = `screenshot.png`;

@@ -3,4 +3,4 @@ Allow: /
 Disallow: /site
 Disallow: /all.html
 
-Sitemap: https://shipstation.ai/sitemap.xml
+Sitemap: https://firstsite.app/sitemap.xml
