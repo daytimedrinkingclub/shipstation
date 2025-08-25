@@ -1,9 +1,9 @@
-# [ShipStation](https://shipstation.ai)
+# [ShipStation](https://firstsite.app)
 
-ShipStation, https://shipstation.ai is an AI based portfolio management service.
+ShipStation, is an AI based portfolio management service.
 You can generate a personal website of your design requirements and manage/update it in natural langauge with chat mode.
 
-## Features of ShipStation.ai
+## Features of ShipStation
 
 - User authentication (login/signup) via SupaBase
 - Dashboard to generate portfolio
@@ -78,7 +78,7 @@ npm run build
 3. Provide portfolio details like name, profession and a design prompt
 
 The websites are stored in s3 bucket and served on the path
-https://shipstation.ai/site/website-slug
+https://firstsite.app/site/website-slug
 
 # Deploying
 1. Build the client project
